@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Create Equipment Tag{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="card-title mb-3">Create Equipment Tag</h3>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label required-field" for="{{ form.project.id_for_label }}">Project</label>
+          {{ form.project|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.project.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.area.id_for_label }}">Area</label>
+          {{ form.area|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.area.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.system.id_for_label }}">System</label>
+          {{ form.system|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.system.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label required-field" for="{{ form.tag_number.id_for_label }}">Tag Number</label>
+          {{ form.tag_number|as_widget(attrs={"class":"form-control"}) }}
+          {{ form.tag_number.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label required-field" for="{{ form.description.id_for_label }}">Description</label>
+          {{ form.description|as_widget(attrs={"class":"form-control"}) }}
+          {{ form.description.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.equipment_type.id_for_label }}">Equipment Type</label>
+          {{ form.equipment_type|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.equipment_type.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.discipline.id_for_label }}">Discipline</label>
+          {{ form.discipline|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.discipline.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.parent_tag.id_for_label }}">Parent Tag</label>
+          {{ form.parent_tag|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.parent_tag.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.manufacturer.id_for_label }}">Manufacturer</label>
+          {{ form.manufacturer|as_widget(attrs={"class":"form-control"}) }}
+          {{ form.manufacturer.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.model_number.id_for_label }}">Model Number</label>
+          {{ form.model_number|as_widget(attrs={"class":"form-control"}) }}
+          {{ form.model_number.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.serial_number.id_for_label }}">Serial Number</label>
+          {{ form.serial_number|as_widget(attrs={"class":"form-control"}) }}
+          {{ form.serial_number.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.criticality.id_for_label }}">Criticality</label>
+          {{ form.criticality|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.criticality.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.status.id_for_label }}">Status</label>
+          {{ form.status|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.status.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.installation_date.id_for_label }}">Installation Date</label>
+          {{ form.installation_date|as_widget(attrs={"class":"form-control", "type":"date"}) }}
+          {{ form.installation_date.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.weight_kg.id_for_label }}">Weight (kg)</label>
+          {{ form.weight_kg|as_widget(attrs={"class":"form-control", "step":"0.01"}) }}
+          {{ form.weight_kg.errors|striptags|safe }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.dimensions.id_for_label }}">Dimensions</label>
+          {{ form.dimensions|as_widget(attrs={"class":"form-control", "placeholder":"3000x2000x1500"}) }}
+          <div class="form-text">{{ form.dimensions.help_text }}</div>
+          {{ form.dimensions.errors|striptags|safe }}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="{{ form.notes.id_for_label }}">Notes</label>
+          {{ form.notes|as_widget(attrs={"class":"form-control", "rows":"4"}) }}
+          {{ form.notes.errors|striptags|safe }}
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex justify-content-end">
+        <a href="{% url 'core:project-detail' form.project.value %}" class="btn btn-outline-secondary me-2">Back</a>
+        <button type="submit" class="btn btn-primary">Create Tag</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

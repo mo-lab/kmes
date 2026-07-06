@@ -4,22 +4,37 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/km.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/base_views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/commissioning/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/construction/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/core/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/documents/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/ism/models/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/procurement/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/resources/forms.py" afterDir="false" />
+    <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="init files">
+      <change afterPath="$PROJECT_DIR$/kmes/commissioning/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/construction/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/core/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/documents/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/kmes/templates/base.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/kmes/templates/core/area_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/kmes/templates/core/equipmenttag_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/kmes/templates/core/project_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/kmes/templates/core/system_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/procurement/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/resources/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/base_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/base_views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/commissioning/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/commissioning/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/commissioning/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/commissioning/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/construction/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/construction/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/construction/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/core/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/core/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/documents/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/documents/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/kmes/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/kmes/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/procurement/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/procurement/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/procurement/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/procurement/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/resources/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/resources/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,23 +45,27 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="3Fc6sIf5VLho2b5WTea7aKYB3EA" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
     "node.js.detected.package.eslint": "true",
@@ -57,6 +76,11 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\moein\OneDrive\projects\django\kani\km\kmes\kmes" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -73,11 +97,34 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1782362215624</updated>
-      <workItem from="1782362217069" duration="8397000" />
+      <workItem from="1782362217069" duration="9223000" />
+      <workItem from="1782387437560" duration="5534000" />
+      <workItem from="1783227880581" duration="3396000" />
+      <workItem from="1783313318800" duration="4729000" />
     </task>
+    <task id="LOCAL‎−۰۰۰۰۱" summary="init">
+      <option name="closed" value="true" />
+      <created>1782385620209</created>
+      <option name="number" value="LOCAL‎−۰۰۰۰۱" />
+      <option name="presentableId" value="LOCAL‎−۰۰۰۰۱" />
+      <updated>1782385620209</updated>
+    </task>
+    <task id="LOCAL‎−۰۰۰۰۲" summary="init files">
+      <option name="closed" value="true" />
+      <created>1782385636737</created>
+      <option name="number" value="LOCAL‎−۰۰۰۰۲" />
+      <option name="presentableId" value="LOCAL‎−۰۰۰۰۲" />
+      <updated>1782385636737</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="init" />
+    <MESSAGE value="init files" />
+    <option name="LAST_COMMIT_MESSAGE" value="init files" />
   </component>
 </project>

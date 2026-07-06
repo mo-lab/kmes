@@ -5,9 +5,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.db import models as db_models
 
-from ..documents.models import Document, TagDocument
-from ..core.models import Project, EquipmentTag
-from ..documents.forms import (
+from documents.models import Document, TagDocument
+from core.models import Project, EquipmentTag
+from documents.forms import (
 	DocumentForm, DocumentRevisionForm, TagDocumentForm,
 	DocumentSearchForm, DocumentBulkUploadForm
 	)
@@ -76,7 +76,7 @@ class DocumentCreateView(BaseCreateView):
 	success_message = "Document '%(document_number)s' was created successfully."
 	
 	def get_success_url(self):
-		return reverse('document_detail', kwargs={'pk': self.object.pk})
+		return reverse('documents:document_detail', kwargs={'pk': self.object.pk})
 	
 	def get_initial(self):
 		initial = super().get_initial()
@@ -97,13 +97,13 @@ class DocumentUpdateView(BaseUpdateView):
 	success_message = "Document '%(document_number)s' was updated successfully."
 	
 	def get_success_url(self):
-		return reverse('document_detail', kwargs={'pk': self.object.pk})
+		return reverse('documents:document_detail', kwargs={'pk': self.object.pk})
 
 
 class DocumentDeleteView(BaseDeleteView):
 	model = Document
 	template_name = 'documents/document_confirm_delete.html'
-	success_url = reverse_lazy('document_list')
+	success_url = reverse_lazy('documents:document_list')
 	success_message = "Document was deleted successfully."
 
 
@@ -128,7 +128,7 @@ class DocumentRevisionCreateView(BaseCreateView):
 		return context
 	
 	def get_success_url(self):
-		return reverse('document_detail', kwargs={'pk': self.object.pk})
+		return reverse('documents:document_detail', kwargs={'pk': self.object.pk})
 	
 	def form_valid(self, form):
 		# Mark the old revision as superseded if the new one is approved
@@ -154,8 +154,8 @@ class TagDocumentCreateView(BaseCreateView):
 	
 	def get_success_url(self):
 		if self.object.equipment_tag:
-			return reverse('equipment_tag_detail', kwargs={'pk': self.object.equipment_tag.pk})
-		return reverse('document_detail', kwargs={'pk': self.object.document.pk})
+			return reverse('core:equipment_tag_detail', kwargs={'pk': self.object.equipment_tag.pk})
+		return reverse('documents:document_detail', kwargs={'pk': self.object.document.pk})
 
 
 class TagDocumentDeleteView(BaseDeleteView):
@@ -165,26 +165,61 @@ class TagDocumentDeleteView(BaseDeleteView):
 	
 	def get_success_url(self):
 		obj = self.get_object()
-		return reverse('equipment_tag_detail', kwargs={'pk': obj.equipment_tag.pk})
+		return reverse('core:equipment_tag_detail', kwargs={'pk': obj.equipment_tag.pk})
 
 
 # ============================================
 # BULK UPLOAD VIEW
 # ============================================
-
+#
+# def document_bulk_upload_view(request):
+# 	"""Handle bulk upload of multiple documents."""
+# 	if request.method == 'POST':
+# 		form = DocumentBulkUploadForm(request.POST, request.FILES)
+# 		if form.is_valid():
+# 			project = form.cleaned_data['project']
+# 			files = request.FILES.getlist('files')
+#
+# 			created_count = 0
+# 			for file in files:
+# 				Document.objects.create(
+# 						project=project,
+# 						document_number=file.name.rsplit('.', 1)[0],
+# 						title=file.name,
+# 						doc_type='OTHR',
+# 						discipline='GEN',
+# 						revision='A',
+# 						file_upload=file,
+# 						submitted_by=request.user
+# 						)
+# 				created_count += 1
+#
+# 			messages.success(request, f"Successfully uploaded {created_count} documents.")
+# 			return redirect('documents:document_list')
+# 	else:
+# 		form = DocumentBulkUploadForm()
+#
+# 	return render(request, 'documents/document_bulk_upload.html', {'form': form})
 def document_bulk_upload_view(request):
 	"""Handle bulk upload of multiple documents."""
 	if request.method == 'POST':
 		form = DocumentBulkUploadForm(request.POST, request.FILES)
 		if form.is_valid():
 			project = form.cleaned_data['project']
-			files = request.FILES.getlist('files')
+			files = form.cleaned_data['files']
+			
+			# files will be a list if multiple files were selected
+			if not isinstance(files, (list, tuple)):
+				files = [files]
 			
 			created_count = 0
 			for file in files:
+				# Generate document number from filename (without extension)
+				doc_number = file.name.rsplit('.', 1)[0] if '.' in file.name else file.name
+				
 				Document.objects.create(
 						project=project,
-						document_number=file.name.rsplit('.', 1)[0],
+						document_number=doc_number,
 						title=file.name,
 						doc_type='OTHR',
 						discipline='GEN',

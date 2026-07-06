@@ -1,7 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
-from django.db import models
+
+from django.views.generic import CreateView, UpdateView, DeleteView
 
 
 class ProjectContextMixin:
@@ -39,7 +40,7 @@ class SuccessUrlMixin:
 		return reverse_lazy('dashboard')  # Default fallback
 
 
-class BaseCreateView(LoginRequiredMixin, SuccessMessageMixin, SuccessUrlMixin, ProjectContextMixin, models.CreateView):
+class BaseCreateView(LoginRequiredMixin, SuccessMessageMixin, SuccessUrlMixin, ProjectContextMixin, CreateView):
 	"""Base create view with common functionality."""
 	template_name = None  # Set in child class or use default
 	
@@ -54,7 +55,7 @@ class BaseCreateView(LoginRequiredMixin, SuccessMessageMixin, SuccessUrlMixin, P
 		return super().form_valid(form)
 
 
-class BaseUpdateView(LoginRequiredMixin, SuccessMessageMixin, SuccessUrlMixin, ProjectContextMixin, models.UpdateView):
+class BaseUpdateView(LoginRequiredMixin, SuccessMessageMixin, SuccessUrlMixin, ProjectContextMixin, UpdateView):
 	"""Base update view with common functionality."""
 	
 	def form_valid(self, form):
@@ -70,7 +71,7 @@ class BaseUpdateView(LoginRequiredMixin, SuccessMessageMixin, SuccessUrlMixin, P
 		return super().form_valid(form)
 
 
-class BaseDeleteView(LoginRequiredMixin, SuccessMessageMixin, SuccessUrlMixin, models.DeleteView):
+class BaseDeleteView(LoginRequiredMixin, SuccessMessageMixin, SuccessUrlMixin, DeleteView):
 	"""Base delete view with common functionality."""
 	
 	def get_success_message(self, cleaned_data):
