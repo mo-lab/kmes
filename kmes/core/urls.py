@@ -185,4 +185,6 @@ urlpatterns = [
 		path("projects/<int:project_pk>/areas/create/", views.AreaCreateView.as_view(), name="area-create"),
 		path("projects/<int:project_pk>/systems/create/", views.SystemCreateView.as_view(), name="system-create"),
 		path("projects/<int:project_pk>/tags/create/", views.EquipmentTagCreateView.as_view(), name="equipmenttag-create"),
+		path('projects/', views.ProjectListView.as_view(), name='project-list'),
+		path('projects/<int:pk>/',views.ProjectDetailView.as_view(),name='project-detail'),
 		]

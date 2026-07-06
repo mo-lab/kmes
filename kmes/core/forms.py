@@ -322,7 +322,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import Project, Area, System, EquipmentTag
 
 
-DATE_INPUT = forms.DateInput(attrs={'type': 'date'})
+DATE_INPUT = forms.DateInput(attrs={'class': 'form-control','type': 'date'})
 
 
 class ProjectForm(forms.ModelForm):
@@ -338,7 +338,9 @@ class ProjectForm(forms.ModelForm):
 				'start_date': DATE_INPUT,
 				'target_completion_date': DATE_INPUT,
 				'actual_completion_date': DATE_INPUT,
-				'status': forms.Select(),
+				'status': forms.Select(attrs={
+						'class': 'form-select'
+						}),
 				}
 		help_texts = {
 				'code': _("Short code, e.g., 'CU-PH2'"),

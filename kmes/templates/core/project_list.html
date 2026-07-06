@@ -1,0 +1,464 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Projects - Copper Mine Processing{% endblock %}
+
+{% block extra_css %}
+<style>
+  .project-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #0d6efd;
+  }
+  .project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .project-card.status-init { border-left-color: #6c757d; }
+  .project-card.status-plan { border-left-color: #0dcaf0; }
+  .project-card.status-exec { border-left-color: #ffc107; }
+  .project-card.status-comm { border-left-color: #fd7e14; }
+  .project-card.status-clsd { border-left-color: #198754; }
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 0.25em 0.75em;
+  }
+
+  .progress {
+    height: 0.5rem;
+  }
+
+  .quick-stats .stat-item {
+    text-align: center;
+    padding: 0.5rem;
+  }
+  .quick-stats .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d6efd;
+  }
+  .quick-stats .stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+  }
+
+  .filter-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">Projects</h1>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+          <li class="breadcrumb-item active">Projects</li>
+        </ol>
+      </nav>
+    </div>
+    <div>
+      <a href="#" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> New Project
+      </a>
+      {% if projects %}
+      <button type="button" class="btn btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#exportModal">
+        <i class="bi bi-download"></i> Export
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  {% if projects %}
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card quick-stats">
+        <div class="card-body">
+          <div class="stat-item">
+            <div class="stat-value">{{ total_count }}</div>
+            <div class="stat-label">Total Projects</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card quick-stats">
+        <div class="card-body">
+          <div class="stat-item">
+            <div class="stat-value text-warning">{{ in_progress_count }}</div>
+            <div class="stat-label">In Progress</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card quick-stats">
+        <div class="card-body">
+          <div class="stat-item">
+            <div class="stat-value text-success">{{ completed_count }}</div>
+            <div class="stat-label">Completed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card quick-stats">
+        <div class="card-body">
+          <div class="stat-item">
+            <div class="stat-value text-info">{{ planning_count }}</div>
+            <div class="stat-label">In Planning</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Search and Filter -->
+  <div class="filter-section">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label for="search" class="form-label small">Search</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text"
+                 name="search"
+                 id="search"
+                 class="form-control"
+                 placeholder="Search by name, code, or location..."
+                 value="{{ request.GET.search|default:'' }}">
+        </div>
+      </div>
+
+      <div class="col-md-2">
+        <label for="status_filter" class="form-label small">Status</label>
+        <select name="status" id="status_filter" class="form-select">
+          <option value="">All Statuses</option>
+          <option value="INIT" {% if request.GET.status == 'INIT' %}selected{% endif %}>Initiation</option>
+          <option value="PLAN" {% if request.GET.status == 'PLAN' %}selected{% endif %}>Planning</option>
+          <option value="EXEC" {% if request.GET.status == 'EXEC' %}selected{% endif %}>Execution</option>
+          <option value="COMM" {% if request.GET.status == 'COMM' %}selected{% endif %}>Commissioning</option>
+          <option value="CLSD" {% if request.GET.status == 'CLSD' %}selected{% endif %}>Closed</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label for="sort_by" class="form-label small">Sort By</label>
+        <select name="sort" id="sort_by" class="form-select">
+          <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+          <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+          <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+          <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>Name (Z-A)</option>
+          <option value="target_completion_date" {% if request.GET.sort == 'target_completion_date' %}selected{% endif %}>Due Date (Earliest)</option>
+          <option value="-target_completion_date" {% if request.GET.sort == '-target_completion_date' %}selected{% endif %}>Due Date (Latest)</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label for="per_page" class="form-label small">Show</label>
+        <select name="per_page" id="per_page" class="form-select">
+          <option value="12" {% if request.GET.per_page == '12' %}selected{% endif %}>12 per page</option>
+          <option value="24" {% if request.GET.per_page == '24' %}selected{% endif %}>24 per page</option>
+          <option value="48" {% if request.GET.per_page == '48' %}selected{% endif %}>48 per page</option>
+          <option value="96" {% if request.GET.per_page == '96' %}selected{% endif %}>96 per page</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-funnel"></i> Apply Filters
+          </button>
+          {% if request.GET %}
+          <a href="{% url 'core:project-list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-x-circle"></i> Clear
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Projects Grid -->
+  {% if projects %}
+  <div class="row g-4">
+    {% for project in projects %}
+    <div class="col-xl-4 col-md-6">
+      <div class="card project-card status-{{ project.status|lower }} h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="card-title mb-1">
+              <a href="{% url 'core:project-detail' project.pk %}" class="text-decoration-none text-dark stretched-link">
+                  {{ project.name }}
+                </a>
+              </h5>
+              <span class="badge bg-secondary">{{ project.code }}</span>
+            </div>
+            <span class="badge status-badge
+                            {% if project.status == 'INIT' %}bg-secondary
+                            {% elif project.status == 'PLAN' %}bg-info
+                            {% elif project.status == 'EXEC' %}bg-warning text-dark
+                            {% elif project.status == 'COMM' %}bg-orange
+                            {% elif project.status == 'CLSD' %}bg-success
+                            {% endif %}">
+                            {{ project.get_status_display }}
+                        </span>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted">
+              <i class="bi bi-geo-alt"></i> {{ project.location }}
+            </small>
+          </div>
+
+          {% if project.description %}
+          <p class="card-text text-muted small mb-3">
+            {{ project.description|truncatechars:120 }}
+          </p>
+          {% endif %}
+
+          <!-- Timeline Progress -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Progress</span>
+              <span>
+                                {% if project.status == 'INIT' %}5%
+                                {% elif project.status == 'PLAN' %}20%
+                                {% elif project.status == 'EXEC' %}60%
+                                {% elif project.status == 'COMM' %}85%
+                                {% elif project.status == 'CLSD' %}100%
+                                {% endif %}
+                            </span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar
+                                {% if project.status == 'INIT' %}bg-secondary
+                                {% elif project.status == 'PLAN' %}bg-info
+                                {% elif project.status == 'EXEC' %}bg-warning
+                                {% elif project.status == 'COMM' %}bg-orange
+                                {% elif project.status == 'CLSD' %}bg-success
+                                {% endif %}"
+                   role="progressbar"
+                   style="width:{% if project.status == 'INIT' %}5%
+                                    {% elif project.status == 'PLAN' %}20%
+                                    {% elif project.status == 'EXEC' %}60%
+                                    {% elif project.status == 'COMM' %}85%
+                                    {% elif project.status == 'CLSD' %}100%
+                                    {% endif %}"
+                   aria-valuenow="
+                                    {% if project.status == 'INIT' %}5
+                                    {% elif project.status == 'PLAN' %}20
+                                    {% elif project.status == 'EXEC' %}60
+                                    {% elif project.status == 'COMM' %}85
+                                    {% elif project.status == 'CLSD' %}100
+                                    {% endif %}"
+                   aria-valuemin="0"
+                   aria-valuemax="100">
+              </div>
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="row small text-muted mb-3">
+            <div class="col-6">
+              <i class="bi bi-calendar-check"></i>
+              Start: {{ project.start_date|date:"M d, Y" }}
+            </div>
+            <div class="col-6">
+              <i class="bi bi-calendar-event"></i>
+              Target: {{ project.target_completion_date|date:"M d, Y" }}
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="row small border-top pt-2">
+            <div class="col-4 text-center">
+              <div class="fw-bold">{{ project.areas.count }}</div>
+              <div class="text-muted">Areas</div>
+            </div>
+            <div class="col-4 text-center">
+              <div class="fw-bold">{{ project.systems.count }}</div>
+              <div class="text-muted">Systems</div>
+            </div>
+            <div class="col-4 text-center">
+              <div class="fw-bold">{{ project.equipment_tags.count }}</div>
+              <div class="text-muted">Tags</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Footer with Actions -->
+        <div class="card-footer bg-transparent border-top">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+              Updated {{ project.updated_at|timesince }} ago
+            </small>
+            <div class="btn-group btn-group-sm">
+              <a href="#" class="btn btn-outline-primary" title="View Details">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="#" class="btn btn-outline-secondary" title="Edit">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="#" class="btn btn-outline-danger" title="Delete">
+                <i class="bi bi-trash"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+  <div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="text-muted small">
+      Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} projects
+    </div>
+    <nav aria-label="Project pagination">
+      <ul class="pagination mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+            <i class="bi bi-chevron-double-left"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+          <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+            <i class="bi bi-chevron-double-right"></i>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <!-- Empty State -->
+  <div class="empty-state">
+    <i class="bi bi-folder2-open"></i>
+    <h3 class="mt-3">No Projects Found</h3>
+    <p class="text-muted">
+      {% if request.GET %}
+      No projects match your search criteria. Try adjusting your filters.
+      {% else %}
+      Get started by creating your first project.
+      {% endif %}
+    </p>
+    <div class="mt-3">
+      {% if request.GET %}
+      <a href="#" class="btn btn-outline-secondary me-2">
+        <i class="bi bi-x-circle"></i> Clear Filters
+      </a>
+      {% endif %}
+      <a href="#" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Create Project
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Export Modal -->
+{% if projects %}
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exportModalLabel">Export Projects</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Select export format:</p>
+        <div class="d-grid gap-2">
+          <a href="{% url 'core:project-list' %}?export=csv{% for key, value in request.GET.items %}{% if key != 'export' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline-primary">
+            <i class="bi bi-filetype-csv"></i> Export as CSV
+          </a>
+          <a href="{% url 'core:project-list' %}?export=excel{% for key, value in request.GET.items %}{% if key != 'export' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline-success">
+            <i class="bi bi-filetype-xlsx"></i> Export as Excel
+          </a>
+          <a href="{% url 'core:project-list' %}?export=pdf{% for key, value in request.GET.items %}{% if key != 'export' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline-danger">
+            <i class="bi bi-filetype-pdf"></i> Export as PDF
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-submit form when select fields change
+  document.getElementById('status_filter').addEventListener('change', function() {
+    this.form.submit();
+  });
+
+  document.getElementById('sort_by').addEventListener('change', function() {
+    this.form.submit();
+  });
+
+  document.getElementById('per_page').addEventListener('change', function() {
+    this.form.submit();
+  });
+
+  // Add debounce to search input
+  let searchTimeout;
+  document.getElementById('search').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      this.form.submit();
+    }, 500);
+  });
+</script>
+{% endblock %}

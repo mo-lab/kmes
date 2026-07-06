@@ -17,56 +17,56 @@
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label required-field" for="{{ form.name.id_for_label }}">Name</label>
-          {{ form.name|as_widget(attrs={"class":"form-control"}) }}
-          {{ form.name.errors|striptags|safe }}
+          {{ form.name }}
+
         </div>
 
         <div class="col-md-6">
           <label class="form-label required-field" for="{{ form.code.id_for_label }}">Code</label>
-          {{ form.code|as_widget(attrs={"class":"form-control"}) }}
+          {{ form.code }}
           <div class="form-text">{{ form.code.help_text }}</div>
           {{ form.code.errors|striptags|safe }}
         </div>
 
         <div class="col-md-6">
           <label class="form-label required-field" for="{{ form.location.id_for_label }}">Location</label>
-          {{ form.location|as_widget(attrs={"class":"form-control"}) }}
+          {{ form.location }}
           {{ form.location.errors|striptags|safe }}
         </div>
 
         <div class="col-md-6">
           <label class="form-label" for="{{ form.status.id_for_label }}">Status</label>
-          {{ form.status|as_widget(attrs={"class":"form-select"}) }}
+          {{ form.status }}
           {{ form.status.errors|striptags|safe }}
         </div>
 
         <div class="col-12">
           <label class="form-label" for="{{ form.description.id_for_label }}">Description</label>
-          {{ form.description|as_widget(attrs={"class":"form-control", "rows":"4"}) }}
+          {{ form.description }}
           {{ form.description.errors|striptags|safe }}
         </div>
 
         <div class="col-md-4">
           <label class="form-label required-field" for="{{ form.start_date.id_for_label }}">Start Date</label>
-          {{ form.start_date|as_widget(attrs={"class":"form-control", "type":"date"}) }}
+          {{ form.start_date }}
           {{ form.start_date.errors|striptags|safe }}
         </div>
 
         <div class="col-md-4">
           <label class="form-label required-field" for="{{ form.target_completion_date.id_for_label }}">Target Completion</label>
-          {{ form.target_completion_date|as_widget(attrs={"class":"form-control", "type":"date"}) }}
+          {{ form.target_completion_date }}
           {{ form.target_completion_date.errors|striptags|safe }}
         </div>
 
         <div class="col-md-4">
           <label class="form-label" for="{{ form.actual_completion_date.id_for_label }}">Actual Completion</label>
-          {{ form.actual_completion_date|as_widget(attrs={"class":"form-control", "type":"date"}) }}
+          {{ form.actual_completion_date }}
           {{ form.actual_completion_date.errors|striptags|safe }}
         </div>
       </div>
 
       <div class="mt-4 d-flex justify-content-end">
-        <a href="{% url 'yourapp:project-list' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+        <a href="#" class="btn btn-outline-secondary me-2">Cancel</a>
         <button type="submit" class="btn btn-primary">Create Project</button>
       </div>
     </form>

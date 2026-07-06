@@ -359,17 +359,18 @@
 # 	project_id = request.GET.get('project_id')
 # 	tags = EquipmentTag.objects.filter(project_id=project_id).values('id', 'tag_number', 'description')
 # 	return JsonResponse(list(tags), safe=False)
-
+from django.db.models import Count, Q
 # views.py
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import get_object_or_404
+from django.views import generic
 from django.views.generic import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Project, Area, System, EquipmentTag
 from .forms import ProjectForm, AreaForm, SystemForm, EquipmentTagForm
 
 
-class ProjectCreateView(LoginRequiredMixin, CreateView):
+class ProjectCreateView( CreateView):
 	model = Project
 	form_class = ProjectForm
 	template_name = "core/project_form.html"
@@ -483,3 +484,139 @@ class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 	
 	def get_success_url(self):
 		return reverse("core:project-detail", kwargs={"pk": self.object.project.pk})
+
+class ProjectListView( generic.ListView):
+	model = Project
+	template_name = 'core/project_list.html'
+	context_object_name = 'projects'
+	paginate_by = 12
+	
+	def get_queryset(self):
+		queryset = Project.objects.annotate(
+				area_count=Count('areas', distinct=True),
+				system_count=Count('systems', distinct=True),
+				equipment_count=Count('equipment_tags', distinct=True)
+				)
+		
+		# Search
+		search = self.request.GET.get('search', '')
+		if search:
+			queryset = queryset.filter(
+					Q(name__icontains=search) |
+					Q(code__icontains=search) |
+					Q(location__icontains=search) |
+					Q(description__icontains=search)
+					)
+		
+		# Status filter
+		status = self.request.GET.get('status', '')
+		if status:
+			queryset = queryset.filter(status=status)
+		
+		# Sorting
+		sort = self.request.GET.get('sort', '-created_at')
+		allowed_sorts = ['name', '-name', 'created_at', '-created_at',
+		                 'target_completion_date', '-target_completion_date']
+		if sort in allowed_sorts:
+			queryset = queryset.order_by(sort)
+		
+		return queryset
+	
+	def get_paginate_by(self, queryset):
+		per_page = self.request.GET.get('per_page', '12')
+		try:
+			return int(per_page)
+		except ValueError:
+			return 12
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		queryset = Project.objects.all()
+		
+		# Quick stats
+		context['total_count'] = queryset.count()
+		context['in_progress_count'] = queryset.filter(status__in=['EXEC', 'COMM']).count()
+		context['completed_count'] = queryset.filter(status='CLSD').count()
+		context['planning_count'] = queryset.filter(status__in=['INIT', 'PLAN']).count()
+		
+		return context
+
+
+
+class ProjectDetailView( generic.DetailView):
+	model = Project
+	template_name = 'core/project_detail.html'
+	context_object_name = 'project'
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		project = self.get_object()
+		
+		# Areas with related counts
+		context['areas'] = project.areas.annotate(
+				equipment_count=Count('equipment_tags'),
+				work_package_count=Count('work_packages')
+				).all()
+		
+		# Systems with commissioning status
+		context['systems'] = project.systems.prefetch_related(
+				'commissioning_phases'
+				).all()
+		
+		# Equipment tags (limited for display)
+		context['equipment_tags'] = project.equipment_tags.select_related(
+				'area', 'parent_tag'
+				).order_by('tag_number')[:100]
+		
+		# Total equipment count
+		context['equipment_count'] = project.equipment_tags.count()
+		
+		# Open punch items count
+		
+		context['punch_items_count'] = PunchItem.objects.filter(
+				project=project,
+				status__in=['OPEN', 'IPRO']
+				).count()
+		
+		# Recent activities (you can implement this based on your needs)
+		context['recent_activities'] = self.get_recent_activities(project)
+		
+		return context
+	
+	def get_recent_activities(self, project):
+		"""Get recent activities across all related models."""
+		activities = []
+		
+		# Recent documents
+		recent_docs = project.documents.order_by('-created_at')[:3]
+		for doc in recent_docs:
+			activities.append({
+					'icon': 'file-earmark-text',
+					'description': f'Document "{doc.title}" was {doc.get_status_display().lower()}',
+					'timestamp': doc.created_at
+					})
+		
+		# Recent work package updates
+		from ..construction.models import WorkPackage
+		recent_wps = WorkPackage.objects.filter(
+				project=project
+				).order_by('-updated_at')[:3]
+		for wp in recent_wps:
+			activities.append({
+					'icon': 'clipboard-check',
+					'description': f'Work package "{wp.code}" status changed to {wp.get_status_display()}',
+					'timestamp': wp.updated_at
+					})
+		
+		# Recent equipment tag updates
+		recent_tags = project.equipment_tags.order_by('-updated_at')[:3]
+		for tag in recent_tags:
+			activities.append({
+					'icon': 'tag',
+					'description': f'Equipment tag "{tag.tag_number}" status: {tag.get_status_display()}',
+					'timestamp': tag.updated_at
+					})
+		
+		# Sort by timestamp and limit
+		activities.sort(key=lambda x: x['timestamp'], reverse=True)
+		return activities[:10]

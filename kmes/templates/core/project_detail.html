@@ -1,0 +1,813 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ project.name }} - Project Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .project-header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+        color: white;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        border-radius: 0.5rem;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    .stat-card .icon {
+        font-size: 2rem;
+        opacity: 0.7;
+    }
+    .stat-card .value {
+        font-size: 1.75rem;
+        font-weight: 700;
+    }
+    .stat-card .label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2rem;
+        top: 0.5rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid white;
+    }
+    .timeline-item.completed::before {
+        background: #198754;
+    }
+    .timeline-item.current::before {
+        background: #ffc107;
+    }
+
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        padding: 0.75rem 1.25rem;
+    }
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        border-bottom: 2px solid #0d6efd;
+        background: transparent;
+    }
+
+    .progress-thick {
+        height: 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .quick-action-btn {
+        transition: all 0.2s;
+    }
+    .quick-action-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .badge-status {
+        font-size: 0.85rem;
+        padding: 0.4em 1em;
+    }
+
+    .table-hover tbody tr {
+        cursor: pointer;
+    }
+
+    .empty-tab {
+        text-align: center;
+        padding: 3rem;
+        color: #adb5bd;
+    }
+    .empty-tab i {
+        font-size: 3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="#">Projects</a></li>
+            <li class="breadcrumb-item active">{{ project.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Project Header -->
+    <div class="project-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-2">
+                    <h1 class="h2 mb-0 me-3">{{ project.name }}</h1>
+                    <span class="badge badge-status
+                        {% if project.status == 'INIT' %}bg-secondary
+                        {% elif project.status == 'PLAN' %}bg-info text-dark
+                        {% elif project.status == 'EXEC' %}bg-warning text-dark
+                        {% elif project.status == 'COMM' %}bg-orange text-dark
+                        {% elif project.status == 'CLSD' %}bg-success
+                        {% endif %}">
+                        {{ project.get_status_display }}
+                    </span>
+                </div>
+                <p class="mb-2 opacity-75">
+                    <span class="badge bg-light text-dark me-2">{{ project.code }}</span>
+                    <i class="bi bi-geo-alt me-1"></i> {{ project.location }}
+                </p>
+                {% if project.description %}
+                <p class="mb-0 opacity-75">{{ project.description|truncatechars:200 }}</p>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="btn-group">
+                    <a href="#" class="btn btn-light">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a href="#" class="btn btn-outline-light">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mt-3">
+            <div class="d-flex justify-content-between small mb-1">
+                <span>Overall Progress</span>
+                <span>
+                    {% if project.status == 'INIT' %}5%
+                    {% elif project.status == 'PLAN' %}20%
+                    {% elif project.status == 'EXEC' %}60%
+                    {% elif project.status == 'COMM' %}85%
+                    {% elif project.status == 'CLSD' %}100%
+                    {% endif %}
+                </span>
+            </div>
+            <div class="progress progress-thick bg-white bg-opacity-25">
+                <div class="progress-bar bg-white" role="progressbar"
+                     style="width: {% if project.status == 'INIT' %}5%{% elif project.status == 'PLAN' %}20%{% elif project.status == 'EXEC' %}60%{% elif project.status == 'COMM' %}85%{% elif project.status == 'CLSD' %}100%{% endif %}"
+                     aria-valuenow="{% if project.status == 'INIT' %}5{% elif project.status == 'PLAN' %}20{% elif project.status == 'EXEC' %}60{% elif project.status == 'COMM' %}85{% elif project.status == 'CLSD' %}100{% endif %}"
+                     aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Statistics -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card stat-card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center">
+                    <div class="icon text-primary"><i class="bi bi-map"></i></div>
+                    <div class="value text-primary">{{ areas.count }}</div>
+                    <div class="label text-primary">Areas</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card stat-card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center">
+                    <div class="icon text-success"><i class="bi bi-diagram-3"></i></div>
+                    <div class="value text-success">{{ systems.count }}</div>
+                    <div class="label text-success">Systems</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card stat-card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center">
+                    <div class="icon text-info"><i class="bi bi-tag"></i></div>
+                    <div class="value text-info">{{ equipment_count }}</div>
+                    <div class="label text-info">Equipment Tags</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card stat-card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center">
+                    <div class="icon text-warning"><i class="bi bi-file-earmark-text"></i></div>
+                    <div class="value text-warning">{{ project.documents.count }}</div>
+                    <div class="label text-warning">Documents</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card stat-card bg-danger bg-opacity-10 border-danger">
+                <div class="card-body text-center">
+                    <div class="icon text-danger"><i class="bi bi-clipboard-check"></i></div>
+                    <div class="value text-danger">{{ project.work_packages.count }}</div>
+                    <div class="label text-danger">Work Packages</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card stat-card bg-secondary bg-opacity-10 border-secondary">
+                <div class="card-body text-center">
+                    <div class="icon text-secondary"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div class="value text-secondary">{{ punch_items_count }}</div>
+                    <div class="label text-secondary">Open Punch Items</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-2 mb-4">
+        <div class="col-auto">
+            <a href="#" class="btn btn-outline-primary btn-sm quick-action-btn">
+                <i class="bi bi-plus-circle"></i> Add Area
+            </a>
+        </div>
+        <div class="col-auto">
+            <a href="#" class="btn btn-outline-primary btn-sm quick-action-btn">
+                <i class="bi bi-plus-circle"></i> Add System
+            </a>
+        </div>
+        <div class="col-auto">
+            <a href="#" class="btn btn-outline-primary btn-sm quick-action-btn">
+                <i class="bi bi-plus-circle"></i> Add Equipment Tag
+            </a>
+        </div>
+        <div class="col-auto">
+            <a href="#" class="btn btn-outline-success btn-sm quick-action-btn">
+                <i class="bi bi-file-earmark-plus"></i> Upload Document
+            </a>
+        </div>
+        <div class="col-auto">
+            <a href="#" class="btn btn-outline-warning btn-sm quick-action-btn">
+                <i class="bi bi-tools"></i> Create Work Package
+            </a>
+        </div>
+        <div class="col-auto">
+            <a href="#" class="btn btn-outline-danger btn-sm quick-action-btn">
+                <i class="bi bi-flag"></i> Raise Punch Item
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card">
+        <div class="card-header bg-white border-bottom-0 pt-3">
+            <ul class="nav nav-tabs card-header-tabs" id="projectTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                        <i class="bi bi-info-circle"></i> Overview
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="areas-tab" data-bs-toggle="tab" data-bs-target="#areas" type="button" role="tab">
+                        <i class="bi bi-map"></i> Areas
+                        <span class="badge bg-primary ms-1">{{ areas.count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="systems-tab" data-bs-toggle="tab" data-bs-target="#systems" type="button" role="tab">
+                        <i class="bi bi-diagram-3"></i> Systems
+                        <span class="badge bg-primary ms-1">{{ systems.count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment" type="button" role="tab">
+                        <i class="bi bi-tag"></i> Equipment Tags
+                        <span class="badge bg-primary ms-1">{{ equipment_count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">
+                        <i class="bi bi-file-earmark-text"></i> Documents
+                        <span class="badge bg-primary ms-1">{{ project.documents.count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="work-packages-tab" data-bs-toggle="tab" data-bs-target="#work-packages" type="button" role="tab">
+                        <i class="bi bi-clipboard-check"></i> Work Packages
+                        <span class="badge bg-primary ms-1">{{ project.work_packages.count }}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content" id="projectTabContent">
+
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="mb-3">Project Timeline</h5>
+                            <div class="timeline">
+                                <div class="timeline-item {% if project.status != 'INIT' %}completed{% endif %}">
+                                    <h6>Initiation</h6>
+                                    <small class="text-muted">{{ project.start_date|date:"F d, Y" }}</small>
+                                    {% if project.status == 'INIT' %}
+                                    <span class="badge bg-primary ms-2">Current</span>
+                                    {% endif %}
+                                </div>
+                                <div class="timeline-item {% if project.status not in 'INIT,PLAN' %}completed{% elif project.status == 'PLAN' %}current{% endif %}">
+                                    <h6>Planning</h6>
+                                    <small class="text-muted">Design, procurement planning, resource allocation</small>
+                                    {% if project.status == 'PLAN' %}
+                                    <span class="badge bg-info ms-2">Current</span>
+                                    {% endif %}
+                                </div>
+                                <div class="timeline-item {% if project.status not in 'INIT,PLAN,EXEC' %}completed{% elif project.status == 'EXEC' %}current{% endif %}">
+                                    <h6>Execution</h6>
+                                    <small class="text-muted">Construction, installation, assembly</small>
+                                    {% if project.status == 'EXEC' %}
+                                    <span class="badge bg-warning ms-2">Current</span>
+                                    {% endif %}
+                                </div>
+                                <div class="timeline-item {% if project.status == 'COMM' %}current{% elif project.status == 'CLSD' %}completed{% endif %}">
+                                    <h6>Commissioning</h6>
+                                    <small class="text-muted">Testing, verification, handover</small>
+                                    {% if project.status == 'COMM' %}
+                                    <span class="badge bg-orange ms-2">Current</span>
+                                    {% endif %}
+                                </div>
+                                <div class="timeline-item {% if project.status == 'CLSD' %}completed{% endif %}">
+                                    <h6>Closed</h6>
+                                    <small class="text-muted">
+                                        {% if project.actual_completion_date %}
+                                        {{ project.actual_completion_date|date:"F d, Y" }}
+                                        {% else %}
+                                        Target: {{ project.target_completion_date|date:"F d, Y" }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <h5 class="mb-3">Project Details</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th class="text-muted">Code:</th>
+                                    <td>{{ project.code }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Location:</th>
+                                    <td>{{ project.location }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Start Date:</th>
+                                    <td>{{ project.start_date|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Target Completion:</th>
+                                    <td>{{ project.target_completion_date|date:"F d, Y" }}</td>
+                                </tr>
+                                {% if project.actual_completion_date %}
+                                <tr>
+                                    <th class="text-muted">Actual Completion:</th>
+                                    <td>{{ project.actual_completion_date|date:"F d, Y" }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th class="text-muted">Created:</th>
+                                    <td>{{ project.created_at|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Last Updated:</th>
+                                    <td>{{ project.updated_at|timesince }} ago</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="mt-4">
+                        <h5 class="mb-3">Recent Activity</h5>
+                        {% if recent_activities %}
+                        <div class="list-group list-group-flush">
+                            {% for activity in recent_activities %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <i class="bi bi-{{ activity.icon }} me-2"></i>
+                                        {{ activity.description }}
+                                    </div>
+                                    <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No recent activity.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Areas Tab -->
+                <div class="tab-pane fade" id="areas" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Project Areas</h5>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Add Area
+                        </a>
+                    </div>
+
+                    {% if areas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Equipment Tags</th>
+                                <th>Work Packages</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for area in areas %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ area.code }}</span></td>
+                                <td>{{ area.name }}</td>
+                                <td><span class="badge bg-info">{{ area.equipment_tags.count }}</span></td>
+                                <td><span class="badge bg-warning text-dark">{{ area.work_packages.count }}</span></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-secondary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-map"></i>
+                        <h5>No Areas Defined</h5>
+                        <p>Areas help organize your project into physical or logical zones.</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Add First Area
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Systems Tab -->
+                <div class="tab-pane fade" id="systems" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Project Systems</h5>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Add System
+                        </a>
+                    </div>
+
+                    {% if systems %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Equipment Tags</th>
+                                <th>Commissioning Status</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for system in systems %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ system.code }}</span></td>
+                                <td>{{ system.name }}</td>
+                                <td><span class="badge bg-info">{{ system.equipment_tags.count }}</span></td>
+                                <td>
+                                    {% with commissioning=system.commissioning_phases.first %}
+                                    {% if commissioning %}
+                                    <span class="badge
+                                                    {% if commissioning.status == 'PREC' %}bg-secondary
+                                                    {% elif commissioning.status == 'COLD' %}bg-info
+                                                    {% elif commissioning.status == 'HOT' %}bg-warning text-dark
+                                                    {% elif commissioning.status == 'HNDO' %}bg-success
+                                                    {% endif %}">
+                                                    {{ commissioning.get_status_display }}
+                                                </span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark">Not Started</span>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-secondary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-diagram-3"></i>
+                        <h5>No Systems Defined</h5>
+                        <p>Systems represent functional groups like lubrication, cooling, or power distribution.</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Add First System
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Equipment Tags Tab -->
+                <div class="tab-pane fade" id="equipment" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Equipment Tags</h5>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Add Equipment Tag
+                        </a>
+                    </div>
+
+                    {% if equipment_tags %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Tag Number</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Area</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for tag in equipment_tags %}
+                            <tr onclick="window.location='#'">
+                                <td><strong>{{ tag.tag_number }}</strong></td>
+                                <td>{{ tag.description|truncatechars:60 }}</td>
+                                <td><span class="badge bg-light text-dark">{{ tag.get_equipment_type_display }}</span></td>
+                                <td>
+                                        <span class="badge
+                                            {% if tag.status == 'INST' %}bg-success
+                                            {% elif tag.status == 'DLVD' %}bg-info
+                                            {% elif tag.status == 'COMM' %}bg-primary
+                                            {% elif tag.status == 'ENG' %}bg-secondary
+                                            {% elif tag.status == 'DEF' %}bg-danger
+                                            {% else %}bg-warning text-dark
+                                            {% endif %}">
+                                            {{ tag.get_status_display }}
+                                        </span>
+                                </td>
+                                <td>{{ tag.area.code|default:"-" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" onclick="event.stopPropagation()">
+                                        <a href="#" class="btn btn-outline-primary" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-outline-secondary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-tag"></i>
+                        <h5>No Equipment Tags</h5>
+                        <p>Equipment tags represent individual assets like pumps, motors, and instruments.</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Add First Equipment Tag
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Documents Tab -->
+                <div class="tab-pane fade" id="documents" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Documents</h5>
+                        <div>
+                            <a href="#" class="btn btn-outline-primary btn-sm me-1">
+                                <i class="bi bi-upload"></i> Bulk Upload
+                            </a>
+                            <a href="#" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-lg"></i> Add Document
+                            </a>
+                        </div>
+                    </div>
+
+                    {% if project.documents.all %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Document Number</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Revision</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for doc in project.documents.all %}
+                            <tr>
+                                <td><strong>{{ doc.document_number }}</strong></td>
+                                <td>{{ doc.title|truncatechars:60 }}</td>
+                                <td><span class="badge bg-light text-dark">{{ doc.get_doc_type_display }}</span></td>
+                                <td>{{ doc.revision }}</td>
+                                <td>
+                                        <span class="badge
+                                            {% if doc.status == 'APPR' %}bg-success
+                                            {% elif doc.status == 'IFC' %}bg-primary
+                                            {% elif doc.status == 'DRAFT' %}bg-secondary
+                                            {% elif doc.status == 'SUPD' %}bg-warning text-dark
+                                            {% else %}bg-info
+                                            {% endif %}">
+                                            {{ doc.get_status_display }}
+                                        </span>
+                                </td>
+                                <td><small>{{ doc.issue_date|date:"M d, Y"|default:"-" }}</small></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-primary" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if doc.file_upload %}
+                                        <a href="{{ doc.file_upload.url }}" class="btn btn-outline-success" title="Download" download>
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <h5>No Documents</h5>
+                        <p>Upload drawings, datasheets, manuals, and other project documents.</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Upload First Document
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Work Packages Tab -->
+                <div class="tab-pane fade" id="work-packages" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Work Packages</h5>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Create Work Package
+                        </a>
+                    </div>
+
+                    {% if project.work_packages.all %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Area</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Dates</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for wp in project.work_packages.all %}
+                            <tr onclick="window.location='#'">
+                                <td><strong>{{ wp.code }}</strong></td>
+                                <td>{{ wp.name|truncatechars:60 }}</td>
+                                <td>{{ wp.area.code|default:"-" }}</td>
+                                <td>
+                                        <span class="badge
+                                            {% if wp.status == 'COMP' %}bg-success
+                                            {% elif wp.status == 'IPRO' %}bg-warning text-dark
+                                            {% elif wp.status == 'HOLD' %}bg-danger
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ wp.get_status_display }}
+                                        </span>
+                                </td>
+                                <td style="width: 120px;">
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1" style="height: 6px;">
+                                            <div class="progress-bar
+                                                    {% if wp.percent_complete >= 100 %}bg-success
+                                                    {% elif wp.percent_complete >= 50 %}bg-warning
+                                                    {% else %}bg-primary
+                                                    {% endif %}"
+                                                 style="width: {{ wp.percent_complete }}%">
+                                            </div>
+                                        </div>
+                                        <small class="ms-2">{{ wp.percent_complete }}%</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small>
+                                        {{ wp.planned_start|date:"M d" }} - {{ wp.planned_finish|date:"M d, Y" }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" onclick="event.stopPropagation()">
+                                        <a href="#" class="btn btn-outline-primary" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-outline-secondary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-clipboard-check"></i>
+                        <h5>No Work Packages</h5>
+                        <p>Work packages break down the installation and construction scope into manageable chunks.</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Create First Work Package
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Preserve active tab on page reload
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('#projectTabs button[data-bs-toggle="tab"]');
+        const activeTab = localStorage.getItem('activeProjectTab');
+
+        if (activeTab) {
+            const tab = document.querySelector(`#projectTabs button[data-bs-target="${activeTab}"]`);
+            if (tab) {
+                const bsTab = new bootstrap.Tab(tab);
+                bsTab.show();
+            }
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                localStorage.setItem('activeProjectTab', e.target.getAttribute('data-bs-target'));
+            });
+        });
+    });
+</script>
+{% endblock %}
