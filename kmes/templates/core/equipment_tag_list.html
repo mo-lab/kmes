@@ -1,0 +1,780 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Equipment Tags - {{ project.name|default:"All Projects" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-sidebar {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        position: sticky;
+        top: 1rem;
+    }
+
+    .tag-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-left: 4px solid #0d6efd;
+    }
+    .tag-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .tag-card.status-eng { border-left-color: #6c757d; }
+    .tag-card.status-proc { border-left-color: #0dcaf0; }
+    .tag-card.status-dlvd { border-left-color: #17a2b8; }
+    .tag-card.status-inst { border-left-color: #ffc107; }
+    .tag-card.status-algn { border-left-color: #fd7e14; }
+    .tag-card.status-prec { border-left-color: #6f42c1; }
+    .tag-card.status-comm { border-left-color: #198754; }
+    .tag-card.status-hndo { border-left-color: #20c997; }
+    .tag-card.status-def { border-left-color: #dc3545; }
+
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 0.25em 0.65em;
+    }
+
+    .type-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .hierarchy-badge {
+        font-size: 0.7rem;
+        background: #e9ecef;
+        padding: 0.15em 0.5em;
+        border-radius: 3px;
+    }
+
+    .quick-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 0.75rem;
+        border-right: 1px solid rgba(255,255,255,0.2);
+    }
+    .stat-item:last-child {
+        border-right: none;
+    }
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+    }
+    .stat-label {
+        font-size: 0.75rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+    }
+
+    .table-hover tbody tr {
+        cursor: pointer;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+    }
+
+    .view-toggle .btn {
+        padding: 0.25rem 0.75rem;
+    }
+
+    .bulk-actions-bar {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        display: none;
+    }
+    .bulk-actions-bar.show {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .pagination-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Equipment Tags</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                    {% if request.GET.project %}
+                    <li class="breadcrumb-item"><a href="{% url 'project_detail' request.GET.project %}">Project</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active">Equipment Tags</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="view-toggle btn-group" role="group">
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=table"
+                   class="btn btn-outline-secondary btn-sm {% if view_mode == 'table' %}active{% endif %}">
+                    <i class="bi bi-list-ul"></i>
+                </a>
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=card"
+                   class="btn btn-outline-secondary btn-sm {% if view_mode == 'card' %}active{% endif %}">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </a>
+            </div>
+            <a href="{% if request.GET.project %}?project={{ request.GET.project }}{% endif %}"
+               class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> New Tag
+            </a>
+            {% if tags %}
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="bi bi-download"></i> Export
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Statistics -->
+    <div class="quick-stats">
+        <div class="row">
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_count }}</div>
+                    <div class="stat-label">Total Tags</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ installed_count }}</div>
+                    <div class="stat-label">Installed</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ delivered_count }}</div>
+                    <div class="stat-label">Delivered</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ commissioned_count }}</div>
+                    <div class="stat-label">Commissioned</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ defective_count }}</div>
+                    <div class="stat-label">Defective</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filter Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-sidebar">
+                <h5 class="mb-3">
+                    <i class="bi bi-funnel"></i> Filters
+                </h5>
+
+                <form method="get" id="filterForm">
+                    <!-- Project -->
+                    <div class="mb-3">
+                        <label class="form-label small">Project</label>
+                        <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Projects</option>
+                            {% for proj in projects %}
+                            <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:'s' %}selected{% endif %}>
+                            {{ proj.code }} - {{ proj.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Area (filtered by project) -->
+                    <div class="mb-3">
+                        <label class="form-label small">Area</label>
+                        <select name="area" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Areas</option>
+                            {% for area in filter_form.fields.area.queryset %}
+                            <option value="{{ area.pk }}" {% if request.GET.area == area.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ area.code }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Equipment Type -->
+                    <div class="mb-3">
+                        <label class="form-label small">Equipment Type</label>
+                        <select name="equipment_type" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Types</option>
+                            {% for value, label in filter_form.fields.equipment_type.choices %}
+                            {% if value %}
+                            <option value="{{ value }}" {% if request.GET.equipment_type == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label class="form-label small">Status</label>
+                        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Statuses</option>
+                            {% for value, label in filter_form.fields.status.choices %}
+                            {% if value %}
+                            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Discipline -->
+                    <div class="mb-3">
+                        <label class="form-label small">Discipline</label>
+                        <select name="discipline" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Disciplines</option>
+                            {% for value, label in filter_form.fields.discipline.choices %}
+                            {% if value %}
+                            <option value="{{ value }}" {% if request.GET.discipline == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Criticality -->
+                    <div class="mb-3">
+                        <label class="form-label small">Criticality</label>
+                        <select name="criticality" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Levels</option>
+                            {% for value, label in filter_form.fields.criticality.choices %}
+                            {% if value %}
+                            <option value="{{ value }}" {% if request.GET.criticality == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <label class="form-label small">Search</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" class="form-control"
+                                   placeholder="Tag number, description..."
+                                   value="{{ request.GET.search|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Parent Tag Only -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="parent_tag_only"
+                                   value="true" id="parentTagOnly"
+                                   {% if request.GET.parent_tag_only == 'true' %}checked{% endif %}
+                            onchange="this.form.submit()">
+                            <label class="form-check-label small" for="parentTagOnly">
+                                Top-level tags only
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search"></i> Apply Filters
+                        </button>
+                        {% if request.GET %}
+                        <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i> Clear All Filters
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+
+            <!-- Bulk Actions Bar -->
+            <div class="bulk-actions-bar" id="bulkActionsBar">
+                <span id="selectedCount">0 tags selected</span>
+                <div>
+                    <button type="button" class="btn btn-warning btn-sm" onclick="bulkUpdateStatus()">
+                        <i class="bi bi-pencil"></i> Update Status
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm" onclick="bulkExport()">
+                        <i class="bi bi-download"></i> Export Selected
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+                        Clear Selection
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Info -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="pagination-info">
+                    {% if is_paginated %}
+                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} tags
+                    {% else %}
+                    {{ tags.count }} tags found
+                    {% endif %}
+                </div>
+                <div>
+                    <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
+                        <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>20 per page</option>
+                        <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>50 per page</option>
+                        <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>100 per page</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if tags %}
+
+            <!-- Table View -->
+            {% if view_mode == 'table' %}
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th width="40">
+                                <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll(this)">
+                            </th>
+                            <th>
+                                <a href="?sort={% if request.GET.sort == 'tag_number' %}-{% endif %}tag_number{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                                   class="text-decoration-none text-dark">
+                                    Tag Number
+                                    {% if request.GET.sort == 'tag_number' %}<i class="bi bi-caret-up-fill"></i>
+                                    {% elif request.GET.sort == '-tag_number' %}<i class="bi bi-caret-down-fill"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>
+                                <a href="?sort={% if request.GET.sort == 'status' %}-{% endif %}status{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                                   class="text-decoration-none text-dark">
+                                    Status
+                                </a>
+                            </th>
+                            <th>Area</th>
+                            <th>Hierarchy</th>
+                            <th>Documents</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for tag in tags %}
+                        <tr onclick="window.location="{% url 'core:equipment-tag-detail' tag.pk %}">
+                            <td onclick="event.stopPropagation()">
+                                <input type="checkbox" class="form-check-input tag-checkbox"
+                                       value="{{ tag.pk }}" onchange="updateBulkActions()">
+                            </td>
+                            <td>
+                                <strong class="text-primary">{{ tag.tag_number }}</strong>
+                                {% if tag.criticality == 'HIGH' %}
+                                <span class="badge bg-danger ms-1" title="High Criticality">!</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>{{ tag.description|truncatechars:60 }}</div>
+                                <small class="text-muted">{{ tag.get_discipline_display }}</small>
+                            </td>
+                            <td>
+                                    <span class="badge bg-light text-dark">
+                                        {{ tag.get_equipment_type_display }}
+                                    </span>
+                            </td>
+                            <td>
+                                    <span class="badge status-badge
+                                        {% if tag.status == 'INST' %}bg-success
+                                        {% elif tag.status == 'DLVD' %}bg-info text-dark
+                                        {% elif tag.status == 'COMM' %}bg-primary
+                                        {% elif tag.status == 'HNDO' %}bg-success
+                                        {% elif tag.status == 'DEF' %}bg-danger
+                                        {% elif tag.status == 'ENG' %}bg-secondary
+                                        {% elif tag.status == 'PROC' %}bg-info
+                                        {% elif tag.status == 'ALGN' %}bg-warning text-dark
+                                        {% elif tag.status == 'PREC' %}bg-purple
+                                        {% endif %}">
+                                        {{ tag.get_status_display }}
+                                    </span>
+                            </td>
+                            <td>{{ tag.area.code|default:"-" }}</td>
+                            <td>
+                                {% if tag.parent_tag %}
+                                <span class="hierarchy-badge" title="Parent: {{ tag.parent_tag.tag_number }}">
+                                            <i class="bi bi-arrow-return-right"></i> {{ tag.parent_tag.tag_number }}
+                                        </span>
+                                {% endif %}
+                                {% if tag.child_count > 0 %}
+                                <span class="hierarchy-badge ms-1" title="{{ tag.child_count }} children">
+                                            <i class="bi bi-diagram-3"></i> {{ tag.child_count }}
+                                        </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tag.document_count > 0 %}
+                                <span class="badge bg-light text-dark">
+                                            <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }}
+                                        </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td onclick="event.stopPropagation()">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'core:equipment-tag-detail' tag.pk %}"
+                                       class="btn btn-outline-primary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="#"
+                                       class="btn btn-outline-secondary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-info" title="Quick Actions"
+                                            data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-check-circle"></i> Installation Check
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-flag"></i> Raise Punch Item
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="bi bi-paperclip"></i> Link Document
+                                            </a>
+                                        </li>
+                                        {% if tag.child_count > 0 %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" href="?parent_tag={{ tag.pk }}">
+                                                <i class="bi bi-diagram-3"></i> View Children
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Card View -->
+            {% else %}
+            <div class="row g-3">
+                {% for tag in tags %}
+                <div class="col-xl-4 col-md-6">
+                    <div class="card tag-card status-{{ tag.status|lower }} h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="type-icon bg-primary bg-opacity-10 text-primary me-2">
+                                        <i class="bi bi-{% if tag.equipment_type == 'PUMP' %}water{% elif tag.equipment_type == 'MOTOR' %}lightning-charge{% elif tag.equipment_type == 'CRUSH' %}hammer{% elif tag.equipment_type == 'CONV' %}arrow-right-circle{% elif tag.equipment_type == 'TANK' %}droplet{% elif tag.equipment_type == 'INST' %}speedometer2{% else %}gear{% endif %}"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">
+                                            <a href="{% url 'core:equipment-tag-detail' tag.pk %}"
+                                               class="text-decoration-none stretched-link">
+                                                {{ tag.tag_number }}
+                                            </a>
+                                        </h6>
+                                        <small class="text-muted">{{ tag.get_equipment_type_display }}</small>
+                                    </div>
+                                </div>
+                                <span class="badge status-badge
+                                    {% if tag.status == 'INST' %}bg-success
+                                    {% elif tag.status == 'DLVD' %}bg-info text-dark
+                                    {% elif tag.status == 'COMM' %}bg-primary
+                                    {% elif tag.status == 'DEF' %}bg-danger
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ tag.get_status_display }}
+                                </span>
+                            </div>
+
+                            <p class="card-text small text-muted mb-2">
+                                {{ tag.description|truncatechars:80 }}
+                            </p>
+
+                            <div class="row small mb-2">
+                                <div class="col-6">
+                                    <span class="text-muted">Area:</span>
+                                    <strong>{{ tag.area.code|default:"-" }}</strong>
+                                </div>
+                                <div class="col-6">
+                                    <span class="text-muted">Discipline:</span>
+                                    <strong>{{ tag.get_discipline_display }}</strong>
+                                </div>
+                            </div>
+
+                            {% if tag.manufacturer %}
+                            <div class="small text-muted mb-2">
+                                <i class="bi bi-building"></i> {{ tag.manufacturer }}
+                                {% if tag.model_number %}- {{ tag.model_number }}{% endif %}
+                            </div>
+                            {% endif %}
+
+                            {% if tag.parent_tag or tag.child_count > 0 %}
+                            <div class="mb-2">
+                                {% if tag.parent_tag %}
+                                <span class="hierarchy-badge">
+                                        <i class="bi bi-arrow-return-right"></i> {{ tag.parent_tag.tag_number }}
+                                    </span>
+                                {% endif %}
+                                {% if tag.child_count > 0 %}
+                                <span class="hierarchy-badge ms-1">
+                                        <i class="bi bi-diagram-3"></i> {{ tag.child_count }} children
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-footer bg-transparent border-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    {% if tag.document_count > 0 %}
+                                    <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }} docs
+                                    {% endif %}
+                                    {% if tag.open_punch_count > 0 %}
+                                    <span class="text-danger ms-2">
+                                            <i class="bi bi-exclamation-triangle"></i> {{ tag.open_punch_count }} open
+                                        </span>
+                                    {% endif %}
+                                </small>
+                                <small class="text-muted">
+                                    {{ tag.updated_at|timesince }} ago
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="pagination-info">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <nav aria-label="Equipment tag pagination">
+                    <ul class="pagination mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <!-- Empty State -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="empty-state">
+                        <i class="bi bi-tags"></i>
+                        <h3 class="mt-3">No Equipment Tags Found</h3>
+                        <p class="text-muted">
+                            {% if request.GET %}
+                            No equipment tags match your search criteria. Try adjusting your filters.
+                            {% else %}
+                            Get started by creating your first equipment tag to track assets in your project.
+                            {% endif %}
+                        </p>
+                        <div class="mt-3">
+                            {% if request.GET %}
+                            <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-x-circle"></i> Clear Filters
+                            </a>
+                            {% endif %}
+                            <a href="#" class="btn btn-primary">
+                                <i class="bi bi-plus-lg"></i> Create First Tag
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Equipment Tags</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Select export format:</p>
+                <div class="d-grid gap-2">
+                    <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=csv"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-filetype-csv"></i> Export as CSV
+                    </a>
+                    <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=excel"
+                       class="btn btn-outline-success">
+                        <i class="bi bi-filetype-xlsx"></i> Export as Excel
+                    </a>
+                    <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=pdf"
+                       class="btn btn-outline-danger">
+                        <i class="bi bi-filetype-pdf"></i> Export as PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // View toggle
+    function updatePerPage(value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('per_page', value);
+        url.searchParams.delete('page');
+        window.location.href = url.toString();
+    }
+
+    // Bulk selection
+    function toggleSelectAll(checkbox) {
+        const checkboxes = document.querySelectorAll('.tag-checkbox');
+        checkboxes.forEach(cb => cb.checked = checkbox.checked);
+        updateBulkActions();
+    }
+
+    function updateBulkActions() {
+        const selected = document.querySelectorAll('.tag-checkbox:checked');
+        const bar = document.getElementById('bulkActionsBar');
+        const count = document.getElementById('selectedCount');
+
+        if (selected.length > 0) {
+            bar.classList.add('show');
+            count.textContent = `${selected.length} tag(s) selected`;
+        } else {
+            bar.classList.remove('show');
+        }
+    }
+
+    function clearSelection() {
+        document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('selectAll').checked = false;
+        updateBulkActions();
+    }
+
+    function bulkUpdateStatus() {
+        const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
+        if (selected.length > 0) {
+            window.location.href = `#`;
+        }
+    }
+
+    function bulkExport() {
+        const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
+        if (selected.length > 0) {
+            window.location.href = `?selected_tags=${selected.join(',')}&export=csv`;
+        }
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+A to select all
+        if (e.ctrlKey && e.key === 'a') {
+            e.preventDefault();
+            document.getElementById('selectAll').click();
+        }
+    });
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

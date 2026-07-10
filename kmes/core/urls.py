@@ -187,4 +187,7 @@ urlpatterns = [
 		path("projects/<int:project_pk>/tags/create/", views.EquipmentTagCreateView.as_view(), name="equipmenttag-create"),
 		path('projects/', views.ProjectListView.as_view(), name='project-list'),
 		path('projects/<int:pk>/',views.ProjectDetailView.as_view(),name='project-detail'),
+		path('equipments/', views.EquipmentTagListView.as_view(), name='equipment-tag-list'),
+		path('equipments/<int:pk>/', views.EquipmentTagDetailView.as_view(), name='equipment-tag-detail'),
+		
 		]

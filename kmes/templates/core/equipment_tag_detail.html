@@ -1,0 +1,1109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ tag.tag_number }} - Equipment Tag Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tag-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .tag-id {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .info-card {
+        border-radius: 0.5rem;
+        transition: transform 0.15s;
+    }
+    .info-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .hierarchy-tree {
+        padding-left: 0;
+    }
+    .hierarchy-tree li {
+        list-style: none;
+        position: relative;
+        padding: 0.5rem 0 0.5rem 2rem;
+    }
+    .hierarchy-tree li::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .hierarchy-tree li:last-child::before {
+        height: 50%;
+    }
+    .hierarchy-tree li::after {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 50%;
+        width: 1.5rem;
+        height: 2px;
+        background: #dee2e6;
+    }
+    .hierarchy-tree .tag-node {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        display: inline-block;
+    }
+    .hierarchy-tree .tag-node.current {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.65rem;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #0d6efd;
+    }
+    .timeline-item.success::before { background: #198754; box-shadow: 0 0 0 2px #198754; }
+    .timeline-item.warning::before { background: #ffc107; box-shadow: 0 0 0 2px #ffc107; }
+    .timeline-item.danger::before { background: #dc3545; box-shadow: 0 0 0 2px #dc3545; }
+
+    .quick-action {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+    .quick-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .document-item, .punch-item, .test-item {
+        transition: background 0.15s;
+    }
+    .document-item:hover, .punch-item:hover, .test-item:hover {
+        background: #f8f9fa;
+    }
+
+    .badge-large {
+        font-size: 0.9rem;
+        padding: 0.5em 1em;
+    }
+
+    .nav-pills .nav-link {
+        color: #6c757d;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+    .nav-pills .nav-link.active {
+        background: #0d6efd;
+        color: white;
+    }
+    .nav-pills .nav-link .badge {
+        font-size: 0.7rem;
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+
+    .image-preview {
+        max-height: 200px;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .image-preview:hover {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'project_detail' tag.project.pk %}">{{ tag.project.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'equipment_tag_list' %}?project={{ tag.project.pk }}">Equipment Tags</a></li>
+            <li class="breadcrumb-item active">{{ tag.tag_number }}</li>
+        </ol>
+    </nav>
+
+    <!-- Tag Header -->
+    <div class="tag-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="tag-id me-3">{{ tag.tag_number }}</div>
+                    <span class="badge badge-large 
+                        {% if tag.status == 'INST' %}bg-success
+                        {% elif tag.status == 'DLVD' %}bg-info
+                        {% elif tag.status == 'COMM' %}bg-primary
+                        {% elif tag.status == 'HNDO' %}bg-success
+                        {% elif tag.status == 'DEF' %}bg-danger
+                        {% elif tag.status == 'ALGN' %}bg-warning text-dark
+                        {% else %}bg-secondary
+                        {% endif %}">
+                        {{ tag.get_status_display }}
+                    </span>
+                    {% if tag.criticality == 'HIGH' %}
+                    <span class="badge bg-danger ms-2">High Criticality</span>
+                    {% endif %}
+                </div>
+
+                <h5 class="mb-2">{{ tag.description }}</h5>
+
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-tag"></i> {{ tag.get_equipment_type_display }}
+                    </span>
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-gear"></i> {{ tag.get_discipline_display }}
+                    </span>
+                    {% if tag.area %}
+                    <span class="badge bg-light text-dark">
+                            <i class="bi bi-map"></i> {{ tag.area.code }} - {{ tag.area.name }}
+                        </span>
+                    {% endif %}
+                    {% if tag.system %}
+                    <span class="badge bg-light text-dark">
+                            <i class="bi bi-diagram-3"></i> {{ tag.system.code }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if tag.manufacturer %}
+                <p class="mb-0 opacity-75">
+                    <i class="bi bi-building"></i>
+                    {{ tag.manufacturer }}
+                    {% if tag.model_number %} | Model: {{ tag.model_number }}{% endif %}
+                    {% if tag.serial_number %} | S/N: {{ tag.serial_number }}{% endif %}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                    <a href="{% url 'equipment_tag_update' tag.pk %}" class="btn btn-light">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a href="{% url 'equipment_tag_delete' tag.pk %}" class="btn btn-outline-light">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i> More
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'equipment_tag_create' %}?parent_tag={{ tag.pk }}&project={{ tag.project.pk }}">
+                                    <i class="bi bi-plus-circle"></i> Add Child Tag
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'installed_item_check_create' %}?tag={{ tag.pk }}">
+                                    <i class="bi bi-check-circle"></i> Installation Check
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'punch_item_create' %}?tag={{ tag.pk }}&project={{ tag.project.pk }}">
+                                    <i class="bi bi-flag"></i> Raise Punch Item
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'tag_document_create' %}?tag={{ tag.pk }}">
+                                    <i class="bi bi-paperclip"></i> Link Document
+                                </a>
+                            </li>
+                            {% if tag.parent_tag %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'equipment_tag_detail' tag.parent_tag.pk %}">
+                                    <i class="bi bi-arrow-up"></i> Go to Parent Tag
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card info-card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-diagram-3 fs-3 text-primary"></i>
+                    <div class="fs-4 fw-bold text-primary">{{ total_children }}</div>
+                    <small class="text-muted">Child Tags</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card info-card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-file-earmark-text fs-3 text-success"></i>
+                    <div class="fs-4 fw-bold text-success">{{ total_documents }}</div>
+                    <small class="text-muted">Documents</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card info-card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-clipboard-check fs-3 text-warning"></i>
+                    <div class="fs-4 fw-bold text-warning">{{ total_test_procedures }}</div>
+                    <small class="text-muted">Test Procedures</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card info-card bg-danger bg-opacity-10 border-danger">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-flag fs-3 text-danger"></i>
+                    <div class="fs-4 fw-bold text-danger">{{ open_punch_count }}</div>
+                    <small class="text-muted">Open Punch Items</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="{% url 'installed_item_check_create' %}?tag={{ tag.pk }}" class="quick-action bg-success bg-opacity-10 text-success text-decoration-none">
+            <i class="bi bi-check-circle me-2"></i> Installation Check
+        </a>
+        <a href="{% url 'punch_item_create' %}?tag={{ tag.pk }}&project={{ tag.project.pk }}" class="quick-action bg-danger bg-opacity-10 text-danger text-decoration-none">
+            <i class="bi bi-flag me-2"></i> Raise Punch Item
+        </a>
+        <a href="{% url 'tag_document_create' %}?tag={{ tag.pk }}" class="quick-action bg-info bg-opacity-10 text-info text-decoration-none">
+            <i class="bi bi-paperclip me-2"></i> Link Document
+        </a>
+        <a href="{% url 'equipment_tag_create' %}?parent_tag={{ tag.pk }}&project={{ tag.project.pk }}" class="quick-action bg-primary bg-opacity-10 text-primary text-decoration-none">
+            <i class="bi bi-plus-circle me-2"></i> Add Child Tag
+        </a>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <ul class="nav nav-pills" id="tagTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
+                        <i class="bi bi-info-circle"></i> Overview
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#hierarchy">
+                        <i class="bi bi-diagram-3"></i> Hierarchy
+                        {% if total_children > 0 %}<span class="badge bg-primary ms-1">{{ total_children }}</span>{% endif %}
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#documents">
+                        <i class="bi bi-file-earmark-text"></i> Documents
+                        {% if total_documents > 0 %}<span class="badge bg-primary ms-1">{{ total_documents }}</span>{% endif %}
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#installation">
+                        <i class="bi bi-tools"></i> Installation
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#testing">
+                        <i class="bi bi-clipboard-check"></i> Testing
+                        {% if total_test_procedures > 0 %}<span class="badge bg-primary ms-1">{{ total_test_procedures }}</span>{% endif %}
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#punch">
+                        <i class="bi bi-flag"></i> Punch Items
+                        {% if total_punch_items > 0 %}<span class="badge bg-{% if open_punch_count > 0 %}danger{% else %}secondary{% endif %} ms-1">{{ total_punch_items }}</span>{% endif %}
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#procurement">
+                        <i class="bi bi-cart"></i> Procurement
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content">
+
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <!-- Details -->
+                            <h5 class="mb-3">Tag Details</h5>
+                            <table class="table table-bordered">
+                                <tbody>
+                                <tr>
+                                    <th class="bg-light" width="200">Tag Number</th>
+                                    <td><strong>{{ tag.tag_number }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Description</th>
+                                    <td>{{ tag.description }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Equipment Type</th>
+                                    <td>{{ tag.get_equipment_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Discipline</th>
+                                    <td>{{ tag.get_discipline_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Status</th>
+                                    <td>
+                                            <span class="badge 
+                                                {% if tag.status == 'INST' %}bg-success
+                                                {% elif tag.status == 'DLVD' %}bg-info
+                                                {% elif tag.status == 'COMM' %}bg-primary
+                                                {% elif tag.status == 'DEF' %}bg-danger
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                {{ tag.get_status_display }}
+                                            </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Criticality</th>
+                                    <td>
+                                            <span class="badge 
+                                                {% if tag.criticality == 'HIGH' %}bg-danger
+                                                {% elif tag.criticality == 'MED' %}bg-warning text-dark
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                {{ tag.get_criticality_display }}
+                                            </span>
+                                    </td>
+                                </tr>
+                                {% if tag.manufacturer %}
+                                <tr>
+                                    <th class="bg-light">Manufacturer</th>
+                                    <td>{{ tag.manufacturer }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.model_number %}
+                                <tr>
+                                    <th class="bg-light">Model Number</th>
+                                    <td>{{ tag.model_number }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.serial_number %}
+                                <tr>
+                                    <th class="bg-light">Serial Number</th>
+                                    <td>{{ tag.serial_number }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.weight_kg %}
+                                <tr>
+                                    <th class="bg-light">Weight</th>
+                                    <td>{{ tag.weight_kg }} kg</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.dimensions %}
+                                <tr>
+                                    <th class="bg-light">Dimensions (LxWxH)</th>
+                                    <td>{{ tag.dimensions }} mm</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.installation_date %}
+                                <tr>
+                                    <th class="bg-light">Installation Date</th>
+                                    <td>{{ tag.installation_date|date:"F d, Y" }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th class="bg-light">Created</th>
+                                    <td>{{ tag.created_at|date:"F d, Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Last Updated</th>
+                                    <td>{{ tag.updated_at|date:"F d, Y H:i" }} ({{ tag.updated_at|timesince }} ago)</td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+                            {% if tag.notes %}
+                            <div class="mt-3">
+                                <h6>Notes</h6>
+                                <p class="text-muted">{{ tag.notes|linebreaks }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-lg-4">
+                            <!-- Location Info -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-geo-alt"></i> Location</h6>
+                                    <p class="mb-1"><strong>Project:</strong> {{ tag.project.name }}</p>
+                                    {% if tag.area %}
+                                    <p class="mb-1"><strong>Area:</strong> {{ tag.area.code }} - {{ tag.area.name }}</p>
+                                    {% endif %}
+                                    {% if tag.system %}
+                                    <p class="mb-0"><strong>System:</strong> {{ tag.system.code }} - {{ tag.system.name }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Parent Tag -->
+                            {% if tag.parent_tag %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-arrow-up-circle"></i> Parent Tag</h6>
+                                    <a href="{% url 'equipment_tag_detail' tag.parent_tag.pk %}" class="text-decoration-none">
+                                        <strong>{{ tag.parent_tag.tag_number }}</strong>
+                                    </a>
+                                    <p class="mb-0 small text-muted">{{ tag.parent_tag.description|truncatechars:60 }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Recent Activity -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-activity"></i> Recent Activity</h6>
+                                    {% if recent_activities %}
+                                    <div class="timeline mt-3">
+                                        {% for activity in recent_activities %}
+                                        <div class="timeline-item
+                                                {% if 'Pass' in activity.description or 'CLSD' in activity.description %}success
+                                                {% elif 'Fail' in activity.description or 'OPEN' in activity.description %}danger
+                                                {% else %}warning{% endif %}">
+                                            <small class="text-muted">{{ activity.date|date:"M d, Y" }}</small>
+                                            <div>{{ activity.description }}</div>
+                                            <small class="text-muted">{{ activity.user }}</small>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <p class="text-muted small mb-0">No recent activity</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hierarchy Tab -->
+                <div class="tab-pane fade" id="hierarchy">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Assembly Hierarchy</h5>
+                        <a href="{% url 'equipment_tag_create' %}?parent_tag={{ tag.pk }}&project={{ tag.project.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Add Child Tag
+                        </a>
+                    </div>
+
+                    <!-- Ancestors -->
+                    {% if ancestors %}
+                    <div class="mb-4">
+                        <h6>Parent Tags</h6>
+                        <ol class="breadcrumb">
+                            {% for ancestor in ancestors %}
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'equipment_tag_detail' ancestor.pk %}">{{ ancestor.tag_number }}</a>
+                            </li>
+                            {% endfor %}
+                            <li class="breadcrumb-item active">{{ tag.tag_number }}</li>
+                        </ol>
+                    </div>
+                    {% endif %}
+
+                    <!-- Current Tag and Children -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <strong>{{ tag.tag_number }}</strong> (Current)
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1">{{ tag.description }}</p>
+                                    <small class="text-muted">{{ tag.get_equipment_type_display }} | {{ tag.get_status_display }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Children -->
+                    {% if child_tags %}
+                    <h6>Child Tags ({{ total_children }})</h6>
+                    <div class="row g-3">
+                        {% for child in child_tags %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card info-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <a href="{% url 'equipment_tag_detail' child.pk %}" class="text-decoration-none">
+                                                    {{ child.tag_number }}
+                                                </a>
+                                            </h6>
+                                            <p class="small text-muted mb-2">{{ child.description|truncatechars:60 }}</p>
+                                            <span class="badge bg-light text-dark">{{ child.get_equipment_type_display }}</span>
+                                            <span class="badge 
+                                                {% if child.status == 'INST' %}bg-success
+                                                {% elif child.status == 'DLVD' %}bg-info
+                                                {% elif child.status == 'DEF' %}bg-danger
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                {{ child.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'equipment_tag_update' child.pk %}" class="btn btn-outline-secondary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% if child.child_tags.count > 0 %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-diagram-3"></i> {{ child.child_tags.count }} sub-components
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-diagram-3" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No child tags. This is a leaf-level component.</p>
+                        <a href="{% url 'equipment_tag_create' %}?parent_tag={{ tag.pk }}&project={{ tag.project.pk }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Add Child Tag
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Documents Tab -->
+                <div class="tab-pane fade" id="documents">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Linked Documents</h5>
+                        <a href="{% url 'tag_document_create' %}?tag={{ tag.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-paperclip"></i> Link Document
+                        </a>
+                    </div>
+
+                    {% if documents %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Document Number</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Revision</th>
+                                <th>Status</th>
+                                <th>Relation</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for td in documents %}
+                            <tr class="document-item">
+                                <td><strong>{{ td.document.document_number }}</strong></td>
+                                <td>{{ td.document.title|truncatechars:60 }}</td>
+                                <td><span class="badge bg-light text-dark">{{ td.document.get_doc_type_display }}</span></td>
+                                <td>{{ td.document.revision }}</td>
+                                <td>
+                                        <span class="badge 
+                                            {% if td.document.status == 'APPR' %}bg-success
+                                            {% elif td.document.status == 'IFC' %}bg-primary
+                                            {% elif td.document.status == 'SUPD' %}bg-warning text-dark
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ td.document.get_status_display }}
+                                        </span>
+                                </td>
+                                <td>{{ td.relation_type }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'document_detail' td.document.pk %}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if td.document.file_upload %}
+                                        <a href="{{ td.document.file_upload.url }}" class="btn btn-outline-success" download>
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        {% endif %}
+                                        <a href="{% url 'tag_document_delete' td.pk %}" class="btn btn-outline-danger">
+                                            <i class="bi bi-unlink"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-file-earmark-text" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No documents linked to this tag.</p>
+                        <a href="{% url 'tag_document_create' %}?tag={{ tag.pk }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-paperclip"></i> Link First Document
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Installation Tab -->
+                <div class="tab-pane fade" id="installation">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Installation Checks</h5>
+                        <a href="{% url 'installed_item_check_create' %}?tag={{ tag.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> New Check
+                        </a>
+                    </div>
+
+                    {% if installation_checks %}
+                    {% for check in installation_checks %}
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Check Date:</strong> {{ check.checked_date|date:"F d, Y" }}
+                                <span class="badge ms-2 
+                                    {% if check.status == 'PASS' %}bg-success
+                                    {% elif check.status == 'FAIL' %}bg-danger
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ check.get_status_display }}
+                                </span>
+                            </div>
+                            <small class="text-muted">By: {{ check.checked_by.get_full_name|default:"N/A" }}</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>Foundation</td>
+                                            <td>
+                                                {% if check.foundation_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> OK</span>
+                                                {% elif check.foundation_ok is None %}
+                                                <span class="text-muted">N/A</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Grouting</td>
+                                            <td>
+                                                {% if check.grouting_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> OK</span>
+                                                {% elif check.grouting_ok is None %}
+                                                <span class="text-muted">N/A</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bolting</td>
+                                            <td>
+                                                {% if check.bolting_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> OK</span>
+                                                {% elif check.bolting_ok is None %}
+                                                <span class="text-muted">N/A</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>Alignment</td>
+                                            <td>
+                                                {% if check.alignment_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> OK</span>
+                                                {% elif check.alignment_ok is None %}
+                                                <span class="text-muted">N/A</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Electrical</td>
+                                            <td>
+                                                {% if check.electrical_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> OK</span>
+                                                {% elif check.electrical_ok is None %}
+                                                <span class="text-muted">N/A</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {% if check.comments %}
+                            <div class="mt-2">
+                                <strong>Comments:</strong>
+                                <p class="mb-0 text-muted">{{ check.comments }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Photos -->
+                            {% if check.photos.all %}
+                            <div class="mt-3">
+                                <strong>Photos:</strong>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    {% for photo in check.photos.all %}
+                                    <img src="{{ photo.photo.url }}"
+                                         class="image-preview"
+                                         alt="{{ photo.caption }}"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#photoModal{{ photo.pk }}">
+
+                                    <!-- Photo Modal -->
+                                    <div class="modal fade" id="photoModal{{ photo.pk }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ photo.caption|default:"Installation Photo" }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <img src="{{ photo.photo.url }}" class="img-fluid" alt="{{ photo.caption }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-tools" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No installation checks performed yet.</p>
+                        <a href="{% url 'installed_item_check_create' %}?tag={{ tag.pk }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Perform First Check
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Testing Tab -->
+                <div class="tab-pane fade" id="testing">
+                    <h5 class="mb-3">Test Procedures</h5>
+
+                    {% if test_procedures %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>System</th>
+                                <th>Latest Result</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for tp in test_procedures %}
+                            {% with latest_record=tp.test_records.all|dictsortreversed:"start_datetime"|first %}
+                            <tr class="test-item">
+                                <td><strong>{{ tp.code }}</strong></td>
+                                <td>{{ tp.description|truncatechars:60 }}</td>
+                                <td><span class="badge bg-light text-dark">{{ tp.get_test_type_display }}</span></td>
+                                <td>{{ tp.commissioning_system.system.code }}</td>
+                                <td>
+                                    {% if latest_record %}
+                                    <span class="badge
+                                                {% if latest_record.result == 'PASS' %}bg-success
+                                                {% elif latest_record.result == 'FAIL' %}bg-danger
+                                                {% elif latest_record.result == 'COND' %}bg-warning text-dark
+                                                {% else %}bg-info
+                                                {% endif %}">
+                                                {{ latest_record.get_result_display }}
+                                            </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Not Tested</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'test_record_create' %}?procedure={{ tp.pk }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-play-circle"></i> Record Test
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-clipboard-check" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No test procedures associated with this tag.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Punch Items Tab -->
+                <div class="tab-pane fade" id="punch">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Punch Items</h5>
+                        <a href="{% url 'punch_item_create' %}?tag={{ tag.pk }}&project={{ tag.project.pk }}" class="btn btn-danger btn-sm">
+                            <i class="bi bi-flag"></i> Raise Punch Item
+                        </a>
+                    </div>
+
+                    {% if punch_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Punch #</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Raised By</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for punch in punch_items %}
+                            <tr class="punch-item">
+                                <td><strong>{{ punch.punch_number }}</strong></td>
+                                <td>{{ punch.description|truncatechars:60 }}</td>
+                                <td>
+                                        <span class="badge 
+                                            {% if punch.category == 'A' %}bg-danger
+                                            {% elif punch.category == 'B' %}bg-warning text-dark
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ punch.get_category_display }}
+                                        </span>
+                                </td>
+                                <td>
+                                        <span class="badge 
+                                            {% if punch.status == 'OPEN' %}bg-danger
+                                            {% elif punch.status == 'IPRO' %}bg-info
+                                            {% elif punch.status == 'RESL' %}bg-warning text-dark
+                                            {% elif punch.status == 'CLSD' %}bg-success
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ punch.get_status_display }}
+                                        </span>
+                                </td>
+                                <td>{{ punch.raised_by.get_full_name|default:"System" }}</td>
+                                <td><small>{{ punch.raised_date|date:"M d, Y" }}</small></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'punch_item_detail' punch.pk %}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if punch.status == 'OPEN' %}
+                                        <a href="{% url 'punch_item_resolve' punch.pk %}" class="btn btn-outline-success">
+                                            <i class="bi bi-check-circle"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-flag" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No punch items raised for this tag.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Procurement Tab -->
+                <div class="tab-pane fade" id="procurement">
+                    <h5 class="mb-3">Purchase Orders</h5>
+
+                    {% if purchase_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>PO Number</th>
+                                <th>Supplier</th>
+                                <th>Line Item</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Delivery Date</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for poi in purchase_orders %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'purchase_order_detail' poi.purchase_order.pk %}">
+                                        {{ poi.purchase_order.po_number }}
+                                    </a>
+                                </td>
+                                <td>{{ poi.purchase_order.supplier.name }}</td>
+                                <td>{{ poi.line_item_number }}</td>
+                                <td>{{ poi.quantity_ordered }} {{ poi.unit }}</td>
+                                <td>
+                                        <span class="badge 
+                                            {% if poi.is_received %}bg-success
+                                            {% else %}bg-warning text-dark
+                                            {% endif %}">
+                                            {% if poi.is_received %}Received{% else %}Pending{% endif %}
+                                        </span>
+                                </td>
+                                <td>
+                                    {% if poi.actual_delivery_date %}
+                                    {{ poi.actual_delivery_date|date:"M d, Y" }}
+                                    {% else %}
+                                    <small class="text-muted">Expected: {{ poi.required_on_site_date|date:"M d, Y"|default:"TBD" }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'purchase_order_detail' poi.purchase_order.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-cart" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No purchase orders associated with this tag.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Tags -->
+    {% if related_tags %}
+    <div class="mt-4">
+        <h5 class="mb-3">Related Tags</h5>
+        <div class="row g-3">
+            {% for related in related_tags %}
+            <div class="col-lg-3 col-md-4 col-6">
+                <a href="{% url 'equipment_tag_detail' related.pk %}" class="text-decoration-none">
+                    <div class="card info-card h-100">
+                        <div class="card-body text-center">
+                            <h6 class="mb-1">{{ related.tag_number }}</h6>
+                            <small class="text-muted">{{ related.description|truncatechars:40 }}</small>
+                            <br>
+                            <span class="badge 
+                                {% if related.status == 'INST' %}bg-success
+                                {% elif related.status == 'DLVD' %}bg-info
+                                {% else %}bg-secondary
+                                {% endif %} mt-1">
+                                {{ related.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Preserve active tab on page reload
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('#tagTabs button[data-bs-toggle="pill"]');
+        const activeTab = localStorage.getItem('activeTagTab');
+
+        if (activeTab) {
+            const tab = document.querySelector(`#tagTabs button[data-bs-target="${activeTab}"]`);
+            if (tab) {
+                const bsTab = new bootstrap.Tab(tab);
+                bsTab.show();
+            }
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                localStorage.setItem('activeTagTab', e.target.getAttribute('data-bs-target'));
+            });
+        });
+    });
+</script>
+{% endblock %}
