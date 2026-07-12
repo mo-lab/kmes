@@ -128,7 +128,7 @@
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
                     {% if request.GET.project %}
-                    <li class="breadcrumb-item"><a href="{% url 'project_detail' request.GET.project %}">Project</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'core:project-detail' request.GET.project %}">Project</a></li>
                     {% endif %}
                     <li class="breadcrumb-item active">Equipment Tags</li>
                 </ol>

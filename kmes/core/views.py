@@ -7,12 +7,12 @@ from django.views import generic
 from django.views.generic import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Project, Area, System, EquipmentTag
-from .forms import ProjectForm, AreaForm, SystemForm, EquipmentTagForm,EquipmentTagFilterForm
+from .forms import ProjectForm, AreaForm, SystemForm, EquipmentTagForm, EquipmentTagFilterForm
 from construction.models import WorkPackage
 from commissioning.models import PunchItem
 
 
-class ProjectCreateView( CreateView):
+class ProjectCreateView(CreateView):
 	model = Project
 	form_class = ProjectForm
 	template_name = "core/project_form.html"
@@ -106,7 +106,7 @@ class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 		if self.project:
 			kw.setdefault("initial", {})["project"] = self.project
 			form = self.get_form_class()
-			# We will set queryset restrictions after instantiating the form in get_form()
+		# We will set queryset restrictions after instantiating the form in get_form()
 		return kw
 	
 	def get_form(self, form_class=None):
@@ -127,7 +127,8 @@ class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 	def get_success_url(self):
 		return reverse("core:project-detail", kwargs={"pk": self.object.project.pk})
 
-class ProjectListView( generic.ListView):
+
+class ProjectListView(generic.ListView):
 	model = Project
 	template_name = 'core/project_list.html'
 	context_object_name = 'projects'
@@ -184,8 +185,7 @@ class ProjectListView( generic.ListView):
 		return context
 
 
-
-class ProjectDetailView( generic.DetailView):
+class ProjectDetailView(generic.DetailView):
 	model = Project
 	template_name = 'core/project_detail.html'
 	context_object_name = 'project'
@@ -232,36 +232,43 @@ class ProjectDetailView( generic.DetailView):
 		# Recent documents
 		recent_docs = project.documents.order_by('-created_at')[:3]
 		for doc in recent_docs:
-			activities.append({
-					'icon': 'file-earmark-text',
-					'description': f'Document "{doc.title}" was {doc.get_status_display().lower()}',
-					'timestamp': doc.created_at
-					})
+			activities.append(
+					{
+							'icon':        'file-earmark-text',
+							'description': f'Document "{doc.title}" was {doc.get_status_display().lower()}',
+							'timestamp':   doc.created_at
+							}
+					)
 		
 		# Recent work package updates
-	
+		
 		recent_wps = WorkPackage.objects.filter(
 				project=project
 				).order_by('-updated_at')[:3]
 		for wp in recent_wps:
-			activities.append({
-					'icon': 'clipboard-check',
-					'description': f'Work package "{wp.code}" status changed to {wp.get_status_display()}',
-					'timestamp': wp.updated_at
-					})
+			activities.append(
+					{
+							'icon':        'clipboard-check',
+							'description': f'Work package "{wp.code}" status changed to {wp.get_status_display()}',
+							'timestamp':   wp.updated_at
+							}
+					)
 		
 		# Recent equipment tag updates
 		recent_tags = project.equipment_tags.order_by('-updated_at')[:3]
 		for tag in recent_tags:
-			activities.append({
-					'icon': 'tag',
-					'description': f'Equipment tag "{tag.tag_number}" status: {tag.get_status_display()}',
-					'timestamp': tag.updated_at
-					})
+			activities.append(
+					{
+							'icon':        'tag',
+							'description': f'Equipment tag "{tag.tag_number}" status: {tag.get_status_display()}',
+							'timestamp':   tag.updated_at
+							}
+					)
 		
 		# Sort by timestamp and limit
 		activities.sort(key=lambda x: x['timestamp'], reverse=True)
 		return activities[:10]
+
 
 class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 	model = EquipmentTag
@@ -394,6 +401,7 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 		
 		return context
 
+
 class EquipmentTagDetailView(LoginRequiredMixin, generic.DetailView):
 	model = EquipmentTag
 	template_name = 'core/equipment_tag_detail.html'
@@ -492,35 +500,130 @@ class EquipmentTagDetailView(LoginRequiredMixin, generic.DetailView):
 		
 		# Recent installation checks
 		for check in tag.installation_checks.order_by('-checked_date')[:3]:
-			activities.append({
-					'icon': 'check-circle',
-					'description': f'Installation check performed - {check.get_status_display()}',
-					'date': check.checked_date,
-					'user': check.checked_by.get_full_name() if check.checked_by else 'System'
-					})
+			activities.append(
+					{
+							'icon':        'check-circle',
+							'description': f'Installation check performed - {check.get_status_display()}',
+							'date':        check.checked_date,
+							'user':        check.checked_by.get_full_name() if check.checked_by else 'System'
+							}
+					)
 		
 		# Recent test records
-		from ..commissioning.models import TestRecord
+		from commissioning.models import TestRecord
 		recent_tests = TestRecord.objects.filter(
 				test_procedure__equipment_tags=tag
 				).order_by('-start_datetime')[:3]
 		for test in recent_tests:
-			activities.append({
-					'icon': 'clipboard-check',
-					'description': f'Test "{test.test_procedure.code}" - {test.get_result_display()}',
-					'date': test.start_datetime.date(),
-					'user': test.executed_by.get_full_name() if test.executed_by else 'System'
-					})
+			activities.append(
+					{
+							'icon':        'clipboard-check',
+							'description': f'Test "{test.test_procedure.code}" - {test.get_result_display()}',
+							'date':        test.start_datetime.date(),
+							'user':        test.executed_by.get_full_name() if test.executed_by else 'System'
+							}
+					)
 		
 		# Recent punch items
 		for punch in tag.punch_items.order_by('-raised_date')[:3]:
-			activities.append({
-					'icon': 'flag',
-					'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
-					'date': punch.raised_date,
-					'user': punch.raised_by.get_full_name() if punch.raised_by else 'System'
-					})
+			activities.append(
+					{
+							'icon':        'flag',
+							'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
+							'date':        punch.raised_date,
+							'user':        punch.raised_by.get_full_name() if punch.raised_by else 'System'
+							}
+					)
 		
 		# Sort by date
 		activities.sort(key=lambda x: x['date'], reverse=True)
 		return activities[:10]
+
+
+class DashboardView(LoginRequiredMixin, generic.TemplateView):
+	template_name = 'core/dashboard.html'
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		
+		# Project statistics
+		context['total_projects'] = Project.objects.count()
+		context['active_projects'] = Project.objects.filter(
+				status__in=['EXEC', 'COMM']
+				).count()
+		context['completed_projects'] = Project.objects.filter(
+				status='CLSD'
+				).count()
+		
+		# Equipment statistics
+		context['total_equipment_tags'] = EquipmentTag.objects.count()
+		context['installed_tags'] = EquipmentTag.objects.filter(
+				status='INST'
+				).count()
+		context['commissioned_tags'] = EquipmentTag.objects.filter(
+				status='COMM'
+				).count()
+		
+		# Document statistics
+		context['total_documents'] = Document.objects.count()
+		context['approved_documents'] = Document.objects.filter(
+				status='APPR'
+				).count()
+		
+		# Punch items
+		context['open_punch_items'] = PunchItem.objects.filter(
+				status__in=['OPEN', 'IPRO']
+				).count()
+		context['critical_punch_items'] = PunchItem.objects.filter(
+				status__in=['OPEN', 'IPRO'],
+				category='A'
+				).count()
+		
+		# Work packages
+		context['active_work_packages'] = WorkPackage.objects.filter(
+				status='IPRO'
+				).count()
+		context['completed_work_packages'] = WorkPackage.objects.filter(
+				status='COMP'
+				).count()
+		
+		# Recent projects
+		context['recent_projects'] = Project.objects.order_by('-created_at')[:5]
+		
+		# Recent equipment tags
+		context['recent_tags'] = EquipmentTag.objects.select_related(
+				'project', 'area'
+				).order_by('-created_at')[:10]
+		
+		# Overdue work packages
+		context['overdue_work_packages'] = WorkPackage.objects.filter(
+				status__in=['IPRO', 'NSTA'],
+				planned_finish__lt=timezone.now().date()
+				).select_related('project', 'area').order_by('planned_finish')[:5]
+		
+		# Recent documents
+		context['recent_documents'] = Document.objects.select_related(
+				'project'
+				).order_by('-created_at')[:5]
+		
+		# Recent punch items
+		context['recent_punch_items'] = PunchItem.objects.filter(
+				status__in=['OPEN', 'IPRO']
+				).select_related(
+				'project', 'equipment_tag', 'raised_by'
+				).order_by('-raised_date')[:5]
+		
+		# Projects overview for cards
+		context['projects_overview'] = Project.objects.annotate(
+				equipment_count=Count('equipment_tags', distinct=True),
+				document_count=Count('documents', distinct=True),
+				work_package_count=Count('work_packages', distinct=True),
+				punch_item_count=Count('punch_items', distinct=True),
+				open_punch_count=Count(
+						'punch_items',
+						filter=Q(punch_items__status__in=['OPEN', 'IPRO']),
+						distinct=True
+						)
+				).order_by('-created_at')
+		
+		return context

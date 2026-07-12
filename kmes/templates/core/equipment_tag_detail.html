@@ -166,8 +166,8 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'project_detail' tag.project.pk %}">{{ tag.project.name }}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'equipment_tag_list' %}?project={{ tag.project.pk }}">Equipment Tags</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:project-detail' tag.project.pk %}">{{ tag.project.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:equipment-tag-list' %}?project={{ tag.project.pk }}">Equipment Tags</a></li>
             <li class="breadcrumb-item active">{{ tag.tag_number }}</li>
         </ol>
     </nav>
@@ -227,10 +227,10 @@
 
             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
                 <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                    <a href="{% url 'equipment_tag_update' tag.pk %}" class="btn btn-light">
+                    <a href="#" class="btn btn-light">
                         <i class="bi bi-pencil"></i> Edit
                     </a>
-                    <a href="{% url 'equipment_tag_delete' tag.pk %}" class="btn btn-outline-light">
+                    <a href="#" class="btn btn-outline-light">
                         <i class="bi bi-trash"></i> Delete
                     </a>
                     <div class="dropdown">
@@ -239,29 +239,29 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item" href="{% url 'equipment_tag_create' %}?parent_tag={{ tag.pk }}&project={{ tag.project.pk }}">
+                                <a class="dropdown-item" href="#">
                                     <i class="bi bi-plus-circle"></i> Add Child Tag
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'installed_item_check_create' %}?tag={{ tag.pk }}">
+                                <a class="dropdown-item" href="#">
                                     <i class="bi bi-check-circle"></i> Installation Check
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'punch_item_create' %}?tag={{ tag.pk }}&project={{ tag.project.pk }}">
+                                <a class="dropdown-item" href="#">
                                     <i class="bi bi-flag"></i> Raise Punch Item
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'tag_document_create' %}?tag={{ tag.pk }}">
+                                <a class="dropdown-item" href="#">
                                     <i class="bi bi-paperclip"></i> Link Document
                                 </a>
                             </li>
                             {% if tag.parent_tag %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'equipment_tag_detail' tag.parent_tag.pk %}">
+                                <a class="dropdown-item" href="#">
                                     <i class="bi bi-arrow-up"></i> Go to Parent Tag
                                 </a>
                             </li>
@@ -315,16 +315,16 @@
 
     <!-- Quick Actions -->
     <div class="d-flex flex-wrap gap-2 mb-4">
-        <a href="{% url 'installed_item_check_create' %}?tag={{ tag.pk }}" class="quick-action bg-success bg-opacity-10 text-success text-decoration-none">
+        <a href="#" class="quick-action bg-success bg-opacity-10 text-success text-decoration-none">
             <i class="bi bi-check-circle me-2"></i> Installation Check
         </a>
-        <a href="{% url 'punch_item_create' %}?tag={{ tag.pk }}&project={{ tag.project.pk }}" class="quick-action bg-danger bg-opacity-10 text-danger text-decoration-none">
+        <a href="#" class="quick-action bg-danger bg-opacity-10 text-danger text-decoration-none">
             <i class="bi bi-flag me-2"></i> Raise Punch Item
         </a>
-        <a href="{% url 'tag_document_create' %}?tag={{ tag.pk }}" class="quick-action bg-info bg-opacity-10 text-info text-decoration-none">
+        <a href="#" class="quick-action bg-info bg-opacity-10 text-info text-decoration-none">
             <i class="bi bi-paperclip me-2"></i> Link Document
         </a>
-        <a href="{% url 'equipment_tag_create' %}?parent_tag={{ tag.pk }}&project={{ tag.project.pk }}" class="quick-action bg-primary bg-opacity-10 text-primary text-decoration-none">
+        <a href="#" class="quick-action bg-primary bg-opacity-10 text-primary text-decoration-none">
             <i class="bi bi-plus-circle me-2"></i> Add Child Tag
         </a>
     </div>
@@ -503,7 +503,7 @@
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <h6><i class="bi bi-arrow-up-circle"></i> Parent Tag</h6>
-                                    <a href="{% url 'equipment_tag_detail' tag.parent_tag.pk %}" class="text-decoration-none">
+                                    <a href="{% url 'core:equipment-tag-detail' tag.parent_tag.pk %}" class="text-decoration-none">
                                         <strong>{{ tag.parent_tag.tag_number }}</strong>
                                     </a>
                                     <p class="mb-0 small text-muted">{{ tag.parent_tag.description|truncatechars:60 }}</p>
@@ -541,7 +541,7 @@
                 <div class="tab-pane fade" id="hierarchy">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Assembly Hierarchy</h5>
-                        <a href="{% url 'equipment_tag_create' %}?parent_tag={{ tag.pk }}&project={{ tag.project.pk }}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn-primary btn-sm">
                             <i class="bi bi-plus-lg"></i> Add Child Tag
                         </a>
                     </div>
@@ -553,7 +553,7 @@
                         <ol class="breadcrumb">
                             {% for ancestor in ancestors %}
                             <li class="breadcrumb-item">
-                                <a href="{% url 'equipment_tag_detail' ancestor.pk %}">{{ ancestor.tag_number }}</a>
+                                <a href="{% url 'core:equipment-tag-detail' ancestor.pk %}">{{ ancestor.tag_number }}</a>
                             </li>
                             {% endfor %}
                             <li class="breadcrumb-item active">{{ tag.tag_number }}</li>
@@ -587,7 +587,7 @@
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h6 class="mb-1">
-                                                <a href="{% url 'equipment_tag_detail' child.pk %}" class="text-decoration-none">
+                                                <a href="{% url 'core:equipment-tag-detail' child.pk %}" class="text-decoration-none">
                                                     {{ child.tag_number }}
                                                 </a>
                                             </h6>
@@ -603,7 +603,7 @@
                                             </span>
                                         </div>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{% url 'equipment_tag_update' child.pk %}" class="btn btn-outline-secondary">
+                                            <a href="#" class="btn btn-outline-secondary">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                         </div>
@@ -624,7 +624,7 @@
                     <div class="text-center py-4 text-muted">
                         <i class="bi bi-diagram-3" style="font-size: 3rem;"></i>
                         <p class="mt-2">No child tags. This is a leaf-level component.</p>
-                        <a href="{% url 'equipment_tag_create' %}?parent_tag={{ tag.pk }}&project={{ tag.project.pk }}" class="btn btn-outline-primary btn-sm">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-plus-lg"></i> Add Child Tag
                         </a>
                     </div>
@@ -635,7 +635,7 @@
                 <div class="tab-pane fade" id="documents">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Linked Documents</h5>
-                        <a href="{% url 'tag_document_create' %}?tag={{ tag.pk }}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn-primary btn-sm">
                             <i class="bi bi-paperclip"></i> Link Document
                         </a>
                     </div>
@@ -674,15 +674,15 @@
                                 <td>{{ td.relation_type }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{% url 'document_detail' td.document.pk %}" class="btn btn-outline-primary">
+                                        <a href="#" class="btn btn-outline-primary">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                         {% if td.document.file_upload %}
-                                        <a href="{{ td.document.file_upload.url }}" class="btn btn-outline-success" download>
+                                        <a href="#" class="btn btn-outline-success" download>
                                             <i class="bi bi-download"></i>
                                         </a>
                                         {% endif %}
-                                        <a href="{% url 'tag_document_delete' td.pk %}" class="btn btn-outline-danger">
+                                        <a href="#" class="btn btn-outline-danger">
                                             <i class="bi bi-unlink"></i>
                                         </a>
                                     </div>
@@ -696,7 +696,7 @@
                     <div class="text-center py-4 text-muted">
                         <i class="bi bi-file-earmark-text" style="font-size: 3rem;"></i>
                         <p class="mt-2">No documents linked to this tag.</p>
-                        <a href="{% url 'tag_document_create' %}?tag={{ tag.pk }}" class="btn btn-outline-primary btn-sm">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-paperclip"></i> Link First Document
                         </a>
                     </div>
@@ -707,7 +707,7 @@
                 <div class="tab-pane fade" id="installation">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Installation Checks</h5>
-                        <a href="{% url 'installed_item_check_create' %}?tag={{ tag.pk }}" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn-primary btn-sm">
                             <i class="bi bi-plus-lg"></i> New Check
                         </a>
                     </div>
@@ -844,7 +844,7 @@
                     <div class="text-center py-4 text-muted">
                         <i class="bi bi-tools" style="font-size: 3rem;"></i>
                         <p class="mt-2">No installation checks performed yet.</p>
-                        <a href="{% url 'installed_item_check_create' %}?tag={{ tag.pk }}" class="btn btn-outline-primary btn-sm">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-plus-lg"></i> Perform First Check
                         </a>
                     </div>
@@ -892,7 +892,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{% url 'test_record_create' %}?procedure={{ tp.pk }}" class="btn btn-outline-primary">
+                                        <a href="#" class="btn btn-outline-primary">
                                             <i class="bi bi-play-circle"></i> Record Test
                                         </a>
                                     </div>
@@ -915,7 +915,7 @@
                 <div class="tab-pane fade" id="punch">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Punch Items</h5>
-                        <a href="{% url 'punch_item_create' %}?tag={{ tag.pk }}&project={{ tag.project.pk }}" class="btn btn-danger btn-sm">
+                        <a href="#" class="btn btn-danger btn-sm">
                             <i class="bi bi-flag"></i> Raise Punch Item
                         </a>
                     </div>
@@ -963,11 +963,11 @@
                                 <td><small>{{ punch.raised_date|date:"M d, Y" }}</small></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{% url 'punch_item_detail' punch.pk %}" class="btn btn-outline-primary">
+                                        <a href="#" class="btn btn-outline-primary">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                         {% if punch.status == 'OPEN' %}
-                                        <a href="{% url 'punch_item_resolve' punch.pk %}" class="btn btn-outline-success">
+                                        <a href="#" class="btn btn-outline-success">
                                             <i class="bi bi-check-circle"></i>
                                         </a>
                                         {% endif %}
@@ -1008,7 +1008,7 @@
                             {% for poi in purchase_orders %}
                             <tr>
                                 <td>
-                                    <a href="{% url 'purchase_order_detail' poi.purchase_order.pk %}">
+                                    <a href="#">
                                         {{ poi.purchase_order.po_number }}
                                     </a>
                                 </td>
@@ -1031,7 +1031,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{% url 'purchase_order_detail' poi.purchase_order.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </td>
@@ -1059,7 +1059,7 @@
         <div class="row g-3">
             {% for related in related_tags %}
             <div class="col-lg-3 col-md-4 col-6">
-                <a href="{% url 'equipment_tag_detail' related.pk %}" class="text-decoration-none">
+                <a href="#S" class="text-decoration-none">
                     <div class="card info-card h-100">
                         <div class="card-body text-center">
                             <h6 class="mb-1">{{ related.tag_number }}</h6>

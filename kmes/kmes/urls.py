@@ -9,12 +9,13 @@ from django.conf.urls.static import static
 # from ..resources import urls as resources_urls
 # from ..construction import urls as construction_urls
 # from ..commissioning import urls as commissioning_urls
-
+from core import views
 urlpatterns = [
 		path('admin/', admin.site.urls),
 		
 		# # Clean string-based includes with namespaces
 		 path('core/', include('core.urls', namespace='core')),
+		path('', views.DashboardView.as_view(), name='dashboard'),
 		# path('documents/', include('documents.urls', namespace='documents')),
 		# path('procurement/', include('procurement.urls', namespace='procurement')),
 		# path('construction/', include('construction.urls', namespace='construction')),

@@ -188,6 +188,6 @@ urlpatterns = [
 		path('projects/', views.ProjectListView.as_view(), name='project-list'),
 		path('projects/<int:pk>/',views.ProjectDetailView.as_view(),name='project-detail'),
 		path('equipments/', views.EquipmentTagListView.as_view(), name='equipment-tag-list'),
-		path('equipments/<int:pk>/', views.EquipmentTagDetailView.as_view(), name='equipment-tag-detail'),
+		path('tags/<int:pk>/', views.EquipmentTagDetailView.as_view(), name='equipment-tag-detail'),
 		
 		]
