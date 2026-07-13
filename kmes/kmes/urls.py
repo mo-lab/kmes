@@ -15,6 +15,7 @@ urlpatterns = [
 		
 		# # Clean string-based includes with namespaces
 		 path('core/', include('core.urls', namespace='core')),
+		 path('docs/', include('documents.urls', namespace='documents')),
 		path('', views.DashboardView.as_view(), name='dashboard'),
 		# path('documents/', include('documents.urls', namespace='documents')),
 		# path('procurement/', include('procurement.urls', namespace='procurement')),

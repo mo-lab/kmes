@@ -99,7 +99,7 @@
         </p>
       </div>
       <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        <a href="{% url 'core:project_create' %}" class="btn btn-light">
+        <a href="#" class="btn btn-light">
           <i class="bi bi-plus-lg"></i> New Project
         </a>
       </div>
@@ -190,7 +190,7 @@
   <!-- Quick Links -->
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-4 col-lg-2">
-      <a href="{% url 'core:project_list' %}" class="quick-link-card d-block">
+      <a href="{% url 'core:project-list' %}" class="quick-link-card d-block">
         <div class="icon-circle bg-primary bg-opacity-10 text-primary">
           <i class="bi bi-folder"></i>
         </div>
@@ -199,7 +199,7 @@
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
-      <a href="{% url 'core:equipment_tag_list' %}" class="quick-link-card d-block">
+      <a href="{% url 'core:equipment-tag-list' %}" class="quick-link-card d-block">
         <div class="icon-circle bg-success bg-opacity-10 text-success">
           <i class="bi bi-tag"></i>
         </div>
@@ -208,7 +208,7 @@
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
-      <a href="{% url 'documents:document_list' %}" class="quick-link-card d-block">
+      <a href="#" class="quick-link-card d-block">
         <div class="icon-circle bg-info bg-opacity-10 text-info">
           <i class="bi bi-file-earmark-text"></i>
         </div>
@@ -217,7 +217,7 @@
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
-      <a href="{% url 'construction:work_package_list' %}" class="quick-link-card d-block">
+      <a href="#" class="quick-link-card d-block">
         <div class="icon-circle bg-warning bg-opacity-10 text-warning">
           <i class="bi bi-tools"></i>
         </div>
@@ -226,7 +226,7 @@
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
-      <a href="{% url 'commissioning:punch_item_list' %}" class="quick-link-card d-block">
+      <a href="#" class="quick-link-card d-block">
         <div class="icon-circle bg-danger bg-opacity-10 text-danger">
           <i class="bi bi-flag"></i>
         </div>
@@ -235,7 +235,7 @@
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
-      <a href="{% url 'resources:employee_list' %}" class="quick-link-card d-block">
+      <a href="#" class="quick-link-card d-block">
         <div class="icon-circle bg-secondary bg-opacity-10 text-secondary">
           <i class="bi bi-people"></i>
         </div>
@@ -252,13 +252,13 @@
       <div class="card h-100">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Recent Projects</h5>
-          <a href="{% url 'core:project_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+          <a href="{% url 'core:project-list' %}" class="btn btn-sm btn-outline-primary">View All</a>
         </div>
         <div class="card-body">
           {% if recent_projects %}
           <div class="list-group list-group-flush">
             {% for project in recent_projects %}
-            <a href="{% url 'core:project_detail' project.pk %}"
+            <a href="{% url 'core:project-detail' project.pk %}"
                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
               <div>
                 <strong>{{ project.name }}</strong>
@@ -288,13 +288,13 @@
       <div class="card h-100">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="bi bi-tag me-2"></i>Recent Tags</h5>
-          <a href="{% url 'core:equipment_tag_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+          <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-sm btn-outline-primary">View All</a>
         </div>
         <div class="card-body">
           {% if recent_tags %}
           <div class="list-group list-group-flush">
             {% for tag in recent_tags %}
-            <a href="{% url 'core:equipment_tag_detail' tag.pk %}"
+            <a href="{% url 'core:equipment-tag-detail' tag.pk %}"
                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
               <div>
                 <strong>{{ tag.tag_number }}</strong>
@@ -324,13 +324,13 @@
       <div class="card h-100">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Open Punch Items</h5>
-          <a href="{% url 'commissioning:punch_item_list' %}" class="btn btn-sm btn-outline-danger">View All</a>
+          <a href="#" class="btn btn-sm btn-outline-danger">View All</a>
         </div>
         <div class="card-body">
           {% if recent_punch_items %}
           <div class="list-group list-group-flush">
             {% for punch in recent_punch_items %}
-            <a href="{% url 'commissioning:punch_item_detail' punch.pk %}"
+            <a href="#"
                class="list-group-item list-group-item-action">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -372,7 +372,7 @@
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="bi bi-calendar-x me-2"></i>Overdue Work Packages</h5>
-          <a href="{% url 'construction:work_package_list' %}" class="btn btn-sm btn-outline-warning">View All</a>
+          <a href="#" class="btn btn-sm btn-outline-warning">View All</a>
         </div>
         <div class="card-body">
           {% if overdue_work_packages %}
@@ -417,13 +417,13 @@
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Recent Documents</h5>
-          <a href="{% url 'documents:document_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+          <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
         </div>
         <div class="card-body">
           {% if recent_documents %}
           <div class="list-group list-group-flush">
             {% for doc in recent_documents %}
-            <a href="{% url 'documents:document_detail' doc.pk %}"
+            <a href="#"
                class="list-group-item list-group-item-action">
               <div class="d-flex justify-content-between align-items-center">
                 <div>

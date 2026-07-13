@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.db.models import Q, Count, Case, When, Value, CharField
 from django.http import HttpResponse
 # views.py
@@ -10,8 +12,20 @@ from .models import Project, Area, System, EquipmentTag
 from .forms import ProjectForm, AreaForm, SystemForm, EquipmentTagForm, EquipmentTagFilterForm
 from construction.models import WorkPackage
 from commissioning.models import PunchItem
+from documents.models import Document
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from django.views import generic
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-
+from .models import EquipmentTag, EquipmentLocation, EquipmentLocationImage
+from .forms import (
+	EquipmentLocationForm,
+	EquipmentLocationImageForm,
+	EquipmentLocationSearchForm
+	)
 class ProjectCreateView(CreateView):
 	model = Project
 	form_class = ProjectForm
@@ -627,3 +641,115 @@ class DashboardView(LoginRequiredMixin, generic.TemplateView):
 				).order_by('-created_at')
 		
 		return context
+
+
+
+class EquipmentLocationCreateView(LoginRequiredMixin, generic.CreateView):
+	"""Record a new location for equipment."""
+	model = EquipmentLocation
+	form_class = EquipmentLocationForm
+	template_name = 'core/equipment_location_form.html'
+	
+	def get_success_url(self):
+		return self.object.equipment_tag.get_absolute_url()
+	
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		tag_id = self.kwargs.get('tag_id') or self.request.GET.get('tag')
+		if tag_id:
+			kwargs['tag_id'] = tag_id
+		return kwargs
+	
+	def get_initial(self):
+		initial = super().get_initial()
+		initial['arrival_date'] = timezone.now()
+		initial['is_current'] = True
+		return initial
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		tag_id = self.kwargs.get('tag_id') or self.request.GET.get('tag')
+		if tag_id:
+			context['equipment_tag'] = get_object_or_404(EquipmentTag, pk=tag_id)
+		return context
+	
+	def form_valid(self, form):
+		form.instance.recorded_by = self.request.user
+		messages.success(self.request, 'Equipment location recorded successfully.')
+		return super().form_valid(form)
+
+
+class EquipmentLocationDetailView(LoginRequiredMixin, generic.DetailView):
+	"""View location details with images."""
+	model = EquipmentLocation
+	template_name = 'core/equipment_location_detail.html'
+	context_object_name = 'location'
+	
+	def get_queryset(self):
+		return EquipmentLocation.objects.select_related(
+				'equipment_tag', 'area', 'recorded_by', 'verified_by'
+				).prefetch_related('images')
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['image_form'] = EquipmentLocationImageForm()
+		context['google_maps_url'] = self.object.google_maps_url
+		context['openstreetmap_url'] = self.object.openstreetmap_url
+		return context
+
+
+@login_required
+def upload_location_image(request, location_id):
+	"""Upload an image for a location."""
+	location = get_object_or_404(EquipmentLocation, pk=location_id)
+	
+	if request.method == 'POST':
+		form = EquipmentLocationImageForm(request.POST, request.FILES)
+		if form.is_valid():
+			image = form.save(commit=False)
+			image.location = location
+			image.uploaded_by = request.user
+			image.save()
+			messages.success(request, 'Image uploaded successfully.')
+		else:
+			messages.error(request, 'Please correct the errors below.')
+	
+	return redirect('core:equipment_location_detail', pk=location.pk)
+
+
+@login_required
+def delete_location_image(request, image_id):
+	"""Delete a location image."""
+	image = get_object_or_404(EquipmentLocationImage, pk=image_id)
+	location_id = image.location_id
+	
+	if request.method == 'POST':
+		image.delete()
+		messages.success(request, 'Image deleted successfully.')
+	
+	return redirect('core:equipment_location_detail', pk=location_id)
+
+
+@login_required
+def set_primary_image(request, image_id):
+	"""Set an image as primary for its location."""
+	image = get_object_or_404(EquipmentLocationImage, pk=image_id)
+	image.is_primary = True
+	image.save()
+	messages.success(request, 'Primary image updated.')
+	return redirect('core:equipment_location_detail', pk=image.location_id)
+
+
+@login_required
+def verify_location(request, location_id):
+	"""Verify a location."""
+	location = get_object_or_404(EquipmentLocation, pk=location_id)
+	
+	if request.method == 'POST':
+		location.is_verified = True
+		location.verified_by = request.user
+		location.verified_date = timezone.now()
+		location.save()
+		messages.success(request, 'Location verified successfully.')
+	
+	return redirect('core:equipment_location_detail', pk=location.pk)

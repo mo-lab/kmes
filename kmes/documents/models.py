@@ -41,7 +41,7 @@ class Document(models.Model):
 	project = models.ForeignKey(
 			'core.Project', on_delete=models.CASCADE, related_name='documents'
 			)
-	document_number = models.CharField(max_length=100)
+	document_number = models.CharField(max_length=100,null=True,blank=True)
 	title = models.CharField(max_length=500)
 	doc_type = models.CharField(max_length=5, choices=DocType.choices)
 	discipline = models.CharField(max_length=5, choices=Discipline.choices)
@@ -50,11 +50,11 @@ class Document(models.Model):
 	
 	file_upload = models.FileField(
 			upload_to='documents/%Y/%m/%d/',
-			validators=[
-					FileExtensionValidator(
-							allowed_extensions=['pdf', 'dwg', 'dxf', 'doc', 'docx', 'xls', 'xlsx', 'zip']
-							)
-					],
+			# validators=[
+			# 		FileExtensionValidator(
+			# 				allowed_extensions=['pdf', 'dwg', 'dxf', 'doc', 'docx', 'xls', 'xlsx', 'zip']
+			# 				)
+			# 		],
 			null=True, blank=True
 			)
 	file_path = models.CharField(
@@ -108,3 +108,44 @@ class TagDocument(models.Model):
 	
 	def __str__(self):
 		return f"{self.equipment_tag.tag_number} <-> {self.document.document_number}"
+
+class DocumentShare(models.Model):
+	"""Track document sharing with users."""
+	
+	document = models.ForeignKey(
+			'Document',
+			on_delete=models.CASCADE,
+			related_name='shares'
+			)
+	shared_by = models.ForeignKey(
+			User,
+			on_delete=models.SET_NULL,
+			null=True,
+			related_name='shared_documents'
+			)
+	shared_with = models.ForeignKey(
+			User,
+			on_delete=models.CASCADE,
+			related_name='received_documents'
+			)
+	shared_date = models.DateTimeField(auto_now_add=True)
+	can_edit = models.BooleanField(default=False)
+	message = models.TextField(blank=True, help_text="Optional message to the recipient")
+	is_accessed = models.BooleanField(default=False)
+	accessed_date = models.DateTimeField(null=True, blank=True)
+	
+	class Meta:
+		unique_together = ['document', 'shared_with']
+		ordering = ['-shared_date']
+		verbose_name = 'Document Share'
+		verbose_name_plural = 'Document Shares'
+	
+	def __str__(self):
+		return f"{self.document.document_number} shared with {self.shared_with.get_full_name()}"
+	
+	def mark_as_accessed(self):
+		"""Mark the shared document as accessed."""
+		from django.utils import timezone
+		self.is_accessed = True
+		self.accessed_date = timezone.now()
+		self.save(update_fields=['is_accessed', 'accessed_date'])

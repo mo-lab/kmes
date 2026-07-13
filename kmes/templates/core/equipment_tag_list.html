@@ -114,6 +114,38 @@
         font-size: 0.85rem;
         color: #6c757d;
     }
+
+    .status-timeline {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-date {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .status-change-info {
+        font-size: 0.8rem;
+    }
+
+    .overdue-badge {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
 </style>
 {% endblock %}
 
@@ -128,7 +160,7 @@
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
                     {% if request.GET.project %}
-                    <li class="breadcrumb-item"><a href="{% url 'core:project-detail' request.GET.project %}">Project</a></li>
+                    <li class="breadcrumb-item"><a href="#">Project</a></li>
                     {% endif %}
                     <li class="breadcrumb-item active">Equipment Tags</li>
                 </ol>
@@ -145,8 +177,7 @@
                     <i class="bi bi-grid-3x3-gap"></i>
                 </a>
             </div>
-            <a href="{% if request.GET.project %}?project={{ request.GET.project }}{% endif %}"
-               class="btn btn-primary">
+            <a href="#" class="btn btn-primary">
                 <i class="bi bi-plus-lg"></i> New Tag
             </a>
             {% if tags %}
@@ -208,14 +239,14 @@
                         <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="">All Projects</option>
                             {% for proj in projects %}
-                            <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:'s' %}selected{% endif %}>
+                            <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}>
                             {{ proj.code }} - {{ proj.name }}
                             </option>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <!-- Area (filtered by project) -->
+                    <!-- Area -->
                     <div class="mb-3">
                         <label class="form-label small">Area</label>
                         <select name="area" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -317,7 +348,7 @@
                             <i class="bi bi-search"></i> Apply Filters
                         </button>
                         {% if request.GET %}
-                        <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-outline-secondary btn-sm">
+                        <a href="#" class="btn btn-outline-secondary btn-sm">
                             <i class="bi bi-x-circle"></i> Clear All Filters
                         </a>
                         {% endif %}
@@ -395,12 +426,21 @@
                             <th>Area</th>
                             <th>Hierarchy</th>
                             <th>Documents</th>
+                            <th>
+                                <a href="?sort={% if request.GET.sort == 'updated_at' %}-{% endif %}updated_at{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                                   class="text-decoration-none text-dark">
+                                    Last Status Change
+                                    {% if request.GET.sort == 'updated_at' %}<i class="bi bi-caret-up-fill"></i>
+                                    {% elif request.GET.sort == '-updated_at' %}<i class="bi bi-caret-down-fill"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
                             <th>Actions</th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for tag in tags %}
-                        <tr onclick="window.location="{% url 'core:equipment-tag-detail' tag.pk %}">
+                        <tr onclick="window.location='#'">
                             <td onclick="event.stopPropagation()">
                                 <input type="checkbox" class="form-check-input tag-checkbox"
                                        value="{{ tag.pk }}" onchange="updateBulkActions()">
@@ -457,14 +497,54 @@
                                 <span class="text-muted">-</span>
                                 {% endif %}
                             </td>
+                            <td>
+                                <div class="status-change-info">
+                                    <div class="d-flex align-items-center">
+                                            <span class="status-dot
+                                                {% if tag.status == 'INST' %}bg-success
+                                                {% elif tag.status == 'DLVD' %}bg-info
+                                                {% elif tag.status == 'COMM' %}bg-primary
+                                                {% elif tag.status == 'HNDO' %}bg-success
+                                                {% elif tag.status == 'DEF' %}bg-danger
+                                                {% elif tag.status == 'ENG' %}bg-secondary
+                                                {% elif tag.status == 'PROC' %}bg-info
+                                                {% elif tag.status == 'ALGN' %}bg-warning
+                                                {% elif tag.status == 'PREC' %}bg-purple
+                                                {% else %}bg-secondary{% endif %} me-1">
+                                            </span>
+                                        <div>
+                                            <div class="small">{{ tag.get_status_display }}</div>
+                                            <div class="status-date">
+                                                {% if tag.installation_date and tag.status == 'INST' %}
+                                                Installed: {{ tag.installation_date|date:"M d, Y" }}
+                                                {% else %}
+                                                {{ tag.updated_at|date:"M d, Y" }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="status-date text-muted">
+                                                <small>
+                                                    {% with days_since=tag.updated_at|timesince %}
+                                                    {% if 'day' in days_since and tag.status not in 'HNDO,COMM,CLSD' %}
+                                                    {% if tag.updated_at|date:"U" < now|date:"U"|add:"-604800" %}
+                                                    <span class="text-danger overdue-badge">
+                                                                        <i class="bi bi-exclamation-triangle"></i>
+                                                                    </span>
+                                                    {% endif %}
+                                                    {% endif %}
+                                                    {{ days_since }} ago
+                                                    {% endwith %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
                             <td onclick="event.stopPropagation()">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'core:equipment-tag-detail' tag.pk %}"
-                                       class="btn btn-outline-primary" title="View">
+                                    <a href="#" class="btn btn-outline-primary" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="#"
-                                       class="btn btn-outline-secondary" title="Edit">
+                                    <a href="#" class="btn btn-outline-secondary" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <button type="button" class="btn btn-outline-info" title="Quick Actions"
@@ -519,8 +599,7 @@
                                     </div>
                                     <div>
                                         <h6 class="mb-0">
-                                            <a href="{% url 'core:equipment-tag-detail' tag.pk %}"
-                                               class="text-decoration-none stretched-link">
+                                            <a href="#" class="text-decoration-none stretched-link">
                                                 {{ tag.tag_number }}
                                             </a>
                                         </h6>
@@ -574,6 +653,22 @@
                                 {% endif %}
                             </div>
                             {% endif %}
+
+                            <!-- Last Status Change in Card View -->
+                            <div class="mt-2 pt-2 border-top">
+                                <div class="d-flex align-items-center small">
+                                    <span class="status-dot
+                                        {% if tag.status == 'INST' %}bg-success
+                                        {% elif tag.status == 'DLVD' %}bg-info
+                                        {% elif tag.status == 'COMM' %}bg-primary
+                                        {% elif tag.status == 'DEF' %}bg-danger
+                                        {% else %}bg-secondary{% endif %} me-1">
+                                    </span>
+                                    <span class="text-muted">
+                                        Status updated {{ tag.updated_at|timesince }} ago
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="card-footer bg-transparent border-top">
@@ -663,7 +758,7 @@
                         </p>
                         <div class="mt-3">
                             {% if request.GET %}
-                            <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-outline-secondary me-2">
+                            <a href="#" class="btn btn-outline-secondary me-2">
                                 <i class="bi bi-x-circle"></i> Clear Filters
                             </a>
                             {% endif %}
@@ -749,7 +844,7 @@
     function bulkUpdateStatus() {
         const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
         if (selected.length > 0) {
-            window.location.href = `#`;
+            window.location.href = `#?tags=${selected.join(',')}`;
         }
     }
 
@@ -762,7 +857,6 @@
 
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
-        // Ctrl+A to select all
         if (e.ctrlKey && e.key === 'a') {
             e.preventDefault();
             document.getElementById('selectAll').click();

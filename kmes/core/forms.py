@@ -252,4 +252,150 @@ class EquipmentTagFilterForm(forms.Form):
 			project_id = self.initial['project']
 			self.fields['area'].queryset = Area.objects.filter(project_id=project_id)
 			self.fields['system'].queryset = System.objects.filter(project_id=project_id)
-			
+
+from django import forms
+from .models import EquipmentLocation, EquipmentLocationImage
+
+
+class EquipmentLocationForm(forms.ModelForm):
+	"""Form for recording equipment location."""
+	
+	class Meta:
+		model = EquipmentLocation
+		fields = [
+				'equipment_tag', 'location_type', 'latitude', 'longitude',
+				'elevation', 'accuracy', 'area', 'building', 'floor',
+				'room', 'grid_reference', 'address', 'city', 'state',
+				'country', 'postal_code', 'is_current', 'arrival_date',
+				'notes'
+				]
+		widgets = {
+				'equipment_tag': forms.Select(attrs={'class': 'form-select'}),
+				'location_type': forms.Select(attrs={'class': 'form-select'}),
+				'latitude': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'step': '0.000001',
+						'placeholder': 'e.g., -23.550520'
+						}),
+				'longitude': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'step': '0.000001',
+						'placeholder': 'e.g., -46.633308'
+						}),
+				'elevation': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'step': '0.01',
+						'placeholder': 'Meters above sea level'
+						}),
+				'accuracy': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'step': '0.01',
+						'placeholder': 'GPS accuracy in meters'
+						}),
+				'area': forms.Select(attrs={'class': 'form-select'}),
+				'building': forms.TextInput(attrs={'class': 'form-control'}),
+				'floor': forms.TextInput(attrs={'class': 'form-control'}),
+				'room': forms.TextInput(attrs={'class': 'form-control'}),
+				'grid_reference': forms.TextInput(attrs={'class': 'form-control'}),
+				'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+				'city': forms.TextInput(attrs={'class': 'form-control'}),
+				'state': forms.TextInput(attrs={'class': 'form-control'}),
+				'country': forms.TextInput(attrs={'class': 'form-control'}),
+				'postal_code': forms.TextInput(attrs={'class': 'form-control'}),
+				'is_current': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+				'arrival_date': forms.DateTimeInput(attrs={
+						'class': 'form-control',
+						'type': 'datetime-local'
+						}),
+				'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+				}
+	
+	def __init__(self, *args, **kwargs):
+		tag_id = kwargs.pop('tag_id', None)
+		super().__init__(*args, **kwargs)
+		
+		if tag_id:
+			self.fields['equipment_tag'].initial = tag_id
+			self.fields['equipment_tag'].widget = forms.HiddenInput()
+			self.fields['equipment_tag'].required = False
+	
+	def clean(self):
+		cleaned_data = super().clean()
+		latitude = cleaned_data.get('latitude')
+		longitude = cleaned_data.get('longitude')
+		
+		if latitude and longitude:
+			if latitude < -90 or latitude > 90:
+				self.add_error('latitude', 'Latitude must be between -90 and 90 degrees.')
+			if longitude < -180 or longitude > 180:
+				self.add_error('longitude', 'Longitude must be between -180 and 180 degrees.')
+		
+		return cleaned_data
+
+
+class EquipmentLocationImageForm(forms.ModelForm):
+	"""Form for uploading location images."""
+	
+	class Meta:
+		model = EquipmentLocationImage
+		fields = [
+				'image', 'title', 'description', 'image_type',
+				'taken_date', 'direction', 'is_primary'
+				]
+		widgets = {
+				'image': forms.FileInput(attrs={
+						'class': 'form-control',
+						'accept': 'image/*'
+						}),
+				'title': forms.TextInput(attrs={'class': 'form-control'}),
+				'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+				'image_type': forms.Select(attrs={'class': 'form-select'}),
+				'taken_date': forms.DateTimeInput(attrs={
+						'class': 'form-control',
+						'type': 'datetime-local'
+						}),
+				'direction': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'min': '0',
+						'max': '360',
+						'step': '0.1'
+						}),
+				'is_primary': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+				}
+
+
+class EquipmentLocationSearchForm(forms.Form):
+	"""Form for searching equipment locations."""
+	
+	equipment_tag = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control',
+					'placeholder': 'Search by tag number...'
+					})
+			)
+	location_type = forms.ChoiceField(
+			choices=[('', 'All Types')] + list(EquipmentLocation.LocationType.choices),
+			required=False,
+			widget=forms.Select(attrs={'class': 'form-select'})
+			)
+	is_current = forms.ChoiceField(
+			choices=[('', 'All'), ('true', 'Current Only'), ('false', 'History Only')],
+			required=False,
+			widget=forms.Select(attrs={'class': 'form-select'})
+			)
+	date_from = forms.DateField(
+			required=False,
+			widget=forms.DateInput(attrs={
+					'class': 'form-control',
+					'type': 'date'
+					})
+			)
+	date_to = forms.DateField(
+			required=False,
+			widget=forms.DateInput(attrs={
+					'class': 'form-control',
+					'type': 'date'
+					})
+			)
+	

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 User = get_user_model()
 
 
@@ -77,6 +78,300 @@ class System(models.Model):
 		return f"{self.code} - {self.name}"
 
 
+
+
+class EquipmentLocation(models.Model):
+	"""
+	GPS location data for equipment tags.
+	Each equipment tag can have one or more location records to track movement.
+	"""
+	
+	class LocationType(models.TextChoices):
+		STORAGE = 'STORE', 'Storage/Warehouse'
+		INSTALLATION = 'INST', 'Installation Site'
+		WORKSHOP = 'WORK', 'Workshop'
+		TRANSIT = 'TRANS', 'In Transit'
+		TEMPORARY = 'TEMP', 'Temporary Location'
+		OTHER = 'OTHER', 'Other'
+	
+	equipment_tag = models.ForeignKey(
+			'EquipmentTag',
+			on_delete=models.CASCADE,
+			related_name='locations'
+			)
+	
+	# Location type
+	location_type = models.CharField(
+			max_length=5,
+			choices=LocationType.choices,
+			default=LocationType.INSTALLATION
+			)
+	
+	# GPS Coordinates
+	latitude = models.DecimalField(
+			max_digits=9,
+			decimal_places=6,
+			validators=[
+					MinValueValidator(-90),
+					MaxValueValidator(90)
+					],
+			help_text="Latitude in decimal degrees (e.g., -23.550520)"
+			)
+	longitude = models.DecimalField(
+			max_digits=9,
+			decimal_places=6,
+			validators=[
+					MinValueValidator(-180),
+					MaxValueValidator(180)
+					],
+			help_text="Longitude in decimal degrees (e.g., -46.633308)"
+			)
+	elevation = models.DecimalField(
+			max_digits=8,
+			decimal_places=2,
+			null=True,
+			blank=True,
+			help_text="Elevation in meters above sea level"
+			)
+	
+	# Accuracy
+	accuracy = models.DecimalField(
+			max_digits=6,
+			decimal_places=2,
+			null=True,
+			blank=True,
+			help_text="GPS accuracy in meters"
+			)
+	
+	# Physical location description
+	area = models.ForeignKey(
+			'Area',
+			on_delete=models.SET_NULL,
+			null=True,
+			blank=True,
+			related_name='equipment_locations'
+			)
+	building = models.CharField(max_length=100, blank=True, help_text="Building or structure name")
+	floor = models.CharField(max_length=50, blank=True, help_text="Floor level")
+	room = models.CharField(max_length=50, blank=True, help_text="Room number or name")
+	grid_reference = models.CharField(max_length=50, blank=True, help_text="Site grid reference")
+	
+	# Address
+	address = models.TextField(blank=True, help_text="Physical address or description")
+	city = models.CharField(max_length=100, blank=True)
+	state = models.CharField(max_length=100, blank=True)
+	country = models.CharField(max_length=100, blank=True)
+	postal_code = models.CharField(max_length=20, blank=True)
+	
+	# Status
+	is_current = models.BooleanField(
+			default=True,
+			help_text="Is this the current location of the equipment?"
+			)
+	is_verified = models.BooleanField(
+			default=False,
+			help_text="Has this location been verified?"
+			)
+	
+	# Dates
+	arrival_date = models.DateTimeField(
+			default=timezone.now,
+			help_text="When the equipment arrived at this location"
+			)
+	departure_date = models.DateTimeField(
+			null=True,
+			blank=True,
+			help_text="When the equipment left this location"
+			)
+	
+	# User who recorded this location
+	recorded_by = models.ForeignKey(
+			'auth.User',
+			on_delete=models.SET_NULL,
+			null=True,
+			blank=True,
+			related_name='recorded_locations'
+			)
+	
+	# Verification
+	verified_by = models.ForeignKey(
+			'auth.User',
+			on_delete=models.SET_NULL,
+			null=True,
+			blank=True,
+			related_name='verified_locations'
+			)
+	verified_date = models.DateTimeField(null=True, blank=True)
+	
+	# Notes
+	notes = models.TextField(blank=True)
+	
+	# Metadata
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+	
+	class Meta:
+		ordering = ['-arrival_date']
+		verbose_name = 'Equipment Location'
+		verbose_name_plural = 'Equipment Locations'
+		indexes = [
+				models.Index(fields=['equipment_tag', 'is_current']),
+				models.Index(fields=['latitude', 'longitude']),
+				models.Index(fields=['location_type']),
+				]
+	
+	def __str__(self):
+		return f"{self.equipment_tag.tag_number} - {self.get_location_type_display()} ({self.latitude}, {self.longitude})"
+	
+	@property
+	def coordinates(self):
+		"""Return coordinates as a tuple."""
+		return (float(self.latitude), float(self.longitude))
+	
+	@property
+	def google_maps_url(self):
+		"""Generate Google Maps URL for this location."""
+		return f"https://www.google.com/maps?q={self.latitude},{self.longitude}"
+	
+	@property
+	def openstreetmap_url(self):
+		"""Generate OpenStreetMap URL for this location."""
+		return f"https://www.openstreetmap.org/?mlat={self.latitude}&mlon={self.longitude}&zoom=18"
+	
+	def save(self, *args, **kwargs):
+		# If this is marked as current, unmark other current locations for this equipment
+		if self.is_current:
+			EquipmentLocation.objects.filter(
+					equipment_tag=self.equipment_tag,
+					is_current=True
+					).exclude(pk=self.pk).update(is_current=False)
+		
+		super().save(*args, **kwargs)
+
+
+class EquipmentLocationImage(models.Model):
+	"""
+	Images associated with equipment locations.
+	Each location can have multiple images.
+	"""
+	
+	class ImageType(models.TextChoices):
+		GENERAL = 'GEN', 'General View'
+		CLOSEUP = 'CLOSE', 'Close-up'
+		SURROUNDING = 'SURR', 'Surrounding Area'
+		INSTALLATION = 'INST', 'Installation Detail'
+		DAMAGE = 'DAMG', 'Damage/Deterioration'
+		GPS = 'GPS', 'GPS Screenshot'
+		SURVEY = 'SURV', 'Survey Mark'
+		OTHER = 'OTHER', 'Other'
+	
+	location = models.ForeignKey(
+			EquipmentLocation,
+			on_delete=models.CASCADE,
+			related_name='images'
+			)
+	
+	# Image file
+	image = models.ImageField(
+			upload_to='equipment_locations/%Y/%m/%d/',
+			help_text="Photo of the equipment at this location"
+			)
+	
+	# Image metadata
+	title = models.CharField(max_length=200, blank=True)
+	description = models.TextField(blank=True)
+	image_type = models.CharField(
+			max_length=5,
+			choices=ImageType.choices,
+			default=ImageType.GENERAL
+			)
+	
+	# Date photo was taken
+	taken_date = models.DateTimeField(
+			null=True,
+			blank=True,
+			help_text="When the photo was taken"
+			)
+	
+	# Direction the photo was taken from
+	direction = models.DecimalField(
+			max_digits=5,
+			decimal_places=1,
+			null=True,
+			blank=True,
+			validators=[
+					MinValueValidator(0),
+					MaxValueValidator(360)
+					],
+			help_text="Compass direction in degrees (0-360)"
+			)
+	
+	# Is this the primary image for the location?
+	is_primary = models.BooleanField(default=False)
+	
+	# Upload info
+	uploaded_by = models.ForeignKey(
+			'auth.User',
+			on_delete=models.SET_NULL,
+			null=True,
+			blank=True,
+			related_name='uploaded_location_images'
+			)
+	
+	# File metadata
+	file_size = models.PositiveIntegerField(null=True, blank=True, help_text="File size in bytes")
+	width = models.PositiveIntegerField(null=True, blank=True, help_text="Image width in pixels")
+	height = models.PositiveIntegerField(null=True, blank=True, help_text="Image height in pixels")
+	
+	# Metadata
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+	
+	class Meta:
+		ordering = ['-is_primary', '-created_at']
+		verbose_name = 'Equipment Location Image'
+		verbose_name_plural = 'Equipment Location Images'
+	
+	def __str__(self):
+		return f"Image for {self.location.equipment_tag.tag_number} - {self.get_image_type_display()}"
+	
+	def save(self, *args, **kwargs):
+		# If marked as primary, unmark other primary images for this location
+		if self.is_primary:
+			EquipmentLocationImage.objects.filter(
+					location=self.location,
+					is_primary=True
+					).exclude(pk=self.pk).update(is_primary=False)
+		
+		# Get image dimensions if not set
+		if self.image and not self.width:
+			try:
+				from PIL import Image
+				img = Image.open(self.image)
+				self.width, self.height = img.size
+			except:
+				pass
+		
+		# Get file size if not set
+		if self.image and not self.file_size:
+			try:
+				self.file_size = self.image.size
+			except:
+				pass
+		
+		super().save(*args, **kwargs)
+	
+	@property
+	def thumbnail_url(self):
+		"""Return URL for thumbnail version if you implement thumbnails."""
+		return self.image.url
+	
+	@property
+	def image_dimensions(self):
+		"""Return image dimensions as string."""
+		if self.width and self.height:
+			return f"{self.width}x{self.height}"
+		return "Unknown"
 class EquipmentTag(models.Model):
 	"""Central entity for all physical assets. Supports assembly hierarchy via self-referencing."""
 	
@@ -186,3 +481,31 @@ class EquipmentTag(models.Model):
 			parts.insert(0, current.tag_number)
 			current = current.parent_tag
 		return '/'.join(parts)
+	@property
+	def current_location(self):
+		"""Get the current location of this equipment."""
+		return self.locations.filter(is_current=True).first()
+
+	@property
+	def location_history(self):
+		"""Get location history for this equipment."""
+		return self.locations.filter(is_current=False).order_by('-arrival_date')
+	
+	def set_location(self, latitude, longitude, location_type='INST', **kwargs):
+		"""Set a new current location for this equipment."""
+		# Mark old locations as not current
+		self.locations.filter(is_current=True).update(
+				is_current=False,
+				departure_date=timezone.now()
+				)
+	
+		# Create new location
+		return EquipmentLocation.objects.create(
+				equipment_tag=self,
+				latitude=latitude,
+				longitude=longitude,
+				location_type=location_type,
+				is_current=True,
+				**kwargs
+				)
+	
