@@ -356,6 +356,12 @@
                     </button>
                 </li>
                 <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#locations">
+                        <i class="bi bi-geo-alt"></i> Locations
+                        {% if total_locations > 0 %}<span class="badge bg-primary ms-1">{{ total_locations }}</span>{% endif %}
+                    </button>
+                </li>
+                <li class="nav-item">
                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#testing">
                         <i class="bi bi-clipboard-check"></i> Testing
                         {% if total_test_procedures > 0 %}<span class="badge bg-primary ms-1">{{ total_test_procedures }}</span>{% endif %}
@@ -630,7 +636,272 @@
                     </div>
                     {% endif %}
                 </div>
+                <!-- Locations Tab -->
+                <div class="tab-pane fade" id="locations" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Equipment Locations</h5>
+                        <a href="{% url 'core:equipment_location_create' tag_id=tag.pk %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Record New Location
+                        </a>
+                    </div>
 
+                    <!-- Current Location Highlight -->
+                    {% if current_location %}
+                    <div class="card border-success mb-4">
+                        <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="bi bi-geo-alt-fill text-success"></i> Current Location
+                                {% if current_location.is_verified %}
+                                <span class="badge bg-success ms-2"><i class="bi bi-check-circle"></i> Verified</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark ms-2"><i class="bi bi-clock"></i> Unverified</span>
+                                {% endif %}
+                            </h6>
+                            <div>
+                                <a href="{% url 'core:equipment_location_detail' current_location.pk %}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <!-- Map -->
+                                    <div id="currentLocationMap" style="height: 300px; border-radius: 0.5rem;"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th class="text-muted">Type:</th>
+                                            <td>{{ current_location.get_location_type_display }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Latitude:</th>
+                                            <td><code>{{ current_location.latitude }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Longitude:</th>
+                                            <td><code>{{ current_location.longitude }}</code></td>
+                                        </tr>
+                                        {% if current_location.elevation %}
+                                        <tr>
+                                            <th class="text-muted">Elevation:</th>
+                                            <td>{{ current_location.elevation }} m</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if current_location.accuracy %}
+                                        <tr>
+                                            <th class="text-muted">Accuracy:</th>
+                                            <td>{{ current_location.accuracy }} m</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if current_location.area %}
+                                        <tr>
+                                            <th class="text-muted">Area:</th>
+                                            <td>{{ current_location.area.code }} - {{ current_location.area.name }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr>
+                                            <th class="text-muted">Arrived:</th>
+                                            <td>{{ current_location.arrival_date|date:"M d, Y H:i" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Recorded by:</th>
+                                            <td>{{ current_location.recorded_by.get_full_name|default:"System" }}</td>
+                                        </tr>
+                                    </table>
+
+                                    <!-- Quick Actions -->
+                                    <div class="d-grid gap-1">
+                                        <a href="{{ current_location.google_maps_url }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-google"></i> Google Maps
+                                        </a>
+                                        <a href="{{ current_location.openstreetmap_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-map"></i> OpenStreetMap
+                                        </a>
+                                        {% if not current_location.is_verified %}
+                                        <form method="post" action="{% url 'core:verify_location' current_location.pk %}" class="d-grid">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-check-circle"></i> Verify Location
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Current Location Photos -->
+                            {% with primary_image=current_location.images.filter.first %}
+                            {% if current_location.images.exists %}
+                            <div class="mt-3">
+                                <h6>Location Photos ({{ current_location.images.count }})</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for image in current_location.images.all %}
+                                    <div class="position-relative">
+                                        <img src="{{ image.image.url }}"
+                                             class="img-thumbnail"
+                                             style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;"
+                                             alt="{{ image.title }}"
+                                             data-bs-toggle="modal"
+                                             data-bs-target="#locationImageModal{{ image.pk }}">
+                                        {% if image.is_primary %}
+                                        <span class="position-absolute top-0 start-0 badge bg-warning text-dark" style="font-size: 0.6rem;">
+                                Primary
+                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Image Modal -->
+                                    <div class="modal fade" id="locationImageModal{{ image.pk }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ image.title|default:"Location Photo" }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <img src="{{ image.image.url }}" class="img-fluid" alt="{{ image.title }}">
+                                                    {% if image.description %}
+                                                    <p class="mt-2">{{ image.description }}</p>
+                                                    {% endif %}
+                                                    <small class="text-muted">
+                                                        {{ image.get_image_type_display }} |
+                                                        {{ image.taken_date|date:"M d, Y"|default:"No date" }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Location History -->
+                    <h6 class="mb-3">
+                        <i class="bi bi-clock-history"></i> Location History
+                        <span class="badge bg-secondary">{{ location_history.count }}</span>
+                    </h6>
+
+                    {% if location_history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Coordinates</th>
+                                <th>Area</th>
+                                <th>Accuracy</th>
+                                <th>Photos</th>
+                                <th>Verified</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for location in location_history %}
+                            <tr>
+                                <td>
+                                    <div>{{ location.arrival_date|date:"M d, Y" }}</div>
+                                    <small class="text-muted">{{ location.arrival_date|date:"H:i" }}</small>
+                                    {% if location.departure_date %}
+                                    <br><small class="text-muted">to {{ location.departure_date|date:"M d, Y" }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">{{ location.get_location_type_display }}</span>
+                                </td>
+                                <td>
+                                    <small>
+                                        <a href="{{ location.google_maps_url }}" target="_blank" class="text-decoration-none">
+                                            {{ location.latitude }}, {{ location.longitude }}
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </a>
+                                    </small>
+                                    {% if location.elevation %}
+                                    <br><small class="text-muted">Elev: {{ location.elevation }}m</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ location.area.code|default:"-" }}</td>
+                                <td>
+                                    {% if location.accuracy %}
+                                    {% if location.accuracy <= 10 %}
+                                    <span class="badge bg-success">{{ location.accuracy }}m</span>
+                                    {% elif location.accuracy <= 30 %}
+                                    <span class="badge bg-warning text-dark">{{ location.accuracy }}m</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ location.accuracy }}m</span>
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% with img_count=location.images.count %}
+                                    {% if img_count > 0 %}
+                                    <span class="badge bg-info">
+                                    <i class="bi bi-camera"></i> {{ img_count }}
+                                </span>
+                                    {% else %}
+                                    <span class="text-muted">0</span>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% if location.is_verified %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i></span>
+                                    {% else %}
+                                    <span class="badge bg-secondary"><i class="bi bi-dash-circle"></i></span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'core:equipment_location_detail' location.pk %}" class="btn btn-outline-primary" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ location.google_maps_url }}" target="_blank" class="btn btn-outline-danger" title="Google Maps">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-geo-alt" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No location history available.</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- All Locations Map -->
+                    {% if locations.count > 1 %}
+                    <div class="mt-4">
+                        <h6 class="mb-3">
+                            <i class="bi bi-map"></i> All Locations Map
+                        </h6>
+                        <div id="allLocationsMap" style="height: 400px; border-radius: 0.5rem;"></div>
+                    </div>
+                    {% endif %}
+
+                    {% if not current_location and not location_history %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-geo-alt" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3">No Locations Recorded</h4>
+                        <p class="text-muted">Record the first location for this equipment to track its position.</p>
+                        <a href="{% url 'core:equipment_location_create' tag_id=tag.pk %}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Record Location
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
                 <!-- Documents Tab -->
                 <div class="tab-pane fade" id="documents">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1085,6 +1356,7 @@
 {% endblock %}
 
 {% block extra_js %}
+
 <script>
     // Preserve active tab on page reload
     document.addEventListener('DOMContentLoaded', function() {
@@ -1105,5 +1377,123 @@
             });
         });
     });
+    // Initialize maps when location tab is shown
+    document.addEventListener('DOMContentLoaded', function() {
+        const locationTab = document.querySelector('button[data-bs-target="#locations"]');
+
+        if (locationTab) {
+            locationTab.addEventListener('shown.bs.tab', function(e) {
+                initializeLocationMaps();
+            });
+
+            // If location tab is active on page load
+            if (locationTab.classList.contains('active')) {
+                initializeLocationMaps();
+            }
+        }
+    });
+
+    function initializeLocationMaps() {
+        // Initialize current location map
+        {% if current_location %}
+        if (!window.currentMap) {
+            window.currentMap = L.map('currentLocationMap').setView(
+                [{{ current_location.latitude }}, {{ current_location.longitude }}],
+            16
+        );
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(window.currentMap);
+
+            // Add marker for current location
+            const currentMarker = L.marker([{{ current_location.latitude }}, {{ current_location.longitude }}])
+        .addTo(window.currentMap)
+                .bindPopup(`
+                    <strong>Current Location</strong><br>
+                    Type: {{ current_location.get_location_type_display }}<br>
+                    Lat: {{ current_location.latitude }}<br>
+                    Lng: {{ current_location.longitude }}<br>
+                    {% if current_location.accuracy %}Accuracy: {{ current_location.accuracy }}m{% endif %}
+                `)
+                .openPopup();
+
+            // Add accuracy circle if available
+            {% if current_location.accuracy %}
+            L.circle([{{ current_location.latitude }}, {{ current_location.longitude }}], {
+                radius: {{ current_location.accuracy }},
+                color: '#198754',
+                    fillColor: '#198754',
+                    fillOpacity: 0.1,
+                    weight: 1
+            }).addTo(window.currentMap);
+            {% endif %}
+        }
+        {% endif %}
+
+        // Initialize all locations map
+        {% if locations.count > 1 %}
+        if (!window.allMap) {
+            // Calculate bounds from all locations
+            const bounds = [];
+            {% for location in locations.all %}
+            {% if location.latitude and location.longitude %}
+            bounds.push([{{ location.latitude }}, {{ location.longitude }}]);
+            {% endif %}
+            {% endfor %}
+
+            if (bounds.length > 0) {
+                window.allMap = L.map('allLocationsMap');
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(window.allMap);
+
+                // Add markers for each location
+                const markers = [];
+                {% for location in locations.all %}
+                {% if location.latitude and location.longitude %}
+                const marker{{ forloop.counter }} = L.marker([{{ location.latitude }}, {{ location.longitude }}])
+            .addTo(window.allMap)
+                    .bindPopup(`
+                            <strong>{{ location.get_location_type_display }}</strong><br>
+                            Date: {{ location.arrival_date|date:"M d, Y" }}<br>
+                            Lat: {{ location.latitude }}<br>
+                            Lng: {{ location.longitude }}<br>
+                            {% if location.is_current %}<span class="badge bg-success">Current</span>{% endif %}
+                            {% if location.is_verified %}<span class="badge bg-success">Verified</span>{% endif %}
+                        `);
+
+                markers.push(marker{{ forloop.counter }});
+
+                // Different color for current location
+                {% if location.is_current %}
+                marker{{ forloop.counter }}.setIcon(L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                }));
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+
+                // Fit map to show all markers
+                const group = L.featureGroup(markers);
+                window.allMap.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+        {% endif %}
+
+        // Fix map size issues
+        setTimeout(function() {
+            if (window.currentMap) window.currentMap.invalidateSize();
+            if (window.allMap) window.allMap.invalidateSize();
+        }, 100);
+    }
 </script>
 {% endblock %}

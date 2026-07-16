@@ -416,7 +416,163 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 		return context
 
 
-class EquipmentTagDetailView(LoginRequiredMixin, generic.DetailView):
+
+class EquipmentTagDetailView( generic.DetailView):
+	model = EquipmentTag
+	template_name = 'core/equipment_tag_detail.html'
+	context_object_name = 'tag'
+	
+	def get_queryset(self):
+		return EquipmentTag.objects.select_related(
+				'project', 'area', 'system', 'parent_tag'
+				).prefetch_related(
+				'child_tags',
+				'tag_documents__document',
+				'purchase_orders__purchase_order',
+				'work_package_items__work_package',
+				'test_procedures',
+				'punch_items',
+				'installation_checks',
+				'locations__images',  # Prefetch locations with images
+				'locations__area',
+				'locations__recorded_by'
+				)
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		tag = self.get_object()
+		
+		# Hierarchy
+		context['hierarchy_tree'] = tag.get_hierarchy_tree()
+		context['child_tags'] = tag.child_tags.all()
+		context['ancestors'] = self.get_ancestors(tag)
+		
+		# Documents
+		context['documents'] = tag.tag_documents.select_related('document').all()
+		
+		# Purchase Orders
+		context['purchase_orders'] = tag.purchase_orders.select_related(
+				'purchase_order__supplier'
+				).all()
+		
+		# Work Packages
+		context['work_package_items'] = tag.work_package_items.select_related(
+				'work_package__area'
+				).all()
+		
+		# Test Procedures
+		context['test_procedures'] = tag.test_procedures.select_related(
+				'commissioning_system__system'
+				).prefetch_related('test_records').all()
+		
+		# Punch Items
+		context['punch_items'] = tag.punch_items.select_related(
+				'raised_by', 'assigned_to'
+				).all()
+		context['open_punch_count'] = tag.punch_items.filter(
+				status__in=['OPEN', 'IPRO']
+				).count()
+		
+		# Installation Checks
+		context['installation_checks'] = tag.installation_checks.select_related(
+				'checked_by'
+				).prefetch_related('photos').all()
+		
+		# Locations
+		context['locations'] = tag.locations.select_related(
+				'area', 'recorded_by', 'verified_by'
+				).prefetch_related('images').order_by('-arrival_date')
+		context['current_location'] = tag.current_location
+		context['location_history'] = tag.locations.filter(
+				is_current=False
+				).order_by('-arrival_date')
+		context['total_locations'] = tag.locations.count()
+		context['verified_locations'] = tag.locations.filter(is_verified=True).count()
+		
+		# Related tags
+		context['related_tags'] = EquipmentTag.objects.filter(
+				Q(area=tag.area) | Q(system=tag.system),
+				project=tag.project
+				).exclude(pk=tag.pk)[:10]
+		
+		# Recent activity
+		context['recent_activities'] = self.get_recent_activities(tag)
+		
+		# Quick stats
+		context['total_documents'] = tag.tag_documents.count()
+		context['total_children'] = tag.child_tags.count()
+		context['total_punch_items'] = tag.punch_items.count()
+		context['total_test_procedures'] = tag.test_procedures.count()
+		
+		return context
+	
+	def get_ancestors(self, tag):
+		"""Get all ancestors of a tag."""
+		ancestors = []
+		current = tag.parent_tag
+		while current:
+			ancestors.append(current)
+			current = current.parent_tag
+		return list(reversed(ancestors))
+	
+	def get_recent_activities(self, tag):
+		"""Get recent activities related to this tag."""
+		activities = []
+		
+		# Recent installation checks
+		for check in tag.installation_checks.order_by('-checked_date')[:3]:
+			activities.append({
+					'icon': 'check-circle',
+					'description': f'Installation check performed - {check.get_status_display()}',
+					'date': check.checked_date,
+					'user': check.checked_by.get_full_name() if check.checked_by else 'System',
+					'type': 'installation'
+					})
+		
+		# Recent location updates
+		for location in tag.locations.order_by('-arrival_date')[:3]:
+			activities.append({
+					'icon': 'geo-alt',
+					'description': f'Location recorded - {location.get_location_type_display()} ({location.latitude}, {location.longitude})',
+					'date': location.arrival_date.date(),
+					'user': location.recorded_by.get_full_name() if location.recorded_by else 'System',
+					'type': 'location'
+					})
+		
+		# Recent test records
+		try:
+			from commissioning.models import TestRecord
+			recent_tests = TestRecord.objects.filter(
+					test_procedure__equipment_tags=tag
+					).order_by('-start_datetime')[:3]
+			for test in recent_tests:
+				activities.append({
+						'icon': 'clipboard-check',
+						'description': f'Test "{test.test_procedure.code}" - {test.get_result_display()}',
+						'date': test.start_datetime.date(),
+						'user': test.executed_by.get_full_name() if test.executed_by else 'System',
+						'type': 'test'
+						})
+		except:
+			pass
+		
+		# Recent punch items
+		for punch in tag.punch_items.order_by('-raised_date')[:3]:
+			activities.append({
+					'icon': 'flag',
+					'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
+					'date': punch.raised_date,
+					'user': punch.raised_by.get_full_name() if punch.raised_by else 'System',
+					'type': 'punch'
+					})
+		
+		# Sort by date
+		activities.sort(key=lambda x: x['date'], reverse=True)
+		return activities[:10]
+	
+	
+	
+class EquipmentTagDetailView2(LoginRequiredMixin, generic.DetailView):
 	model = EquipmentTag
 	template_name = 'core/equipment_tag_detail.html'
 	context_object_name = 'tag'

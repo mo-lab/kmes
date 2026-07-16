@@ -6,6 +6,7 @@ from django.urls import path
 # 	EquipmentTagCreateView, EquipmentTagDetailView, EquipmentTagUpdateView, EquipmentTagDeleteView, equipment_tag_hierarchy_view, \
 # 	equipment_tag_bulk_update_view, ajax_load_areas, ajax_load_systems, ajax_load_tags
 from . import views
+
 app_name = 'core'
 
 # urlpatterns = [
@@ -186,8 +187,38 @@ urlpatterns = [
 		path("projects/<int:project_pk>/systems/create/", views.SystemCreateView.as_view(), name="system-create"),
 		path("projects/<int:project_pk>/tags/create/", views.EquipmentTagCreateView.as_view(), name="equipmenttag-create"),
 		path('projects/', views.ProjectListView.as_view(), name='project-list'),
-		path('projects/<int:pk>/',views.ProjectDetailView.as_view(),name='project-detail'),
+		path('projects/<int:pk>/', views.ProjectDetailView.as_view(), name='project-detail'),
 		path('equipments/', views.EquipmentTagListView.as_view(), name='equipment-tag-list'),
 		path('tags/<int:pk>/', views.EquipmentTagDetailView.as_view(), name='equipment-tag-detail'),
+		path(
+			'tags/<int:tag_id>/location/create/',
+			views.EquipmentLocationCreateView.as_view(),
+			name='equipment_location_create'
+			),
+		path(
+			'locations/<int:pk>/',
+			views.EquipmentLocationDetailView.as_view(),
+			name='equipment_location_detail'
+			),
+		path(
+			'locations/<int:location_id>/upload-image/',
+			views.upload_location_image,
+			name='upload_location_image'
+			),
+		path(
+			'locations/image/<int:image_id>/delete/',
+			views.delete_location_image,
+			name='delete_location_image'
+			),
+		path(
+			'locations/image/<int:image_id>/set-primary/',
+			views.set_primary_image,
+			name='set_primary_image'
+			),
+		path(
+			'locations/<int:location_id>/verify/',
+			views.verify_location,
+			name='verify_location'
+			),
 		
 		]

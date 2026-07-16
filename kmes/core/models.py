@@ -78,8 +78,6 @@ class System(models.Model):
 		return f"{self.code} - {self.name}"
 
 
-
-
 class EquipmentLocation(models.Model):
 	"""
 	GPS location data for equipment tags.
@@ -372,6 +370,8 @@ class EquipmentLocationImage(models.Model):
 		if self.width and self.height:
 			return f"{self.width}x{self.height}"
 		return "Unknown"
+
+
 class EquipmentTag(models.Model):
 	"""Central entity for all physical assets. Supports assembly hierarchy via self-referencing."""
 	
@@ -508,4 +508,4 @@ class EquipmentTag(models.Model):
 				is_current=True,
 				**kwargs
 				)
-	
+
