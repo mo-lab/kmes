@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import FileExtensionValidator
@@ -149,3 +150,31 @@ class DocumentShare(models.Model):
 		self.is_accessed = True
 		self.accessed_date = timezone.now()
 		self.save(update_fields=['is_accessed', 'accessed_date'])
+
+
+class DocumentDownload(models.Model):
+	"""Track document downloads."""
+	
+	document = models.ForeignKey(
+			'Document',
+			on_delete=models.CASCADE,
+			related_name='downloads'
+			)
+	user = models.ForeignKey(
+			settings.AUTH_USER_MODEL,
+			on_delete=models.SET_NULL,
+			null=True,
+			related_name='document_downloads'
+			)
+	downloaded_at = models.DateTimeField(auto_now_add=True)
+	ip_address = models.GenericIPAddressField(null=True, blank=True)
+	user_agent = models.TextField(blank=True)
+	file_size = models.PositiveIntegerField(null=True, blank=True)
+	
+	class Meta:
+		ordering = ['-downloaded_at']
+		verbose_name = 'Document Download'
+		verbose_name_plural = 'Document Downloads'
+	
+	def __str__(self):
+		return f"{self.document.document_number} downloaded by {self.user}"

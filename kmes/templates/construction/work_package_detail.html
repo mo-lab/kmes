@@ -1,0 +1,1414 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ work_package.code }} - Work Package Details{% endblock %}
+
+{% block extra_css %}
+<style>
+  .wp-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .wp-code {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .stat-card {
+    border-radius: 0.5rem;
+    transition: transform 0.15s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .progress-thick {
+    height: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .report-card {
+    border-left: 4px solid #dee2e6;
+    transition: all 0.15s;
+  }
+  .report-card:hover {
+    border-left-color: #0d6efd;
+    background: #f8f9fa;
+  }
+  .report-card.has-issues {
+    border-left-color: #ffc107;
+  }
+
+  .weather-badge {
+    font-size: 0.7rem;
+    padding: 0.2em 0.5em;
+  }
+
+  .nav-pills .nav-link {
+    color: #6c757d;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+  .nav-pills .nav-link.active {
+    background: #0d6efd;
+    color: white;
+  }
+  .nav-pills .nav-link .badge {
+    font-size: 0.7rem;
+  }
+
+  .activity-timeline {
+    position: relative;
+    padding-left: 1.5rem;
+  }
+  .activity-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.25rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+  }
+  .activity-item {
+    position: relative;
+    padding-bottom: 1rem;
+  }
+  .activity-item::before {
+    content: '';
+    position: absolute;
+    left: -1.4rem;
+    top: 0.25rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #0d6efd;
+    border: 2px solid white;
+  }
+  .activity-item.report::before { background: #0d6efd; }
+  .activity-item.completion::before { background: #198754; }
+  .activity-item.tool::before { background: #fd7e14; }
+
+  .overdue-alert {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  .equipment-row {
+    transition: background 0.15s;
+  }
+
+  .completed-row {
+    opacity: 0.9;
+  }
+
+  .completed-row td:not(:last-child) {
+    text-decoration: none;
+  }
+
+  .toggle-complete {
+    cursor: pointer;
+  }
+
+  .toggle-complete:checked {
+    background-color: #198754;
+    border-color: #198754;
+  }
+
+  #bulkActionsBar {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    border-radius: 0.5rem;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+
+  .tag-select-checkbox {
+    cursor: pointer;
+  }
+
+  .equipment-row:hover {
+    background-color: #f8f9fa !important;
+  }
+
+  .equipment-row.table-success:hover {
+    background-color: #d1e7dd !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">Work Packages</a></li>
+      <li class="breadcrumb-item active">{{ work_package.code }}</li>
+    </ol>
+  </nav>
+
+  <!-- Work Package Header -->
+  <div class="wp-header">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-3">
+          <div class="wp-code me-3">{{ work_package.code }}</div>
+          <span class="badge fs-6
+                        {% if work_package.status == 'COMP' %}bg-success
+                        {% elif work_package.status == 'IPRO' %}bg-warning text-dark
+                        {% elif work_package.status == 'HOLD' %}bg-danger
+                        {% elif work_package.status == 'MOB' %}bg-info
+                        {% else %}bg-secondary
+                        {% endif %}">
+                        {{ work_package.get_status_display }}
+                    </span>
+          {% if is_overdue %}
+          <span class="badge bg-danger ms-2 overdue-alert">
+                        <i class="bi bi-exclamation-triangle"></i> Overdue
+                    </span>
+          {% endif %}
+        </div>
+
+        <h5 class="mb-2">{{ work_package.name }}</h5>
+
+        <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-folder"></i> {{ work_package.project.name }}
+                    </span>
+          {% if work_package.area %}
+          <span class="badge bg-light text-dark">
+                        <i class="bi bi-map"></i> {{ work_package.area.code }} - {{ work_package.area.name }}
+                    </span>
+          {% endif %}
+          {% if work_package.system %}
+          <span class="badge bg-light text-dark">
+                        <i class="bi bi-diagram-3"></i> {{ work_package.system.code }}
+                    </span>
+          {% endif %}
+          {% if work_package.contractor %}
+          <span class="badge bg-light text-dark">
+                        <i class="bi bi-building"></i> {{ work_package.contractor }}
+                    </span>
+          {% endif %}
+        </div>
+
+        <div class="d-flex align-items-center">
+          <div class="me-4">
+            <small class="opacity-75">
+              <i class="bi bi-person"></i>
+              {{ work_package.supervisor.get_full_name|default:"Unassigned" }}
+            </small>
+          </div>
+          <div>
+            <small class="opacity-75">
+              <i class="bi bi-calendar"></i>
+              {{ work_package.planned_start|date:"M d, Y" }} - {{ work_package.planned_finish|date:"M d, Y" }}
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+          <a href="{% url 'construction:daily_report_create' %}?work_package={{ work_package.pk }}"
+             class="btn btn-light">
+            <i class="bi bi-journal-plus"></i> Daily Report
+          </a>
+          <a href="#"
+             class="btn btn-outline-light">
+            <i class="bi bi-pencil"></i> Edit
+          </a>
+          <a href="#"
+             class="btn btn-outline-light">
+            <i class="bi bi-trash"></i> Delete
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Section -->
+    <div class="mt-3">
+      <div class="d-flex justify-content-between small mb-1">
+        <span>Overall Progress</span>
+        <span>{{ work_package.percent_complete }}%</span>
+      </div>
+      <div class="progress progress-thick bg-white bg-opacity-25">
+        <div class="progress-bar bg-white" role="progressbar"
+             style="width: {{ work_package.percent_complete }}%">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="card stat-card bg-primary bg-opacity-10 border-primary">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-tag fs-3 text-primary"></i>
+          <div class="fs-4 fw-bold text-primary">{{ total_items }}</div>
+          <small class="text-muted">Equipment Tags</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-success bg-opacity-10 border-success">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-check-circle fs-3 text-success"></i>
+          <div class="fs-4 fw-bold text-success">{{ completed_items }}</div>
+          <small class="text-muted">Completed</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-info bg-opacity-10 border-info">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-journal-text fs-3 text-info"></i>
+          <div class="fs-4 fw-bold text-info">{{ total_reports }}</div>
+          <small class="text-muted">Daily Reports</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-warning bg-opacity-10 border-warning">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-clock fs-3 text-warning"></i>
+          <div class="fs-4 fw-bold text-warning">{{ timesheet_total_hours|floatformat:0 }}</div>
+          <small class="text-muted">Total Hours</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-danger bg-opacity-10 border-danger">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
+          <div class="fs-4 fw-bold text-danger">{{ reports_with_issues }}</div>
+          <small class="text-muted">Issues Reported</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-secondary bg-opacity-10 border-secondary">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-tools fs-3 text-secondary"></i>
+          <div class="fs-4 fw-bold text-secondary">{{ tool_assignments.count }}</div>
+          <small class="text-muted">Tools Assigned</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Tabs -->
+  <div class="card">
+    <div class="card-header bg-white py-3">
+      <ul class="nav nav-pills" id="wpTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
+            <i class="bi bi-info-circle"></i> Overview
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#daily-reports">
+            <i class="bi bi-journal-text"></i> Daily Reports
+            <span class="badge bg-primary ms-1">{{ total_reports }}</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#equipment">
+            <i class="bi bi-tag"></i> Equipment Tags
+            <span class="badge bg-primary ms-1">{{ total_items }}</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#timesheets">
+            <i class="bi bi-clock"></i> Timesheets
+            <span class="badge bg-primary ms-1">{{ total_timesheets }}</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tools">
+            <i class="bi bi-tools"></i> Tools
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card-body">
+      <div class="tab-content">
+
+        <!-- Overview Tab -->
+        <div class="tab-pane fade show active" id="overview">
+          <div class="row">
+            <div class="col-md-8">
+              <!-- Description -->
+              {% if work_package.description %}
+              <h6>Scope of Work</h6>
+              <p class="text-muted">{{ work_package.description|linebreaks }}</p>
+              {% endif %}
+
+              <!-- Progress Update Form -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0">Quick Progress Update</h6>
+                </div>
+                <div class="card-body">
+                  <form method="post" action="#">
+                    {% csrf_token %}
+                    <div class="row g-2 align-items-end">
+                      <div class="col-md-3">
+                        <label class="form-label small">Status</label>
+                        {{ progress_form.status }}
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label small">Progress %</label>
+                        {{ progress_form.percent_complete }}
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label small">Actual Start</label>
+                        {{ progress_form.actual_start }}
+                      </div>
+                      <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                          <i class="bi bi-check-lg"></i> Update
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Recent Activities -->
+              <h6>Recent Activities</h6>
+              {% if activities %}
+              <div class="activity-timeline">
+                {% for activity in activities %}
+                <div class="activity-item {{ activity.type }}">
+                  <small class="text-muted">{{ activity.date|date:"M d, Y H:i" }}</small>
+                  <div>
+                    <i class="bi bi-{{ activity.icon }} me-1"></i>
+                    {{ activity.description }}
+                  </div>
+                  {% if activity.detail %}
+                  <small class="text-muted">{{ activity.detail }}</small>
+                  {% endif %}
+                  <br>
+                  <small class="text-muted">{{ activity.user }}</small>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="text-muted">No activities recorded yet.</p>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4">
+              <!-- Schedule Info -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="bi bi-calendar me-2"></i>Schedule</h6>
+                </div>
+                <div class="card-body">
+                  <table class="table table-sm">
+                    <tr>
+                      <th class="text-muted">Planned Start:</th>
+                      <td>{{ work_package.planned_start|date:"F d, Y" }}</td>
+                    </tr>
+                    <tr>
+                      <th class="text-muted">Planned Finish:</th>
+                      <td>{{ work_package.planned_finish|date:"F d, Y" }}</td>
+                    </tr>
+                    {% if work_package.actual_start %}
+                    <tr>
+                      <th class="text-muted">Actual Start:</th>
+                      <td>{{ work_package.actual_start|date:"F d, Y" }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if work_package.actual_finish %}
+                    <tr>
+                      <th class="text-muted">Actual Finish:</th>
+                      <td>{{ work_package.actual_finish|date:"F d, Y" }}</td>
+                    </tr>
+                    {% endif %}
+                  </table>
+                </div>
+              </div>
+
+              <!-- Weather Summary -->
+              {% if weather_summary %}
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="bi bi-cloud-sun me-2"></i>Weather Summary</h6>
+                </div>
+                <div class="card-body">
+                  {% for weather, count in weather_summary.items %}
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span>{{ weather }}</span>
+                    <span class="badge bg-light text-dark">{{ count }} day(s)</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+
+              {% if work_package.notes %}
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="bi bi-sticky me-2"></i>Notes</h6>
+                </div>
+                <div class="card-body">
+                  <p class="small text-muted mb-0">{{ work_package.notes|linebreaks }}</p>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Reports Tab -->
+        <div class="tab-pane fade" id="daily-reports">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Daily Progress Reports</h5>
+            <a href="{% url 'construction:daily_report_create' %}?work_package={{ work_package.pk }}"
+               class="btn btn-primary btn-sm">
+              <i class="bi bi-plus-lg"></i> Add Daily Report
+            </a>
+          </div>
+
+          <!-- Report Statistics -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-3">
+              <div class="border rounded p-2 text-center">
+                <div class="fs-5 fw-bold">{{ total_reports }}</div>
+                <small class="text-muted">Total Reports</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-2 text-center">
+                <div class="fs-5 fw-bold">{{ report_stats.total_manpower|default:0 }}</div>
+                <small class="text-muted">Total Manpower</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-2 text-center">
+                <div class="fs-5 fw-bold">{{ report_stats.total_hours|default:0 }}</div>
+                <small class="text-muted">Total Hours</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-2 text-center">
+                <div class="fs-5 fw-bold">{{ reports_with_issues }}</div>
+                <small class="text-muted">With Issues</small>
+              </div>
+            </div>
+          </div>
+
+          {% if daily_reports %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Weather</th>
+                <th>Work Performed</th>
+                <th>Manpower</th>
+                <th>Hours</th>
+                <th>Issues</th>
+                <th>Reported By</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for report in daily_reports %}
+              <tr class="{% if report.issues_encountered %}table-warning{% endif %}">
+                <td>
+                  <strong>{{ report.report_date|date:"M d, Y" }}</strong>
+                  <br>
+                  <small class="text-muted">{{ report.report_date|date:"D" }}</small>
+                </td>
+                <td>
+                                        <span class="weather-badge badge bg-light text-dark">
+                                            {% if 'Sunny' in report.weather_conditions %}
+                                                <i class="bi bi-sun text-warning"></i>
+                                            {% elif 'Rain' in report.weather_conditions %}
+                                                <i class="bi bi-cloud-rain text-primary"></i>
+                                            {% elif 'Cloud' in report.weather_conditions %}
+                                                <i class="bi bi-cloud text-secondary"></i>
+                                            {% elif 'Snow' in report.weather_conditions %}
+                                                <i class="bi bi-snow text-info"></i>
+                                            {% else %}
+                                                <i class="bi bi-cloud"></i>
+                                            {% endif %}
+                                            {{ report.weather_conditions|default:"N/A" }}
+                                        </span>
+                  {% if report.temperature_celsius %}
+                  <br>
+                  <small>{{ report.temperature_celsius }}°C</small>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="small">{{ report.work_performed_description|truncatechars:100 }}</div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark">{{ report.manpower_count }}</span>
+                </td>
+                <td>
+                  {% if report.hours_worked %}
+                  <span class="badge bg-light text-dark">{{ report.hours_worked }}h</span>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if report.issues_encountered %}
+                  <i class="bi bi-exclamation-triangle text-warning"
+                     title="{{ report.issues_encountered|truncatechars:100 }}"></i>
+                  <span class="badge bg-warning text-dark">Yes</span>
+                  {% else %}
+                  <span class="text-success"><i class="bi bi-check-circle"></i></span>
+                  {% endif %}
+                </td>
+                <td>
+                  <small>{{ report.reported_by.get_full_name|default:"System" }}</small>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <a href="#"
+                       class="btn btn-outline-secondary" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <button type="button" class="btn btn-outline-info"
+                            title="View Details"
+                            data-bs-toggle="modal"
+                            data-bs-target="#reportModal{{ report.pk }}">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
+
+                  <!-- Report Detail Modal -->
+                  <div class="modal fade" id="reportModal{{ report.pk }}" tabindex="-1">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h6 class="modal-title">
+                            Daily Report - {{ report.report_date|date:"F d, Y" }}
+                          </h6>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                          <p><strong>Weather:</strong> {{ report.weather_conditions|default:"N/A" }}
+                            {% if report.temperature_celsius %} | {{ report.temperature_celsius }}°C{% endif %}</p>
+                          <p><strong>Manpower:</strong> {{ report.manpower_count }} workers |
+                            {{ report.hours_worked|default:"0" }} hours</p>
+                          <hr>
+                          <h6>Work Performed:</h6>
+                          <p>{{ report.work_performed_description|linebreaks }}</p>
+                          {% if report.issues_encountered %}
+                          <hr>
+                          <h6 class="text-warning">Issues Encountered:</h6>
+                          <p>{{ report.issues_encountered|linebreaks }}</p>
+                          {% endif %}
+                          <hr>
+                          <small class="text-muted">
+                            Reported by: {{ report.reported_by.get_full_name|default:"System" }}<br>
+                            Submitted: {{ report.created_at|date:"F d, Y H:i" }}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-journal-text" style="font-size: 3rem;"></i>
+            <p class="mt-2">No daily reports submitted yet.</p>
+            <a href="{% url 'construction:daily_report_create' %}?work_package={{ work_package.pk }}"
+               class="btn btn-primary">
+              <i class="bi bi-plus-lg"></i> Create First Daily Report
+            </a>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Equipment Tags Tab -->
+        <div class="tab-pane fade" id="equipment">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="mb-0">Equipment Tags</h5>
+              <small class="text-muted">
+                {{ completed_items }} of {{ total_items }} tags completed
+              </small>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{% url 'construction:work_package_item_bulk_add' work_package.pk %}"
+                 class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> Bulk Add
+              </a>
+              <a href="{% url 'construction:work_package_item_create' work_package.pk %}"
+                 class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> Add Tag
+              </a>
+            </div>
+          </div>
+
+          <!-- Progress Overview -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <div class="card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-primary">{{ total_items }}</div>
+                  <small class="text-muted">Total Tags</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-success">{{ completed_items }}</div>
+                  <small class="text-muted">Completed</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-warning">{{ pending_items }}</div>
+                  <small class="text-muted">Pending</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-info">{{ item_progress }}%</div>
+                  <small class="text-muted">Completion</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="mb-4">
+            <div class="d-flex justify-content-between small mb-1">
+              <span>Installation Progress</span>
+              <strong>{{ item_progress }}%</strong>
+            </div>
+            <div class="progress" style="height: 10px;">
+              <div class="progress-bar bg-success"
+                   role="progressbar"
+                   style="width: {{ item_progress }}%"
+                   aria-valuenow="{{ item_progress }}"
+                   aria-valuemin="0"
+                   aria-valuemax="100">
+              </div>
+            </div>
+          </div>
+
+          {% if work_package_items %}
+
+          <!-- Search and Filter -->
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="equipmentSearchInput" class="form-control"
+                       placeholder="Search by tag number or description...">
+              </div>
+            </div>
+            <div class="col-md-2">
+              <select id="statusFilter" class="form-select form-select-sm" onchange="filterEquipmentTags()">
+                <option value="all">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select id="typeFilter" class="form-select form-select-sm" onchange="filterEquipmentTags()">
+                <option value="all">All Types</option>
+                {% for value, label in work_package_items.0.equipment_tag.EquipmentType.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-outline-success btn-sm w-100"
+                      onclick="markAllComplete()">
+                <i class="bi bi-check-all"></i> Mark All Complete
+              </button>
+            </div>
+            <div class="col-md-2">
+              <a href="{% url 'construction:work_package_item_reorder' work_package.pk %}"
+                 class="btn btn-outline-secondary btn-sm w-100">
+                <i class="bi bi-arrow-down-up"></i> Reorder
+              </a>
+            </div>
+          </div>
+
+          <!-- Equipment Tags Table -->
+          <div class="table-responsive">
+            <table class="table table-hover align-middle" id="equipmentTagsTable">
+              <thead class="table-light">
+              <tr>
+                <th width="50">
+                  <input type="checkbox" class="form-check-input" id="selectAllTags"
+                         onchange="toggleSelectAllTags(this)">
+                </th>
+                <th width="60">#</th>
+                <th>Tag Number</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Installation Date</th>
+                <th>Documents</th>
+                <th>Complete</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for item in work_package_items %}
+              <tr class="equipment-row
+                    {% if item.is_complete %}table-success completed-row{% else %}pending-row{% endif %}"
+                  data-status="{% if item.is_complete %}completed{% else %}pending{% endif %}"
+                  data-type="{{ item.equipment_tag.equipment_type }}"
+                  data-search="{{ item.equipment_tag.tag_number|lower }} {{ item.equipment_tag.description|lower }}">
+
+                <td>
+                  <input type="checkbox" class="form-check-input tag-select-checkbox"
+                         value="{{ item.pk }}">
+                </td>
+                <td>
+                  <span class="badge bg-secondary">{{ item.sequence_number }}</span>
+                </td>
+                <td>
+                  <a href="{% url 'core:equipment_tag_detail' item.equipment_tag.pk %}"
+                     class="fw-bold text-decoration-none">
+                    {{ item.equipment_tag.tag_number }}
+                  </a>
+                  {% if item.equipment_tag.criticality == 'HIGH' %}
+                  <span class="badge bg-danger ms-1" title="High Criticality">!</span>
+                  {% endif %}
+                  {% if item.notes %}
+                  <i class="bi bi-sticky text-warning ms-1"
+                     title="{{ item.notes }}"></i>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="small">{{ item.equipment_tag.description|truncatechars:60 }}</div>
+                  {% if item.equipment_tag.manufacturer %}
+                  <small class="text-muted">
+                    {{ item.equipment_tag.manufacturer }}
+                    {% if item.equipment_tag.model_number %}
+                    - {{ item.equipment_tag.model_number }}
+                    {% endif %}
+                  </small>
+                  {% endif %}
+                </td>
+                <td>
+                        <span class="badge bg-light text-dark small">
+                            {{ item.equipment_tag.get_equipment_type_display }}
+                        </span>
+                </td>
+                <td>
+                  {% if item.equipment_tag.area %}
+                  <span class="badge bg-light text-dark small">
+                                {{ item.equipment_tag.area.code }}
+                            </span>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                        <span class="badge small
+                            {% if item.equipment_tag.status == 'INST' %}bg-success
+                            {% elif item.equipment_tag.status == 'DLVD' %}bg-info
+                            {% elif item.equipment_tag.status == 'COMM' %}bg-primary
+                            {% elif item.equipment_tag.status == 'DEF' %}bg-danger
+                            {% elif item.equipment_tag.status == 'ALGN' %}bg-warning text-dark
+                            {% else %}bg-secondary
+                            {% endif %}">
+                            {{ item.equipment_tag.get_status_display }}
+                        </span>
+                </td>
+                <td>
+                  {% if item.equipment_tag.installation_date %}
+                  <small>{{ item.equipment_tag.installation_date|date:"M d, Y" }}</small>
+                  {% elif item.is_complete %}
+                  <small class="text-muted">Not recorded</small>
+                  {% else %}
+                  <small class="text-muted">Pending</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {% with doc_count=item.equipment_tag.tag_documents.count %}
+                  {% if doc_count > 0 %}
+                  <a href="{% url 'core:equipment_tag_detail' item.equipment_tag.pk %}#documents"
+                     class="badge bg-info text-decoration-none">
+                    <i class="bi bi-file-earmark-text"></i> {{ doc_count }}
+                  </a>
+                  {% else %}
+                  <span class="text-muted small">0</span>
+                  {% endif %}
+                  {% endwith %}
+                </td>
+                <td>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input toggle-complete"
+                           type="checkbox"
+                           data-item-id="{{ item.pk }}"
+                           {% if item.is_complete %}checked{% endif %}
+                           onchange="toggleItemComplete(this, {{ item.pk }})">
+                  </div>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <a href="{% url 'core:equipment_tag_detail' item.equipment_tag.pk %}"
+                       class="btn btn-outline-primary"
+                       title="View Tag Details"
+                       data-bs-toggle="tooltip">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{% url 'core:equipment_tag_update' item.equipment_tag.pk %}"
+                       class="btn btn-outline-secondary"
+                       title="Edit Tag"
+                       data-bs-toggle="tooltip">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <button type="button"
+                            class="btn btn-outline-info"
+                            title="Quick Actions"
+                            data-bs-toggle="dropdown">
+                      <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <a class="dropdown-item small"
+                           href="{% url 'installed_item_check_create' %}?tag={{ item.equipment_tag.pk }}">
+                          <i class="bi bi-check-circle"></i> Installation Check
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item small"
+                           href="{% url 'punch_item_create' %}?tag={{ item.equipment_tag.pk }}">
+                          <i class="bi bi-flag"></i> Raise Punch Item
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item small"
+                           href="{% url 'documents:tag_document_create' %}?tag={{ item.equipment_tag.pk }}">
+                          <i class="bi bi-paperclip"></i> Link Document
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <a class="dropdown-item small text-danger"
+                           href="{% url 'construction:work_package_item_delete' item.pk %}">
+                          <i class="bi bi-trash"></i> Remove from Work Package
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bulk Actions Bar -->
+          <div id="bulkActionsBar" class="alert alert-warning d-none mt-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span id="selectedCount">0 tags selected</span>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-success btn-sm" onclick="bulkMarkComplete()">
+                  <i class="bi bi-check-all"></i> Mark Complete
+                </button>
+                <button type="button" class="btn btn-warning btn-sm" onclick="bulkMarkPending()">
+                  <i class="bi bi-arrow-counterclockwise"></i> Mark Pending
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="bulkRemove()">
+                  <i class="bi bi-trash"></i> Remove Selected
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {% else %}
+          <!-- Empty State -->
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-tag" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">No Equipment Tags</h4>
+            <p class="text-muted">No equipment tags have been assigned to this work package yet.</p>
+            <div class="mt-3">
+              <a href="{% url 'construction:work_package_item_create' work_package.pk %}"
+                 class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add First Tag
+              </a>
+              <a href="{% url 'construction:work_package_item_bulk_add' work_package.pk %}"
+                 class="btn btn-outline-primary ms-2">
+                <i class="bi bi-plus-lg"></i> Bulk Add Tags
+              </a>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Equipment Tag Detail Modal -->
+          <div class="modal fade" id="tagQuickViewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h6 class="modal-title">Equipment Tag Details</h6>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="tagQuickViewContent">
+                  <div class="text-center py-3">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Loading tag details...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Timesheets Tab -->
+        <div class="tab-pane fade" id="timesheets">
+          <h5 class="mb-3">Timesheets</h5>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="border rounded p-2 text-center">
+                <div class="fs-5 fw-bold">{{ total_timesheets }}</div>
+                <small class="text-muted">Total Entries</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded p-2 text-center">
+                <div class="fs-5 fw-bold">{{ timesheet_total_hours|floatformat:1 }}</div>
+                <small class="text-muted">Regular Hours</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded p-2 text-center">
+                <div class="fs-5 fw-bold">{{ timesheet_total_overtime|floatformat:1 }}</div>
+                <small class="text-muted">Overtime Hours</small>
+              </div>
+            </div>
+          </div>
+
+          {% if timesheets %}
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Employee</th>
+                <th>Hours</th>
+                <th>Overtime</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for ts in timesheets %}
+              <tr>
+                <td>{{ ts.date|date:"M d, Y" }}</td>
+                <td>{{ ts.employee.full_name }}</td>
+                <td>{{ ts.hours_worked }}h</td>
+                <td>{% if ts.overtime_hours > 0 %}{{ ts.overtime_hours }}h{% else %}-{% endif %}</td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-3">No timesheets recorded.</p>
+          {% endif %}
+        </div>
+
+        <!-- Tools Tab -->
+        <div class="tab-pane fade" id="tools">
+          <h5 class="mb-3">Tool Assignments</h5>
+
+          {% if tool_assignments %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+              <tr>
+                <th>Asset #</th>
+                <th>Type</th>
+                <th>Make/Model</th>
+                <th>Assigned</th>
+                <th>Status</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for assignment in tool_assignments %}
+              <tr>
+                <td><strong>{{ assignment.tool_plant.asset_number }}</strong></td>
+                <td>{{ assignment.tool_plant.get_tool_type_display }}</td>
+                <td>{{ assignment.tool_plant.make }} {{ assignment.tool_plant.model }}</td>
+                <td>
+                  {{ assignment.assignment_start|date:"M d, Y H:i" }}
+                  {% if assignment.assignment_end %}
+                  <br><small class="text-muted">to {{ assignment.assignment_end|date:"M d, Y H:i" }}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if not assignment.assignment_end %}
+                  <span class="badge bg-success">Active</span>
+                  {% else %}
+                  <span class="badge bg-secondary">Returned</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-3">No tools assigned.</p>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Preserve active tab on page reload
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('#wpTabs button[data-bs-toggle="pill"]');
+    const activeTab = localStorage.getItem('activeWPTab');
+
+    if (activeTab) {
+      const tab = document.querySelector(`#wpTabs button[data-bs-target="${activeTab}"]`);
+      if (tab) {
+        const bsTab = new bootstrap.Tab(tab);
+        bsTab.show();
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('shown.bs.tab', function(e) {
+        localStorage.setItem('activeWPTab', e.target.getAttribute('data-bs-target'));
+      });
+    });
+  });
+
+  // ============================================
+  // EQUIPMENT TAGS TAB FUNCTIONALITY
+  // ============================================
+
+  // Search equipment tags
+  const equipmentSearchInput = document.getElementById('equipmentSearchInput');
+  if (equipmentSearchInput) {
+    equipmentSearchInput.addEventListener('input', filterEquipmentTags);
+  }
+
+  function filterEquipmentTags() {
+    const searchQuery = (document.getElementById('equipmentSearchInput')?.value || '').toLowerCase();
+    const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+    const typeFilter = document.getElementById('typeFilter')?.value || 'all';
+
+    const rows = document.querySelectorAll('.equipment-row');
+
+    rows.forEach(row => {
+      let showRow = true;
+
+      // Search filter
+      if (searchQuery && row.dataset.search) {
+        if (!row.dataset.search.includes(searchQuery)) {
+          showRow = false;
+        }
+      }
+
+      // Status filter
+      if (statusFilter !== 'all' && row.dataset.status !== statusFilter) {
+        showRow = false;
+      }
+
+      // Type filter
+      if (typeFilter !== 'all' && row.dataset.type !== typeFilter) {
+        showRow = false;
+      }
+
+      row.style.display = showRow ? '' : 'none';
+    });
+
+    // Update visible count
+    updateVisibleCount();
+  }
+
+  function updateVisibleCount() {
+    const visibleRows = document.querySelectorAll('.equipment-row[style=""]').length;
+    const totalRows = document.querySelectorAll('.equipment-row').length;
+
+    // You can update a counter element if needed
+    console.log(`Showing ${visibleRows} of ${totalRows} tags`);
+  }
+
+  // Toggle item completion
+  function toggleItemComplete(checkbox, itemId) {
+    const row = checkbox.closest('tr');
+    const isComplete = checkbox.checked;
+
+    fetch(`/construction/work-packages/items/${itemId}/toggle-complete/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json',
+      },
+    })
+            .then(response => {
+              if (response.ok) {
+                // Update row appearance
+                if (isComplete) {
+                  row.classList.add('table-success', 'completed-row');
+                  row.classList.remove('pending-row');
+                  row.dataset.status = 'completed';
+                } else {
+                  row.classList.remove('table-success', 'completed-row');
+                  row.classList.add('pending-row');
+                  row.dataset.status = 'pending';
+                }
+
+                // Show brief notification
+                showToast(isComplete ? 'Tag marked as complete' : 'Tag marked as pending', 'success');
+              } else {
+                // Revert checkbox
+                checkbox.checked = !isComplete;
+                showToast('Error updating tag status', 'danger');
+              }
+            })
+            .catch(error => {
+              checkbox.checked = !isComplete;
+              showToast('Error updating tag status', 'danger');
+              console.error('Error:', error);
+            });
+  }
+
+  // Select all tags
+  function toggleSelectAllTags(checkbox) {
+    const checkboxes = document.querySelectorAll('.tag-select-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateBulkActionsBar();
+  }
+
+  // Update bulk actions bar
+  document.querySelectorAll('.tag-select-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateBulkActionsBar);
+  });
+
+  function updateBulkActionsBar() {
+    const selected = document.querySelectorAll('.tag-select-checkbox:checked');
+    const bar = document.getElementById('bulkActionsBar');
+    const count = document.getElementById('selectedCount');
+
+    if (selected.length > 0) {
+      bar.classList.remove('d-none');
+      count.textContent = `${selected.length} tag(s) selected`;
+    } else {
+      bar.classList.add('d-none');
+    }
+  }
+
+  // Bulk mark complete
+  function bulkMarkComplete() {
+    const selected = document.querySelectorAll('.tag-select-checkbox:checked');
+    if (selected.length === 0) return;
+
+    if (confirm(`Mark ${selected.length} tag(s) as complete?`)) {
+      const promises = [];
+      selected.forEach(cb => {
+        const itemId = cb.value;
+        promises.push(
+                fetch(`/construction/work-packages/items/${itemId}/toggle-complete/`, {
+                  method: 'POST',
+                  headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                  },
+                })
+        );
+      });
+
+      Promise.all(promises).then(() => {
+        location.reload();
+      });
+    }
+  }
+
+  // Bulk mark pending
+  function bulkMarkPending() {
+    const selected = document.querySelectorAll('.tag-select-checkbox:checked');
+    const completedOnly = Array.from(selected).filter(cb => {
+      const row = cb.closest('tr');
+      return row.classList.contains('completed-row');
+    });
+
+    if (completedOnly.length === 0) {
+      alert('No completed tags selected.');
+      return;
+    }
+
+    if (confirm(`Mark ${completedOnly.length} tag(s) as pending?`)) {
+      const promises = [];
+      completedOnly.forEach(cb => {
+        const itemId = cb.value;
+        promises.push(
+                fetch(`/construction/work-packages/items/${itemId}/toggle-complete/`, {
+                  method: 'POST',
+                  headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                  },
+                })
+        );
+      });
+
+      Promise.all(promises).then(() => {
+        location.reload();
+      });
+    }
+  }
+
+  // Bulk remove
+  function bulkRemove() {
+    const selected = document.querySelectorAll('.tag-select-checkbox:checked');
+    if (selected.length === 0) return;
+
+    if (confirm(`Remove ${selected.length} tag(s) from this work package?`)) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '{% url "construction:work_package_item_bulk_add" work_package.pk %}';
+
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfmiddlewaretoken';
+      csrfInput.value = '{{ csrf_token }}';
+      form.appendChild(csrfInput);
+
+      selected.forEach(cb => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'remove_tags';
+        input.value = cb.value;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
+  // Clear selection
+  function clearSelection() {
+    document.querySelectorAll('.tag-select-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('selectAllTags').checked = false;
+    updateBulkActionsBar();
+  }
+
+  // Mark all complete
+  function markAllComplete() {
+    if (confirm('Mark ALL tags as complete?')) {
+      const checkboxes = document.querySelectorAll('.toggle-complete:not(:checked)');
+      const promises = [];
+
+      checkboxes.forEach(cb => {
+        const itemId = cb.dataset.itemId;
+        promises.push(
+                fetch(`/construction/work-packages/items/${itemId}/toggle-complete/`, {
+                  method: 'POST',
+                  headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                  },
+                })
+        );
+      });
+
+      Promise.all(promises).then(() => {
+        location.reload();
+      });
+    }
+  }
+
+  // Toast notification
+  function showToast(message, type) {
+    const toastContainer = document.createElement('div');
+    toastContainer.style.position = 'fixed';
+    toastContainer.style.bottom = '20px';
+    toastContainer.style.right = '20px';
+    toastContainer.style.zIndex = '9999';
+    toastContainer.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show mb-0 shadow" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+    document.body.appendChild(toastContainer);
+
+    setTimeout(() => {
+      toastContainer.remove();
+    }, 3000);
+  }
+
+  // Quick view tag details (AJAX)
+  function quickViewTag(tagId) {
+    const modal = new bootstrap.Modal(document.getElementById('tagQuickViewModal'));
+    const content = document.getElementById('tagQuickViewContent');
+
+    content.innerHTML = `
+            <div class="text-center py-3">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2">Loading tag details...</p>
+            </div>
+        `;
+
+    modal.show();
+
+    fetch(`/core/tags/${tagId}/quick-view/`)
+            .then(response => response.text())
+            .then(html => {
+              content.innerHTML = html;
+            })
+            .catch(error => {
+              content.innerHTML = `
+                    <div class="alert alert-danger">
+                        Error loading tag details. Please try again.
+                    </div>
+                `;
+            });
+  }
+
+  // Initialize tooltips
+  document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>
+{% endblock %}

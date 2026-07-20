@@ -1,5 +1,5 @@
 from django import forms
-from .models import Document, DocumentShare, User
+from .models import Document, DocumentShare, User,TagDocument
 
 
 class DocumentForm(forms.ModelForm):
@@ -187,3 +187,297 @@ class DocumentShareUpdateForm(forms.ModelForm):
 						'rows': 2
 						}),
 				}
+
+
+class TagDocumentForm(forms.ModelForm):
+	"""Form for linking documents to equipment tags."""
+	
+	class Meta:
+		model = TagDocument
+		fields = ['equipment_tag', 'document', 'relation_type']
+		widgets = {
+				'equipment_tag': forms.Select(attrs={
+						'class': 'form-select',
+						'required': 'required'
+						}),
+				'document': forms.Select(attrs={
+						'class': 'form-select',
+						'required': 'required'
+						}),
+				'relation_type': forms.Select(attrs={
+						'class': 'form-select'
+						}),
+				}
+	
+	def __init__(self, *args, **kwargs):
+		project_id = kwargs.pop('project_id', None)
+		super().__init__(*args, **kwargs)
+		
+		if project_id:
+			try:
+				from core.models import EquipmentTag
+				self.fields['equipment_tag'].queryset = EquipmentTag.objects.filter(
+						project_id=project_id
+						)
+			except ImportError:
+				pass
+			
+			self.fields['document'].queryset = Document.objects.filter(
+					project_id=project_id
+					)
+	
+	def clean(self):
+		cleaned_data = super().clean()
+		equipment_tag = cleaned_data.get('equipment_tag')
+		document = cleaned_data.get('document')
+		
+		# if equipment_tag and document:
+		# 	# Check if they belong to the same project
+		# 	if equipment_tag.project_id != document.project_id:
+		# 		raise forms.ValidationError(
+		# 				"Equipment tag and document must belong to the same project."
+		# 				)
+		
+		return cleaned_data
+
+
+class DocumentSearchForm(forms.Form):
+	"""Form for searching and filtering documents in the list view."""
+	
+	project = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	doc_type = forms.ChoiceField(
+			choices=[('', 'All Types')] + list(Document.DocType.choices),
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	discipline = forms.ChoiceField(
+			choices=[('', 'All Disciplines')] + list(Document.Discipline.choices),
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	status = forms.ChoiceField(
+			choices=[('', 'All Statuses')] + list(Document.DocStatus.choices),
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	search = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'Search by document number, title, or tag...',
+					'aria-label': 'Search documents'
+					})
+			)
+	
+	date_from = forms.DateField(
+			required=False,
+			widget=forms.DateInput(attrs={
+					'class': 'form-control form-control-sm',
+					'type': 'date',
+					'placeholder': 'From date',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	date_to = forms.DateField(
+			required=False,
+			widget=forms.DateInput(attrs={
+					'class': 'form-control form-control-sm',
+					'type': 'date',
+					'placeholder': 'To date',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	has_file = forms.BooleanField(
+			required=False,
+			widget=forms.CheckboxInput(attrs={
+					'class': 'form-check-input',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	def clean(self):
+		cleaned_data = super().clean()
+		
+		# Validate date range
+		date_from = cleaned_data.get('date_from')
+		date_to = cleaned_data.get('date_to')
+		
+		if date_from and date_to and date_from > date_to:
+			self.add_error('date_to', 'End date must be after start date.')
+		
+		return cleaned_data
+	
+	def apply_filters(self, queryset):
+		"""Apply form filters to a queryset."""
+		if not self.is_valid():
+			return queryset
+		
+		data = self.cleaned_data
+		
+		if data.get('project'):
+			queryset = queryset.filter(project_id=data['project'])
+		
+		if data.get('doc_type'):
+			queryset = queryset.filter(doc_type=data['doc_type'])
+		
+		if data.get('discipline'):
+			queryset = queryset.filter(discipline=data['discipline'])
+		
+		if data.get('status'):
+			queryset = queryset.filter(status=data['status'])
+		
+		if data.get('search'):
+			from django.db.models import Q
+			search = data['search']
+			queryset = queryset.filter(
+					Q(document_number__icontains=search) |
+					Q(title__icontains=search) |
+					Q(notes__icontains=search)
+					).distinct()
+		
+		if data.get('date_from'):
+			queryset = queryset.filter(created_at__date__gte=data['date_from'])
+		
+		if data.get('date_to'):
+			queryset = queryset.filter(created_at__date__lte=data['date_to'])
+		
+		if data.get('has_file'):
+			queryset = queryset.filter(file_upload__isnull=False)
+		
+		return queryset
+	
+class TagDocumentBulkForm(forms.Form):
+	"""Form for bulk linking documents and tags."""
+	
+	MODE_CHOICES = [
+			('tags_to_document', 'Link One Document to Multiple Tags'),
+			('documents_to_tag', 'Link Multiple Documents to One Tag'),
+			]
+	
+	RELATION_TYPE_CHOICES = [
+			('references', 'References'),
+			('defines', 'Defines'),
+			('specifies', 'Specifies'),
+			('illustrates', 'Illustrates'),
+			('supports', 'Supports'),
+			]
+	
+	mode = forms.ChoiceField(
+			choices=MODE_CHOICES,
+			widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+			initial='documents_to_tag'
+			)
+	
+	# For mode: documents_to_tag
+	equipment_tag = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control',
+					'placeholder': 'Search and select a tag...',
+					'id': 'tagSearch'
+					})
+			)
+	equipment_tag_id = forms.IntegerField(
+			required=False,
+			widget=forms.HiddenInput(attrs={'id': 'tagId'})
+			)
+	documents = forms.ModelMultipleChoiceField(
+			queryset=Document.objects.all(),
+			required=False,
+			widget=forms.SelectMultiple(attrs={
+					'class': 'form-select',
+					'size': '10'
+					})
+			)
+	
+	# For mode: tags_to_document
+	document = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control',
+					'placeholder': 'Search and select a document...',
+					'id': 'documentSearch'
+					})
+			)
+	document_id = forms.IntegerField(
+			required=False,
+			widget=forms.HiddenInput(attrs={'id': 'documentId'})
+			)
+	equipment_tags = forms.ModelMultipleChoiceField(
+			queryset=None,  # Set in __init__
+			required=False,
+			widget=forms.SelectMultiple(attrs={
+					'class': 'form-select',
+					'size': '10'
+					})
+			)
+	
+	relation_type = forms.ChoiceField(
+			choices=RELATION_TYPE_CHOICES,
+			initial='references',
+			widget=forms.Select(attrs={'class': 'form-select'})
+			)
+	
+	def __init__(self, *args, **kwargs):
+		project_id = kwargs.pop('project_id', None)
+		super().__init__(*args, **kwargs)
+		
+		try:
+			from core.models import EquipmentTag
+			if project_id:
+				self.fields['equipment_tags'].queryset = EquipmentTag.objects.filter(
+						project_id=project_id
+						)
+				self.fields['documents'].queryset = Document.objects.filter(
+						project_id=project_id
+						)
+			else:
+				self.fields['equipment_tags'].queryset = EquipmentTag.objects.all()
+				self.fields['documents'].queryset = Document.objects.all()
+		except ImportError:
+			self.fields['equipment_tags'].queryset = None
+	
+	def clean(self):
+		cleaned_data = super().clean()
+		mode = cleaned_data.get('mode')
+		
+		if mode == 'documents_to_tag':
+			tag_id = cleaned_data.get('equipment_tag_id')
+			if not tag_id:
+				self.add_error('equipment_tag', 'Please select an equipment tag.')
+			
+			documents = cleaned_data.get('documents')
+			if not documents:
+				self.add_error('documents', 'Please select at least one document.')
+		
+		elif mode == 'tags_to_document':
+			doc_id = cleaned_data.get('document_id')
+			if not doc_id:
+				self.add_error('document', 'Please select a document.')
+			
+			tags = cleaned_data.get('equipment_tags')
+			if not tags:
+				self.add_error('equipment_tags', 'Please select at least one tag.')
+		
+		return cleaned_data

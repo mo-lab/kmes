@@ -16,6 +16,10 @@
     .stat-item {
         text-align: center;
         padding: 0.5rem;
+        border-right: 1px solid rgba(255,255,255,0.2);
+    }
+    .stat-item:last-child {
+        border-right: none;
     }
     .stat-value {
         font-size: 1.75rem;
@@ -43,10 +47,11 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    .document-card.status-draft { border-left-color: #6c757d; }
-    .document-card.status-apr { border-left-color: #198754; }
-    .document-card.status-ifc { border-left-color: #0d6efd; }
-    .document-card.status-supd { border-left-color: #ffc107; }
+    .document-card.status-DRAFT { border-left-color: #6c757d; }
+    .document-card.status-APPR { border-left-color: #198754; }
+    .document-card.status-IFC { border-left-color: #0d6efd; }
+    .document-card.status-SUPD { border-left-color: #ffc107; }
+    .document-card.status-REVW { border-left-color: #0dcaf0; }
 
     .doc-type-icon {
         width: 45px;
@@ -84,6 +89,19 @@
         font-size: 0.65rem;
         padding: 0.15em 0.5em;
     }
+
+    .pagination-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .linked-badge {
+        font-size: 0.7rem;
+    }
+
+    .share-indicator {
+        font-size: 0.7rem;
+    }
 </style>
 {% endblock %}
 
@@ -96,7 +114,7 @@
             <h1 class="h2 mb-1">Documents</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
                     <li class="breadcrumb-item active">Documents</li>
                 </ol>
             </nav>
@@ -112,7 +130,7 @@
                     <i class="bi bi-grid-3x3-gap"></i>
                 </a>
             </div>
-            <a href="#" class="btn btn-primary">
+            <a href="{% url 'documents:document-create' %}" class="btn btn-primary">
                 <i class="bi bi-plus-lg"></i> Upload Document
             </a>
             <a href="#" class="btn btn-outline-primary">
@@ -152,6 +170,12 @@
                 <div class="stat-item">
                     <div class="stat-value">{{ superseded_documents }}</div>
                     <div class="stat-label">Superseded</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ review_documents }}</div>
+                    <div class="stat-label">In Review</div>
                 </div>
             </div>
         </div>
@@ -242,13 +266,26 @@
                                onchange="this.form.submit()">
                     </div>
 
+                    <!-- Has File -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="has_file"
+                                   value="1" id="hasFileFilter"
+                                   {% if request.GET.has_file %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <label class="form-check-label small" for="hasFileFilter">
+                                Documents with files only
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- Search -->
                     <div class="mb-3">
                         <label class="form-label small">Search</label>
                         <div class="input-group input-group-sm">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" name="search" class="form-control"
-                                   placeholder="Document number, title..."
+                                   placeholder="Document number, title, tag..."
                                    value="{{ request.GET.search|default:'' }}">
                         </div>
                     </div>
@@ -258,7 +295,7 @@
                             <i class="bi bi-search"></i> Apply Filters
                         </button>
                         {% if request.GET %}
-                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                        <a href="{% url 'documents:document_list' %}" class="btn btn-outline-secondary btn-sm">
                             <i class="bi bi-x-circle"></i> Clear All Filters
                         </a>
                         {% endif %}
@@ -279,7 +316,16 @@
                     {{ documents.count }} document(s) found
                     {% endif %}
                 </div>
-                <div>
+                <div class="d-flex align-items-center gap-2">
+                    <select name="sort" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                        <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                        <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+                        <option value="document_number" {% if request.GET.sort == 'document_number' %}selected{% endif %}>Document # (A-Z)</option>
+                        <option value="-document_number" {% if request.GET.sort == '-document_number' %}selected{% endif %}>Document # (Z-A)</option>
+                        <option value="title" {% if request.GET.sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
+                        <option value="-title" {% if request.GET.sort == '-title' %}selected{% endif %}>Title (Z-A)</option>
+                        <option value="-updated_at" {% if request.GET.sort == '-updated_at' %}selected{% endif %}>Recently Updated</option>
+                    </select>
                     <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
                         <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>20 per page</option>
                         <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>50 per page</option>
@@ -297,30 +343,26 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                         <tr>
-                            <th>
-                                <a href="?sort={% if request.GET.sort == 'document_number' %}-{% endif %}document_number{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
-                                   class="text-decoration-none text-dark">
-                                    Document #
-                                    {% if request.GET.sort == 'document_number' %}<i class="bi bi-caret-up-fill"></i>
-                                    {% elif request.GET.sort == '-document_number' %}<i class="bi bi-caret-down-fill"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
+                            <th>Document #</th>
                             <th>Title</th>
                             <th>Type</th>
                             <th>Rev</th>
                             <th>Status</th>
                             <th>Project</th>
                             <th>Linked Tags</th>
+                            <th>Shares</th>
                             <th>Date</th>
                             <th>Actions</th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for doc in documents %}
-                        <tr onclick="window.location='{% url 'documents:document-detail' doc.pk %}'">
+                        <tr onclick="window.location='{% url 'documents:document_detail' doc.pk %}'">
                             <td>
                                 <strong class="text-primary">{{ doc.document_number }}</strong>
+                                {% if doc.file_upload %}
+                                <i class="bi bi-paperclip text-muted ms-1 small"></i>
+                                {% endif %}
                             </td>
                             <td>
                                 <div>{{ doc.title|truncatechars:60 }}</div>
@@ -338,11 +380,6 @@
                                         {% endif %}
                                         {{ doc.get_doc_type_display }}
                                     </span>
-                                {% if doc.file_upload %}
-                                {% with ext=doc.file_upload.name|slice:"-4:"|lower %}
-                                <span class="file-type-badge bg-secondary text-white ms-1">{{ ext }}</span>
-                                {% endwith %}
-                                {% endif %}
                             </td>
                             <td><span class="badge bg-info">{{ doc.revision }}</span></td>
                             <td>
@@ -350,7 +387,7 @@
                                         {% if doc.status == 'APPR' %}bg-success
                                         {% elif doc.status == 'IFC' %}bg-primary
                                         {% elif doc.status == 'DRAFT' %}bg-secondary
-                                        {% elif doc.status == 'REVW' %}bg-info
+                                        {% elif doc.status == 'REVW' %}bg-info text-dark
                                         {% elif doc.status == 'SUPD' %}bg-warning text-dark
                                         {% elif doc.status == 'ASBL' %}bg-info
                                         {% endif %}">
@@ -366,14 +403,32 @@
                             </td>
                             <td>
                                 {% if doc.linked_tags_count > 0 %}
-                                <span class="badge bg-light text-dark">
+                                <span class="badge bg-light text-dark linked-badge">
                                             <i class="bi bi-link-45deg"></i> {{ doc.linked_tags_count }}
                                         </span>
                                 {% else %}
                                 <span class="text-muted">-</span>
                                 {% endif %}
                             </td>
-                            <td><small>{{ doc.created_at|date:"M d, Y" }}</small></td>
+                            <td>
+                                {% if doc.shares_count > 0 %}
+                                <span class="badge bg-light text-dark share-indicator">
+                                            <i class="bi bi-share"></i> {{ doc.shares_count }}
+                                        </span>
+                                {% if doc.unviewed_shares_count > 0 %}
+                                <span class="badge bg-warning text-dark share-indicator ms-1">
+                                                {{ doc.unviewed_shares_count }} new
+                                            </span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ doc.created_at|date:"M d, Y" }}</small>
+                                <br>
+                                <small class="text-muted">{{ doc.created_at|date:"H:i" }}</small>
+                            </td>
                             <td onclick="event.stopPropagation()">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{% url 'documents:document_detail' doc.pk %}"
@@ -381,14 +436,18 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     {% if doc.file_upload %}
-                                    <a href="{{ doc.file_upload.url }}"
-                                       class="btn btn-outline-success" title="Download" download>
+                                    <a href="{% url 'documents:document_download' doc.pk %}"
+                                       class="btn btn-outline-success" title="Download">
                                         <i class="bi bi-download"></i>
                                     </a>
                                     {% endif %}
-                                    <a href="{% url 'documents:document_update' doc.pk %}"
+                                    <a href="#"
                                        class="btn btn-outline-secondary" title="Edit">
                                         <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'documents:document_share' doc.pk %}"
+                                       class="btn btn-outline-info" title="Share">
+                                        <i class="bi bi-share"></i>
                                     </a>
                                 </div>
                             </td>
@@ -404,7 +463,7 @@
             <div class="row g-3">
                 {% for doc in documents %}
                 <div class="col-xl-4 col-md-6">
-                    <div class="card document-card status-{{ doc.status|lower }} h-100">
+                    <div class="card document-card status-{{ doc.status }} h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="d-flex align-items-center">
@@ -452,13 +511,23 @@
                             </div>
                             {% endif %}
 
-                            {% if doc.linked_tags_count > 0 %}
-                            <div class="mb-2">
-                                <span class="badge bg-light text-dark">
-                                    <i class="bi bi-link-45deg"></i> {{ doc.linked_tags_count }} linked tag(s)
+                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                {% if doc.linked_tags_count > 0 %}
+                                <span class="badge bg-light text-dark linked-badge">
+                                    <i class="bi bi-link-45deg"></i> {{ doc.linked_tags_count }} tags
                                 </span>
+                                {% endif %}
+                                {% if doc.shares_count > 0 %}
+                                <span class="badge bg-light text-dark share-indicator">
+                                    <i class="bi bi-share"></i> {{ doc.shares_count }} shares
+                                </span>
+                                {% endif %}
+                                {% if doc.file_upload %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-paperclip"></i> File
+                                </span>
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
 
                         <div class="card-footer bg-transparent border-top">
@@ -467,9 +536,15 @@
                                     <i class="bi bi-person"></i>
                                     {{ doc.submitted_by.get_full_name|default:"System"|truncatechars:15 }}
                                 </small>
-                                <small class="text-muted">
-                                    {{ doc.created_at|date:"M d, Y" }}
-                                </small>
+                                <div>
+                                    <a href="{% url 'documents:document_share' doc.pk %}"
+                                       class="btn btn-sm btn-outline-info" title="Share">
+                                        <i class="bi bi-share"></i>
+                                    </a>
+                                    <small class="text-muted ms-1">
+                                        {{ doc.created_at|date:"M d, Y" }}
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -546,10 +621,10 @@
                                 <i class="bi bi-x-circle"></i> Clear Filters
                             </a>
                             {% endif %}
-                            <a href="{% url 'documents:document_create' %}" class="btn btn-primary">
+                            <a href="{% url 'documents:document-create' %}" class="btn btn-primary">
                                 <i class="bi bi-plus-lg"></i> Upload Document
                             </a>
-                            <a href="{% url 'documents:document_bulk_upload' %}" class="btn btn-outline-primary ms-2">
+                            <a href="#" class="btn btn-outline-primary ms-2">
                                 <i class="bi bi-upload"></i> Bulk Upload
                             </a>
                         </div>
@@ -569,6 +644,12 @@
         const url = new URL(window.location.href);
         url.searchParams.set('per_page', value);
         url.searchParams.delete('page');
+        window.location.href = url.toString();
+    }
+
+    function updateSort(value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort', value);
         window.location.href = url.toString();
     }
 
