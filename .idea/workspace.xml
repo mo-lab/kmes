@@ -5,29 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="init files">
-      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/daily_report_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/work_package_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/work_package_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/work_package_item_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/work_package_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/documents/document_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/documents/document_share.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/documents/document_share_delete.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/documents/document_share_update.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/documents/tag_document_confirm_delete.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/documents/tag_document_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/resources/employee_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/resources/employee_list.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/construction/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/documents/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/documents/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/documents/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/documents/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/kmes/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/kmes/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/documents/document_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/documents/document_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/resources/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/resources/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/resources/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/construction/work_package_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/construction/work_package_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/construction/work_package_item_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/construction/work_package_item_form.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,7 +100,9 @@
       <workItem from="1784213254999" duration="5613000" />
       <workItem from="1784298161425" duration="6639000" />
       <workItem from="1784539707616" duration="1921000" />
-      <workItem from="1784551915689" duration="4479000" />
+      <workItem from="1784551915689" duration="5589000" />
+      <workItem from="1784647747502" duration="2060000" />
+      <workItem from="1784806872229" duration="1883000" />
     </task>
     <task id="LOCAL‎−۰۰۰۰۱" summary="init">
       <option name="closed" value="true" />
@@ -170,7 +160,14 @@
       <option name="presentableId" value="LOCAL‎−۰۰۰۰۸" />
       <updated>1784193695116</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL‎−۰۰۰۰۹" summary="init files">
+      <option name="closed" value="true" />
+      <created>1784568035304</created>
+      <option name="number" value="LOCAL‎−۰۰۰۰۹" />
+      <option name="presentableId" value="LOCAL‎−۰۰۰۰۹" />
+      <updated>1784568035304</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

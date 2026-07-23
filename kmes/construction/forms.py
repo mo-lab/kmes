@@ -500,7 +500,7 @@ class WorkPackageItemForm(forms.ModelForm):
 			
 			self.fields['equipment_tag'].queryset = EquipmentTag.objects.filter(
 					project=work_package.project
-					).exclude(pk__in=existing_ids).select_related('area').order_by('tag_number')
+					).select_related('area').order_by('tag_number') #.exclude(pk__in=existing_ids).
 
 
 class WorkPackageItemBulkForm(forms.Form):

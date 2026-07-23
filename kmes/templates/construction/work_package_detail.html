@@ -752,7 +752,7 @@
               </button>
             </div>
             <div class="col-md-2">
-              <a href="{% url 'construction:work_package_item_reorder' work_package.pk %}"
+              <a href="#"
                  class="btn btn-outline-secondary btn-sm w-100">
                 <i class="bi bi-arrow-down-up"></i> Reorder
               </a>
@@ -796,7 +796,7 @@
                   <span class="badge bg-secondary">{{ item.sequence_number }}</span>
                 </td>
                 <td>
-                  <a href="{% url 'core:equipment_tag_detail' item.equipment_tag.pk %}"
+                  <a href="{% url 'core:equipment-tag-detail' item.equipment_tag.pk %}"
                      class="fw-bold text-decoration-none">
                     {{ item.equipment_tag.tag_number }}
                   </a>
@@ -857,7 +857,7 @@
                 <td>
                   {% with doc_count=item.equipment_tag.tag_documents.count %}
                   {% if doc_count > 0 %}
-                  <a href="{% url 'core:equipment_tag_detail' item.equipment_tag.pk %}#documents"
+                  <a href="{% url 'core:equipment-tag-detail' item.equipment_tag.pk %}#documents"
                      class="badge bg-info text-decoration-none">
                     <i class="bi bi-file-earmark-text"></i> {{ doc_count }}
                   </a>
@@ -877,13 +877,13 @@
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
-                    <a href="{% url 'core:equipment_tag_detail' item.equipment_tag.pk %}"
+                    <a href="{% url 'core:equipment-tag-detail' item.equipment_tag.pk %}"
                        class="btn btn-outline-primary"
                        title="View Tag Details"
                        data-bs-toggle="tooltip">
                       <i class="bi bi-eye"></i>
                     </a>
-                    <a href="{% url 'core:equipment_tag_update' item.equipment_tag.pk %}"
+                    <a href="#"
                        class="btn btn-outline-secondary"
                        title="Edit Tag"
                        data-bs-toggle="tooltip">
@@ -898,26 +898,26 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                       <li>
                         <a class="dropdown-item small"
-                           href="{% url 'installed_item_check_create' %}?tag={{ item.equipment_tag.pk }}">
+                           href="#">
                           <i class="bi bi-check-circle"></i> Installation Check
                         </a>
                       </li>
                       <li>
                         <a class="dropdown-item small"
-                           href="{% url 'punch_item_create' %}?tag={{ item.equipment_tag.pk }}">
+                           href="#">
                           <i class="bi bi-flag"></i> Raise Punch Item
                         </a>
                       </li>
                       <li>
                         <a class="dropdown-item small"
-                           href="{% url 'documents:tag_document_create' %}?tag={{ item.equipment_tag.pk }}">
+                           href="#">
                           <i class="bi bi-paperclip"></i> Link Document
                         </a>
                       </li>
                       <li><hr class="dropdown-divider"></li>
                       <li>
                         <a class="dropdown-item small text-danger"
-                           href="{% url 'construction:work_package_item_delete' item.pk %}">
+                           href="#">
                           <i class="bi bi-trash"></i> Remove from Work Package
                         </a>
                       </li>
