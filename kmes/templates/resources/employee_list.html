@@ -145,7 +145,7 @@
             <h1 class="h2 mb-1">Employees</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                     <li class="breadcrumb-item active">Employees</li>
                 </ol>
             </nav>
@@ -188,12 +188,7 @@
                     <div class="stat-label">Inactive</div>
                 </div>
             </div>
-            <div class="col">
-                <div class="stat-item">
-                    <div class="stat-value">{{ employees_with_certs }}</div>
-                    <div class="stat-label">With Certifications</div>
-                </div>
-            </div>
+
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ recent_hires }}</div>
@@ -396,7 +391,6 @@
                             <th>ID</th>
                             <th>Company</th>
                             <th>Trade</th>
-                            <th>Certifications</th>
                             <th>Hours</th>
                             <th>Status</th>
                             <th>Hire Date</th>
@@ -405,20 +399,17 @@
                         </thead>
                         <tbody>
                         {% for employee in employees %}
-                        <tr onclick="window.location='{% url 'resources:employee_detail' employee.pk %}'"
+                        <tr onclick="window.location='#'"
                             class="{% if not employee.is_active %}table-secondary{% endif %}">
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="employee-avatar me-2 {% if not employee.is_active %}inactive{% endif %}">
-                                        {{ employee.first_name|first|upper }}{{ employee.last_name|first|upper }}
-                                    </div>
+<!--                                    <div class="employee-avatar me-2 {% if not employee.is_active %}inactive{% endif %}">-->
+<!--                                        {{ employee.first_name|first|upper }}{{ employee.last_name|first|upper }}-->
+<!--                                    </div>-->
                                     <div>
                                         <strong>{{ employee.full_name }}</strong>
                                         <br>
                                         <small class="text-muted">
-                                            {% if employee.email %}
-                                            <i class="bi bi-envelope"></i> {{ employee.email|truncatechars:25 }}
-                                            {% endif %}
                                             {% if employee.phone %}
                                             <br><i class="bi bi-telephone"></i> {{ employee.phone }}
                                             {% endif %}
@@ -440,23 +431,7 @@
                                         {{ employee.get_trade_display }}
                                     </span>
                             </td>
-                            <td>
-                                <div class="d-flex align-items-center gap-1">
-                                    {% if employee.valid_certification_count > 0 %}
-                                    <span class="badge bg-success" title="{{ employee.valid_certification_count }} valid certifications">
-                                                <i class="bi bi-patch-check"></i> {{ employee.valid_certification_count }}
-                                            </span>
-                                    {% endif %}
-                                    {% if employee.expired_certification_count > 0 %}
-                                    <span class="badge bg-danger" title="{{ employee.expired_certification_count }} expired certifications">
-                                                <i class="bi bi-exclamation-triangle"></i> {{ employee.expired_certification_count }}
-                                            </span>
-                                    {% endif %}
-                                    {% if employee.certification_count == 0 %}
-                                    <span class="text-muted small">None</span>
-                                    {% endif %}
-                                </div>
-                            </td>
+
                             <td>
                                 {% if employee.total_hours %}
                                 <span class="badge bg-info hours-badge">
@@ -485,19 +460,16 @@
                             </td>
                             <td onclick="event.stopPropagation()">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'resources:employee_detail' employee.pk %}"
+                                    <a href="#"
                                        class="btn btn-outline-primary" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{% url 'resources:employee_update' employee.pk %}"
+                                    <a href="#"
                                        class="btn btn-outline-secondary" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a href="{% url 'resources:certification_create' %}?employee={{ employee.pk }}"
-                                       class="btn btn-outline-info" title="Add Certification">
-                                        <i class="bi bi-patch-plus"></i>
-                                    </a>
-                                    <a href="{% url 'resources:timesheet_create' %}?employee={{ employee.pk }}"
+
+                                    <a href="#"
                                        class="btn btn-outline-success" title="Add Timesheet">
                                         <i class="bi bi-clock"></i>
                                     </a>
@@ -524,7 +496,7 @@
                             </div>
 
                             <h6 class="mb-1">
-                                <a href="{% url 'resources:employee_detail' employee.pk %}"
+                                <a href="#"
                                    class="text-decoration-none stretched-link">
                                     {{ employee.full_name }}
                                 </a>
@@ -547,17 +519,7 @@
                                 <span class="badge bg-danger small">Inactive</span>
                                 {% endif %}
 
-                                {% if employee.valid_certification_count > 0 %}
-                                <span class="badge bg-success small">
-                                        <i class="bi bi-patch-check"></i> {{ employee.valid_certification_count }}
-                                    </span>
-                                {% endif %}
 
-                                {% if employee.expired_certification_count > 0 %}
-                                <span class="badge bg-danger small">
-                                        <i class="bi bi-exclamation-triangle"></i> {{ employee.expired_certification_count }}
-                                    </span>
-                                {% endif %}
                             </div>
 
                             <!-- Hours Summary -->

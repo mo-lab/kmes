@@ -801,6 +801,45 @@ class WorkPackageDetailView(LoginRequiredMixin, generic.DetailView):
 		# Recent activities
 		context['activities'] = self.get_work_package_activities(wp)
 		
+		context['timesheets'] = wp.timesheets.select_related(
+				'employee', 'approved_by'
+				).order_by('-date', 'employee__last_name')
+
+		context['total_timesheets'] = wp.timesheets.count()
+		
+		# Timesheet totals
+		timesheet_totals = wp.timesheets.aggregate(
+				total_hours=Sum('hours_worked'),
+				total_overtime=Sum('overtime_hours')
+				)
+		context['timesheet_total_hours'] = timesheet_totals['total_hours'] or 0
+		context['timesheet_total_overtime'] = timesheet_totals['total_overtime'] or 0
+		
+		# Timesheets grouped by company
+		context['timesheets_by_company'] = wp.timesheets.values(
+				'employee__company'
+				).annotate(
+				total_hours=Sum('hours_worked'),
+				total_overtime=Sum('overtime_hours'),
+				entry_count=Count('id'),
+				worker_count=Count('employee', distinct=True)
+				).order_by('-total_hours')
+				
+				# Timesheets grouped by trade
+		context['timesheets_by_trade'] = wp.timesheets.values(
+					'employee__trade'
+					).annotate(
+					count=Count('id'),
+					total_hours=Sum('hours_worked')
+					).order_by('-total_hours')
+			
+			# Timesheets by date (for chart)
+		context['timesheets_by_date'] = wp.timesheets.values('date').annotate(
+					total_hours=Sum('hours_worked'),
+					total_overtime=Sum('overtime_hours'),
+					worker_count=Count('employee', distinct=True)
+					).order_by('-date')[:30]
+			
 		return context
 	
 	def get_work_package_activities(self, wp):

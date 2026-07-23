@@ -992,57 +992,372 @@
 
         <!-- Timesheets Tab -->
         <div class="tab-pane fade" id="timesheets">
-          <h5 class="mb-3">Timesheets</h5>
+          <div class="d-flex justify-content-between align-items-center mb-3">
 
-          <div class="row g-3 mb-3">
-            <div class="col-md-4">
-              <div class="border rounded p-2 text-center">
-                <div class="fs-5 fw-bold">{{ total_timesheets }}</div>
-                <small class="text-muted">Total Entries</small>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 class="mb-0">Timesheets</h5>
+                <small class="text-muted">
+                  Total: {{ total_timesheets }} entries |
+                  {{ timesheet_total_hours|floatformat:1 }} regular hours |
+                  {{ timesheet_total_overtime|floatformat:1 }} overtime hours
+                </small>
               </div>
-            </div>
-            <div class="col-md-4">
-              <div class="border rounded p-2 text-center">
-                <div class="fs-5 fw-bold">{{ timesheet_total_hours|floatformat:1 }}</div>
-                <small class="text-muted">Regular Hours</small>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="border rounded p-2 text-center">
-                <div class="fs-5 fw-bold">{{ timesheet_total_overtime|floatformat:1 }}</div>
-                <small class="text-muted">Overtime Hours</small>
+              <div class="d-flex gap-2 "style="margin-left:10px ">
+
+                <!-- Bulk Actions Dropdown -->
+                <div class="dropdown">
+                  <button class="btn btn-outline-warning btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-check-all"></i> Bulk Actions
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a class="dropdown-item" href="#" onclick="bulkApproveTimesheets()">
+                        <i class="bi bi-check-circle text-success"></i> Approve All Visible
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" onclick="filterTimesheets(); document.getElementById('approvalFilter').value='pending'; filterTimesheets();">
+                        <i class="bi bi-filter"></i> Show Pending Only
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" onclick="clearFilters()">
+                        <i class="bi bi-x-circle"></i> Clear All Filters
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+                <a href="#"
+                   class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-plus-lg"></i> Bulk Add
+                </a>
+                <a href="{% url 'resources:timesheet_create' %}?work_package={{ work_package.pk }}"
+                   class="btn btn-primary btn-sm">
+                  <i class="bi bi-plus-lg"></i> Add Timesheet
+                </a>
               </div>
             </div>
           </div>
 
+          <!-- Timesheet Statistics -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-2">
+              <div class="card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-primary">{{ total_timesheets }}</div>
+                  <small class="text-muted">Total Entries</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-success">{{ timesheet_total_hours|floatformat:1 }}</div>
+                  <small class="text-muted">Regular Hours</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-warning">{{ timesheet_total_overtime|floatformat:1 }}</div>
+                  <small class="text-muted">Overtime Hours</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-info">
+                    {{ timesheet_total_hours|add:timesheet_total_overtime|floatformat:1 }}
+                  </div>
+                  <small class="text-muted">Total Hours</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-secondary bg-opacity-10 border-secondary">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-secondary">
+                    {{ timesheets_by_company|length }}
+                  </div>
+                  <small class="text-muted">Companies</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-danger bg-opacity-10 border-danger">
+                <div class="card-body text-center py-3">
+                  <div class="fs-4 fw-bold text-danger">
+                    {{ timesheets|dictsort:'employee_id'|length }}
+                  </div>
+                  <small class="text-muted">Workers</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="row g-2 mb-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label small">Filter by Company</label>
+              <select id="companyFilter" class="form-select form-select-sm" onchange="filterTimesheets()">
+                <option value="all">All Companies</option>
+                {% for company in timesheets_by_company %}
+                <option value="{{ company.employee__company|slugify }}">
+                  {{ company.employee__company }} ({{ company.total_hours|floatformat:1 }}h)
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small">Filter by Trade</label>
+              <select id="tradeFilter" class="form-select form-select-sm" onchange="filterTimesheets()">
+                <option value="all">All Trades</option>
+                {% for trade in timesheets_by_trade %}
+                <option value="{{ trade.employee__trade }}">
+                  {{ trade.get_trade_display }} ({{ trade.count }})
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small">Approval Status</label>
+              <select id="approvalFilter" class="form-select form-select-sm" onchange="filterTimesheets()">
+                <option value="all">All</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small">Search</label>
+              <input type="text" id="timesheetSearchInput" class="form-control form-control-sm"
+                     placeholder="Search employee name..." oninput="filterTimesheets()">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small">Date Range</label>
+              <input type="date" id="dateFromFilter" class="form-control form-control-sm" onchange="filterTimesheets()">
+            </div>
+          </div>
+
+          <!-- Company Summary Cards -->
+          <div class="row g-2 mb-3" id="companySummaryCards">
+            {% for company in timesheets_by_company %}
+            <div class="col-xl-3 col-md-4 col-sm-6 company-summary-card" data-company="{{ company.employee__company|slugify }}">
+              <div class="card bg-light h-100">
+                <div class="card-body py-2 px-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong class="small">{{ company.employee__company }}</strong>
+                      <br>
+                      <small class="text-muted">{{ company.worker_count }} workers</small>
+                    </div>
+                    <div class="text-end">
+                      <div class="fw-bold text-primary">{{ company.total_hours|floatformat:1 }}h</div>
+                      <small class="text-muted">{{ company.entry_count }} entries</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <!-- Export Actions Card -->
+          <div class="row g-2 mb-3" id="exportActions">
+            <div class="col-auto">
+              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsCSV()" title="Export as CSV">
+                <i class="bi bi-filetype-csv"></i> CSV
+              </button>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsExcel()" title="Export as Excel (HTML)">
+                <i class="bi bi-filetype-xls"></i> Excel
+              </button>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsXLSX()" title="Export as Excel (XLSX)">
+                <i class="bi bi-filetype-xlsx"></i> XLSX
+              </button>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-sm btn-outline-danger" onclick="exportTimesheetsPDF()" title="Export as PDF">
+                <i class="bi bi-filetype-pdf"></i> PDF
+              </button>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-sm btn-outline-secondary" onclick="window.print()" title="Print">
+                <i class="bi bi-printer"></i> Print
+              </button>
+            </div>
+          </div>
+          <!-- Timesheets Table -->
           {% if timesheets %}
           <div class="table-responsive">
-            <table class="table table-sm table-hover">
+            <table class="table table-hover table-sm align-middle" id="timesheetsTable">
               <thead class="table-light">
               <tr>
-                <th>Date</th>
+                <th>
+                  <a href="?sort={% if request.GET.sort == 'date' %}-{% endif %}date"
+                     class="text-decoration-none text-dark small">
+                    Date
+                    {% if request.GET.sort == 'date' %}<i class="bi bi-caret-up-fill"></i>
+                    {% elif request.GET.sort == '-date' %}<i class="bi bi-caret-down-fill"></i>
+                    {% endif %}
+                  </a>
+                </th>
                 <th>Employee</th>
-                <th>Hours</th>
+                <th>Company</th>
+                <th>Trade</th>
+                <th>Regular Hours</th>
                 <th>Overtime</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
               </thead>
               <tbody>
               {% for ts in timesheets %}
-              <tr>
-                <td>{{ ts.date|date:"M d, Y" }}</td>
-                <td>{{ ts.employee.full_name }}</td>
-                <td>{{ ts.hours_worked }}h</td>
-                <td>{% if ts.overtime_hours > 0 %}{{ ts.overtime_hours }}h{% else %}-{% endif %}</td>
+              <tr class="timesheet-row"
+                  data-company="{{ ts.employee.company|slugify }}"
+                  data-trade="{{ ts.employee.trade }}"
+                  data-approved="{% if ts.is_approved %}approved{% else %}pending{% endif %}"
+                  data-date="{{ ts.date|date:'Y-m-d' }}"
+                  data-search="{{ ts.employee.full_name|lower }} {{ ts.employee.company|lower }}">
+
+                <td>
+                  <strong class="small">{{ ts.date|date:"M d, Y" }}</strong>
+                  <br>
+                  <small class="text-muted">{{ ts.date|date:"D" }}</small>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center me-2"
+                         style="width: 30px; height: 30px; min-width: 30px; font-size: 0.75rem; font-weight: 600;">
+                      {{ ts.employee.first_name|first|upper }}{{ ts.employee.last_name|first|upper }}
+                    </div>
+                    <div>
+                      <strong class="small">{{ ts.employee.full_name }}</strong>
+                      <br>
+                      <small class="text-muted">{{ ts.employee.employee_id }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                        <span class="badge bg-light text-dark small company-badge-filter"
+                              data-company="{{ ts.employee.company|slugify }}">
+                            {{ ts.employee.company|truncatechars:20 }}
+                        </span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark small">{{ ts.employee.get_trade_display }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-primary">{{ ts.hours_worked }}h</span>
+                </td>
+                <td>
+                  {% if ts.overtime_hours > 0 %}
+                  <span class="badge bg-warning text-dark">{{ ts.overtime_hours }}h</span>
+                  {% else %}
+                  <span class="text-muted small">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <strong class="small">{{ ts.hours_worked|add:ts.overtime_hours }}h</strong>
+                </td>
+                <td>
+                  {% if ts.is_approved %}
+                  <span class="badge bg-success small">
+                                <i class="bi bi-check-circle"></i> Approved
+                            </span>
+                  {% if ts.approved_by %}
+                  <br>
+                  <small class="text-muted">{{ ts.approved_by.get_full_name|truncatechars:12 }}</small>
+                  {% endif %}
+                  {% else %}
+                  <button class="btn btn-sm btn-outline-success approve-btn"
+                          data-timesheet-id="{{ ts.pk }}"
+                          onclick="approveSingleTimesheet({{ ts.pk }}, this)">
+                    <i class="bi bi-check-lg"></i> Approve
+                  </button>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <a href="#"
+                       class="btn btn-outline-secondary btn-sm" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="#"
+                       class="btn btn-outline-danger btn-sm" title="Delete">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </div>
+                </td>
               </tr>
               {% endfor %}
               </tbody>
             </table>
           </div>
+
+          <!-- Empty State if no results after filtering -->
+          <div id="noResultsMessage" class="text-center py-4 text-muted d-none">
+            <i class="bi bi-filter" style="font-size: 2rem;"></i>
+            <p class="mt-2">No timesheets match the selected filters.</p>
+            <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+              <i class="bi bi-x-circle"></i> Clear Filters
+            </button>
+          </div>
+
           {% else %}
-          <p class="text-muted text-center py-3">No timesheets recorded.</p>
+          <!-- Empty State -->
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-clock" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">No Timesheets Recorded</h4>
+            <p class="text-muted">No timesheet entries have been recorded for this work package yet.</p>
+            <div class="mt-3">
+              <a href="#"
+                 class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add First Timesheet
+              </a>
+              <a href="#"
+                 class="btn btn-outline-primary ms-2">
+                <i class="bi bi-plus-lg"></i> Bulk Add
+              </a>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Company Hours Breakdown -->
+          {% if timesheets_by_company %}
+          <div class="mt-4">
+            <h6 class="mb-3">
+              <i class="bi bi-pie-chart me-2"></i>Hours by Company
+            </h6>
+            <div class="row g-3">
+              {% for company in timesheets_by_company %}
+              <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="border rounded p-3">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <strong class="small">{{ company.employee__company }}</strong>
+                    <span class="badge bg-primary">{{ company.total_hours|floatformat:1 }}h</span>
+                  </div>
+                  <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-primary" style="width: {% widthratio company.total_hours timesheet_total_hours 100 %}%">
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted">{{ company.worker_count }} workers</small>
+                    <small class="text-muted">{{ company.entry_count }} entries</small>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
           {% endif %}
         </div>
-
         <!-- Tools Tab -->
         <div class="tab-pane fade" id="tools">
           <h5 class="mb-3">Tool Assignments</h5>
@@ -1410,5 +1725,802 @@
       return new bootstrap.Tooltip(tooltipTriggerEl);
     });
   });
+
+  // ============================================
+  // TIMESHEETS TAB FUNCTIONALITY
+  // ============================================
+
+  function filterTimesheets() {
+    const companyFilter = document.getElementById('companyFilter')?.value || 'all';
+    const tradeFilter = document.getElementById('tradeFilter')?.value || 'all';
+    const approvalFilter = document.getElementById('approvalFilter')?.value || 'all';
+    const searchQuery = (document.getElementById('timesheetSearchInput')?.value || '').toLowerCase();
+    const dateFrom = document.getElementById('dateFromFilter')?.value || '';
+
+    const rows = document.querySelectorAll('.timesheet-row');
+    const companyCards = document.querySelectorAll('.company-summary-card');
+    let visibleCount = 0;
+
+    // Filter table rows
+    rows.forEach(row => {
+      let showRow = true;
+
+      // Company filter
+      if (companyFilter !== 'all' && row.dataset.company !== companyFilter) {
+        showRow = false;
+      }
+
+      // Trade filter
+      if (tradeFilter !== 'all' && row.dataset.trade !== tradeFilter) {
+        showRow = false;
+      }
+
+      // Approval filter
+      if (approvalFilter !== 'all' && row.dataset.approved !== approvalFilter) {
+        showRow = false;
+      }
+
+      // Date filter
+      if (dateFrom && row.dataset.date < dateFrom) {
+        showRow = false;
+      }
+
+      // Search filter
+      if (searchQuery && row.dataset.search && !row.dataset.search.includes(searchQuery)) {
+        showRow = false;
+      }
+
+      row.style.display = showRow ? '' : 'none';
+      if (showRow) visibleCount++;
+    });
+
+    // Filter company summary cards
+    if (companyCards.length > 0) {
+      companyCards.forEach(card => {
+        if (companyFilter !== 'all') {
+          card.style.display = card.dataset.company === companyFilter ? '' : 'none';
+        } else {
+          card.style.display = '';
+        }
+      });
+    }
+
+    // Show/hide no results message
+    const noResultsMsg = document.getElementById('noResultsMessage');
+    if (noResultsMsg) {
+      if (visibleCount === 0 && rows.length > 0) {
+        noResultsMsg.classList.remove('d-none');
+      } else {
+        noResultsMsg.classList.add('d-none');
+      }
+    }
+  }
+
+  // Clear all filters
+  function clearFilters() {
+    const companyFilter = document.getElementById('companyFilter');
+    const tradeFilter = document.getElementById('tradeFilter');
+    const approvalFilter = document.getElementById('approvalFilter');
+    const searchInput = document.getElementById('timesheetSearchInput');
+    const dateFrom = document.getElementById('dateFromFilter');
+
+    if (companyFilter) companyFilter.value = 'all';
+    if (tradeFilter) tradeFilter.value = 'all';
+    if (approvalFilter) approvalFilter.value = 'all';
+    if (searchInput) searchInput.value = '';
+    if (dateFrom) dateFrom.value = '';
+
+    filterTimesheets();
+  }
+
+  // Quick filter by company (when clicking company badges)
+  document.querySelectorAll('.company-badge-filter').forEach(badge => {
+    badge.addEventListener('click', function() {
+      const company = this.dataset.company;
+      const companyFilter = document.getElementById('companyFilter');
+      if (companyFilter) {
+        companyFilter.value = company;
+        filterTimesheets();
+      }
+    });
+    badge.style.cursor = 'pointer';
+  });
+
+  // Approve single timesheet
+  function approveSingleTimesheet(timesheetId, button) {
+    if (confirm('Approve this timesheet entry?')) {
+      fetch(`/resources/timesheets/${timesheetId}/approve/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/json',
+        },
+      })
+              .then(response => {
+                if (response.ok) {
+                  // Update the button to show approved status
+                  const cell = button.closest('td');
+                  if (cell) {
+                    cell.innerHTML = `
+                        <span class="badge bg-success small">
+                            <i class="bi bi-check-circle"></i> Approved
+                        </span>
+                        <br>
+                        <small class="text-muted">{{ request.user.get_full_name|truncatechars:12 }}</small>
+                    `;
+                  }
+                  showToast('Timesheet approved successfully', 'success');
+                } else {
+                  showToast('Error approving timesheet', 'danger');
+                }
+              })
+              .catch(error => {
+                showToast('Error approving timesheet', 'danger');
+                console.error('Error:', error);
+              });
+    }
+  }
+
+  // Bulk approve all pending timesheets
+  function bulkApproveTimesheets() {
+    const pendingRows = document.querySelectorAll('.timesheet-row[data-approved="pending"]:not([style*="display: none"])');
+
+    if (pendingRows.length === 0) {
+      alert('No pending timesheets to approve.');
+      return;
+    }
+
+    if (confirm(`Approve ${pendingRows.length} pending timesheet entries?`)) {
+      const approveButtons = document.querySelectorAll('.approve-btn:not([style*="display: none"])');
+      const promises = [];
+
+      approveButtons.forEach(btn => {
+        const timesheetId = btn.dataset.timesheetId;
+        promises.push(
+                fetch(`/resources/timesheets/${timesheetId}/approve/`, {
+                  method: 'POST',
+                  headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                  },
+                })
+        );
+      });
+
+      Promise.all(promises).then(() => {
+        location.reload();
+      });
+    }
+  }
+
+  // Export timesheets to CSV
+  function exportTimesheets() {
+    const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
+
+    if (visibleRows.length === 0) {
+      alert('No timesheets to export.');
+      return;
+    }
+
+    let csv = 'Date,Employee,Company,Trade,Regular Hours,Overtime,Total Hours,Status\n';
+
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const date = cells[0]?.textContent.trim() || '';
+      const employee = cells[1]?.querySelector('strong')?.textContent.trim() || '';
+      const company = cells[2]?.textContent.trim() || '';
+      const trade = cells[3]?.textContent.trim() || '';
+      const regularHours = cells[4]?.textContent.replace('h', '').trim() || '0';
+      const overtime = cells[5]?.textContent.replace('h', '').trim() || '0';
+      const total = cells[6]?.textContent.replace('h', '').trim() || '0';
+      const status = row.dataset.approved === 'approved' ? 'Approved' : 'Pending';
+
+      csv += `"${date}","${employee}","${company}","${trade}",${regularHours},${overtime},${total},"${status}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `timesheets_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  // Toast notification
+  function showToast(message, type) {
+    const toastContainer = document.createElement('div');
+    toastContainer.style.position = 'fixed';
+    toastContainer.style.bottom = '20px';
+    toastContainer.style.right = '20px';
+    toastContainer.style.zIndex = '9999';
+    toastContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show mb-0 shadow" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.appendChild(toastContainer);
+
+    setTimeout(() => {
+      toastContainer.remove();
+    }, 3000);
+  }
+
+  // ============================================
+  // EXPORT FUNCTIONALITY
+  // ============================================
+
+  // Export timesheets to CSV
+  function exportTimesheetsCSV() {
+    const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
+
+    if (visibleRows.length === 0) {
+      showToast('No timesheets to export.', 'warning');
+      return;
+    }
+
+    let csv = '\uFEFF'; // BOM for Excel UTF-8 support
+    csv += 'Date,Day,Employee,Employee ID,Company,Trade,Regular Hours,Overtime Hours,Total Hours,Status,Approved By\n';
+
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const date = cells[0]?.querySelector('strong')?.textContent.trim() || '';
+      const day = cells[0]?.querySelector('small')?.textContent.trim() || '';
+      const employeeName = cells[1]?.querySelector('strong')?.textContent.trim() || '';
+      const employeeId = cells[1]?.querySelector('small')?.textContent.trim() || '';
+      const company = cells[2]?.textContent.trim() || '';
+      const trade = cells[3]?.textContent.trim() || '';
+      const regularHours = cells[4]?.textContent.replace('h', '').trim() || '0';
+      const overtime = cells[5]?.textContent.replace('h', '').trim() || '0';
+      const total = cells[6]?.textContent.replace('h', '').trim() || '0';
+      const status = row.dataset.approved === 'approved' ? 'Approved' : 'Pending';
+      const approvedBy = cells[7]?.querySelector('small')?.textContent.trim() || '';
+
+      csv += `"${date}","${day}","${employeeName}","${employeeId}","${company}","${trade}",${regularHours},${overtime},${total},"${status}","${approvedBy}"\n`;
+    });
+
+    // Add summary rows
+    csv += '\n';
+    csv += 'SUMMARY\n';
+
+    const companyFilter = document.getElementById('companyFilter')?.value || 'all';
+    const tradeFilter = document.getElementById('tradeFilter')?.value || 'all';
+
+    let totalRegular = 0;
+    let totalOvertime = 0;
+
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      totalRegular += parseFloat(cells[4]?.textContent.replace('h', '').trim() || '0');
+      totalOvertime += parseFloat(cells[5]?.textContent.replace('h', '').trim() || '0');
+    });
+
+    csv += `"","","","","","Total",${totalRegular.toFixed(1)},${totalOvertime.toFixed(1)},${(totalRegular + totalOvertime).toFixed(1)},"",""\n`;
+
+    downloadFile(csv, `timesheets_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8');
+    showToast('CSV exported successfully!', 'success');
+  }
+
+  // Export timesheets to Excel (XLSX)
+  function exportTimesheetsExcel() {
+    const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
+
+    if (visibleRows.length === 0) {
+      showToast('No timesheets to export.', 'warning');
+      return;
+    }
+
+    // Build HTML table for Excel
+    let html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:x="urn:schemas-microsoft-com:office:excel"
+              xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta charset="UTF-8">
+            <!--[if gte mso 9]><xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>Timesheets</x:Name>
+                            <x:WorksheetOptions>
+                                <x:DisplayGridlines/>
+                            </x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+            </xml><![endif]-->
+            <style>
+                table { border-collapse: collapse; }
+                th, td {
+                    border: 1px solid #000;
+                    padding: 5px 10px;
+                    font-family: Arial, sans-serif;
+                    font-size: 12px;
+                }
+                th {
+                    background-color: #4472C4;
+                    color: white;
+                    font-weight: bold;
+                    text-align: center;
+                }
+                td { text-align: left; }
+                .number-cell { text-align: right; }
+                .center-cell { text-align: center; }
+                .summary-row {
+                    background-color: #FFF2CC;
+                    font-weight: bold;
+                }
+                .approved { background-color: #C6EFCE; }
+                .pending { background-color: #FFEB9C; }
+                .total-row {
+                    background-color: #D9E2F3;
+                    font-weight: bold;
+                    font-size: 13px;
+                }
+            </style>
+        </head>
+        <body>
+            <h2>Timesheet Report - {{ work_package.code }}</h2>
+            <p>Work Package: {{ work_package.name }}</p>
+            <p>Export Date: ${new Date().toLocaleDateString()}</p>
+            <p>Filters Applied:
+                Company: ${document.getElementById('companyFilter')?.value || 'All'} |
+                Trade: ${document.getElementById('tradeFilter')?.value || 'All'} |
+                Status: ${document.getElementById('approvalFilter')?.value || 'All'}
+            </p>
+            <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Employee</th>
+                        <th>Employee ID</th>
+                        <th>Company</th>
+                        <th>Trade</th>
+                        <th>Regular Hours</th>
+                        <th>Overtime Hours</th>
+                        <th>Total Hours</th>
+                        <th>Status</th>
+                        <th>Approved By</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    let totalRegular = 0;
+    let totalOvertime = 0;
+
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const date = cells[0]?.querySelector('strong')?.textContent.trim() || '';
+      const day = cells[0]?.querySelector('small')?.textContent.trim() || '';
+      const employeeName = cells[1]?.querySelector('strong')?.textContent.trim() || '';
+      const employeeId = cells[1]?.querySelector('small')?.textContent.trim() || '';
+      const company = cells[2]?.textContent.trim() || '';
+      const trade = cells[3]?.textContent.trim() || '';
+      const regularHours = parseFloat(cells[4]?.textContent.replace('h', '').trim() || '0');
+      const overtime = parseFloat(cells[5]?.textContent.replace('h', '').trim() || '0');
+      const totalHours = regularHours + overtime;
+      const isApproved = row.dataset.approved === 'approved';
+      const approvedBy = cells[7]?.querySelector('small')?.textContent.trim() || '';
+
+      totalRegular += regularHours;
+      totalOvertime += overtime;
+
+      const rowClass = isApproved ? 'approved' : 'pending';
+
+      html += `
+            <tr class="${rowClass}">
+                <td>${date}</td>
+                <td class="center-cell">${day}</td>
+                <td>${employeeName}</td>
+                <td>${employeeId}</td>
+                <td>${company}</td>
+                <td>${trade}</td>
+                <td class="number-cell">${regularHours.toFixed(1)}</td>
+                <td class="number-cell">${overtime.toFixed(1)}</td>
+                <td class="number-cell"><strong>${totalHours.toFixed(1)}</strong></td>
+                <td class="center-cell">${isApproved ? 'Approved' : 'Pending'}</td>
+                <td>${approvedBy}</td>
+            </tr>
+        `;
+    });
+
+    // Add total row
+    html += `
+            <tr class="total-row">
+                <td colspan="6"><strong>TOTAL</strong></td>
+                <td class="number-cell"><strong>${totalRegular.toFixed(1)}</strong></td>
+                <td class="number-cell"><strong>${totalOvertime.toFixed(1)}</strong></td>
+                <td class="number-cell"><strong>${(totalRegular + totalOvertime).toFixed(1)}</strong></td>
+                <td colspan="2"></td>
+            </tr>
+        </tbody>
+    </table>
+    `;
+
+    // Add company summary
+    html += '<br><h3>Summary by Company</h3><table><thead><tr><th>Company</th><th>Total Hours</th><th>Workers</th><th>Entries</th></tr></thead><tbody>';
+
+    const companySummary = {};
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const company = cells[2]?.textContent.trim() || '';
+      const hours = parseFloat(cells[6]?.textContent.replace('h', '').trim() || '0');
+
+      if (!companySummary[company]) {
+        companySummary[company] = { hours: 0, workers: new Set(), entries: 0 };
+      }
+      companySummary[company].hours += hours;
+      companySummary[company].entries += 1;
+
+      const employeeName = cells[1]?.querySelector('strong')?.textContent.trim() || '';
+      companySummary[company].workers.add(employeeName);
+    });
+
+    Object.entries(companySummary).sort((a, b) => b[1].hours - a[1].hours).forEach(([company, data]) => {
+      html += `
+            <tr>
+                <td>${company}</td>
+                <td class="number-cell">${data.hours.toFixed(1)}</td>
+                <td class="center-cell">${data.workers.size}</td>
+                <td class="center-cell">${data.entries}</td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table></body></html>';
+
+    downloadFile(html, `timesheets_${new Date().toISOString().split('T')[0]}.xls`, 'application/vnd.ms-excel;charset=utf-8');
+    showToast('Excel file exported successfully!', 'success');
+  }
+
+  // Export timesheets to Excel using SheetJS library (if available)
+  function exportTimesheetsXLSX() {
+    // Check if SheetJS is loaded
+    if (typeof XLSX === 'undefined') {
+      // Fall back to HTML Excel export
+      exportTimesheetsExcel();
+      return;
+    }
+
+    const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
+
+    if (visibleRows.length === 0) {
+      showToast('No timesheets to export.', 'warning');
+      return;
+    }
+
+    // Build data array
+    const data = [];
+
+    // Header row
+    data.push([
+      'Date', 'Day', 'Employee', 'Employee ID', 'Company', 'Trade',
+      'Regular Hours', 'Overtime Hours', 'Total Hours', 'Status', 'Approved By'
+    ]);
+
+    // Data rows
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const date = cells[0]?.querySelector('strong')?.textContent.trim() || '';
+      const day = cells[0]?.querySelector('small')?.textContent.trim() || '';
+      const employeeName = cells[1]?.querySelector('strong')?.textContent.trim() || '';
+      const employeeId = cells[1]?.querySelector('small')?.textContent.trim() || '';
+      const company = cells[2]?.textContent.trim() || '';
+      const trade = cells[3]?.textContent.trim() || '';
+      const regularHours = parseFloat(cells[4]?.textContent.replace('h', '').trim() || '0');
+      const overtime = parseFloat(cells[5]?.textContent.replace('h', '').trim() || '0');
+      const totalHours = regularHours + overtime;
+      const status = row.dataset.approved === 'approved' ? 'Approved' : 'Pending';
+      const approvedBy = cells[7]?.querySelector('small')?.textContent.trim() || '';
+
+      data.push([
+        date, day, employeeName, employeeId, company, trade,
+        regularHours, overtime, totalHours, status, approvedBy
+      ]);
+    });
+
+    // Add summary rows
+    data.push([]);
+    data.push(['SUMMARY', '', '', '', '', '', '', '', '', '', '']);
+
+    let totalRegular = 0;
+    let totalOvertime = 0;
+
+    data.slice(1).forEach(row => {
+      if (row[6] && !isNaN(row[6])) {
+        totalRegular += row[6];
+        totalOvertime += row[7] || 0;
+      }
+    });
+
+    data.push([
+      'TOTAL', '', '', '', '', '',
+      totalRegular, totalOvertime, totalRegular + totalOvertime, '', ''
+    ]);
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+
+    // Main timesheet sheet
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 12 },  // Date
+      { wch: 5 },   // Day
+      { wch: 25 },  // Employee
+      { wch: 12 },  // Employee ID
+      { wch: 20 },  // Company
+      { wch: 15 },  // Trade
+      { wch: 12 },  // Regular Hours
+      { wch: 12 },  // Overtime Hours
+      { wch: 12 },  // Total Hours
+      { wch: 10 },  // Status
+      { wch: 15 },  // Approved By
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Timesheets');
+
+    // Company summary sheet
+    const companyData = [['Company', 'Total Hours', 'Workers', 'Entries']];
+    const companySummary = {};
+
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const company = cells[2]?.textContent.trim() || '';
+      const hours = parseFloat(cells[6]?.textContent.replace('h', '').trim() || '0');
+
+      if (!companySummary[company]) {
+        companySummary[company] = { hours: 0, workers: new Set(), entries: 0 };
+      }
+      companySummary[company].hours += hours;
+      companySummary[company].entries += 1;
+
+      const employeeName = cells[1]?.querySelector('strong')?.textContent.trim() || '';
+      companySummary[company].workers.add(employeeName);
+    });
+
+    Object.entries(companySummary).sort((a, b) => b[1].hours - a[1].hours).forEach(([company, data]) => {
+      companyData.push([company, data.hours, data.workers.size, data.entries]);
+    });
+
+    const wsCompany = XLSX.utils.aoa_to_sheet(companyData);
+    wsCompany['!cols'] = [
+      { wch: 25 },  // Company
+      { wch: 12 },  // Total Hours
+      { wch: 10 },  // Workers
+      { wch: 10 },  // Entries
+    ];
+
+    XLSX.utils.book_append_sheet(wb, wsCompany, 'Company Summary');
+
+    // Export
+    XLSX.writeFile(wb, `timesheets_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast('Excel file exported successfully!', 'success');
+  }
+
+  // Generic download function
+  function downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  // Export timesheets to PDF
+  function exportTimesheetsPDF() {
+    const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
+
+    if (visibleRows.length === 0) {
+      showToast('No timesheets to export.', 'warning');
+      return;
+    }
+
+    // Create a print-friendly version
+    const printWindow = window.open('', '_blank');
+
+    let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Timesheet Report - {{ work_package.code }}</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                    color: #333;
+                }
+                .header {
+                    border-bottom: 2px solid #0d6efd;
+                    padding-bottom: 10px;
+                    margin-bottom: 20px;
+                }
+                .header h2 { margin: 0; color: #0d6efd; }
+                .header p { margin: 5px 0; color: #666; font-size: 14px; }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 30px;
+                    font-size: 12px;
+                }
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px 10px;
+                    text-align: left;
+                }
+                th {
+                    background-color: #4472C4;
+                    color: white;
+                    font-weight: bold;
+                }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+                .approved { background-color: #d4edda; }
+                .pending { background-color: #fff3cd; }
+                .total-row {
+                    background-color: #e2e6ea;
+                    font-weight: bold;
+                    font-size: 13px;
+                }
+                .number-cell { text-align: right; }
+                .summary-section {
+                    page-break-before: always;
+                }
+                .footer {
+                    margin-top: 30px;
+                    font-size: 11px;
+                    color: #999;
+                    text-align: center;
+                }
+                @media print {
+                    body { padding: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>Timesheet Report</h2>
+                <p><strong>Work Package:</strong> {{ work_package.code }} - {{ work_package.name }}</p>
+                <p><strong>Project:</strong> {{ work_package.project.name }}</p>
+                <p><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</p>
+                <p><strong>Filters:</strong>
+                    Company: ${document.getElementById('companyFilter')?.value || 'All'} |
+                    Status: ${document.getElementById('approvalFilter')?.value || 'All'}
+                </p>
+            </div>
+
+            <div class="no-print" style="margin-bottom: 20px;">
+                <button onclick="window.print()" style="padding: 10px 20px; background: #0d6efd; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    🖨️ Print / Save as PDF
+                </button>
+                <button onclick="window.close()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                    Close
+                </button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee</th>
+                        <th>Company</th>
+                        <th>Trade</th>
+                        <th>Regular Hours</th>
+                        <th>Overtime</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    let totalRegular = 0;
+    let totalOvertime = 0;
+
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const date = cells[0]?.querySelector('strong')?.textContent.trim() || '';
+      const employeeName = cells[1]?.querySelector('strong')?.textContent.trim() || '';
+      const company = cells[2]?.textContent.trim() || '';
+      const trade = cells[3]?.textContent.trim() || '';
+      const regularHours = parseFloat(cells[4]?.textContent.replace('h', '').trim() || '0');
+      const overtime = parseFloat(cells[5]?.textContent.replace('h', '').trim() || '0');
+      const totalHours = regularHours + overtime;
+      const isApproved = row.dataset.approved === 'approved';
+
+      totalRegular += regularHours;
+      totalOvertime += overtime;
+
+      html += `
+            <tr class="${isApproved ? 'approved' : 'pending'}">
+                <td>${date}</td>
+                <td>${employeeName}</td>
+                <td>${company}</td>
+                <td>${trade}</td>
+                <td class="number-cell">${regularHours.toFixed(1)}</td>
+                <td class="number-cell">${overtime.toFixed(1)}</td>
+                <td class="number-cell"><strong>${totalHours.toFixed(1)}</strong></td>
+                <td>${isApproved ? '✓ Approved' : '⏳ Pending'}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            <tr class="total-row">
+                <td colspan="4"><strong>TOTAL</strong></td>
+                <td class="number-cell"><strong>${totalRegular.toFixed(1)}</strong></td>
+                <td class="number-cell"><strong>${totalOvertime.toFixed(1)}</strong></td>
+                <td class="number-cell"><strong>${(totalRegular + totalOvertime).toFixed(1)}</strong></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="summary-section">
+        <h3>Summary by Company</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Total Hours</th>
+                    <th>Workers</th>
+                    <th>Entries</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    const companySummary = {};
+    visibleRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const company = cells[2]?.textContent.trim() || '';
+      const hours = parseFloat(cells[6]?.textContent.replace('h', '').trim() || '0');
+
+      if (!companySummary[company]) {
+        companySummary[company] = { hours: 0, workers: new Set(), entries: 0 };
+      }
+      companySummary[company].hours += hours;
+      companySummary[company].entries += 1;
+
+      const employeeName = cells[1]?.querySelector('strong')?.textContent.trim() || '';
+      companySummary[company].workers.add(employeeName);
+    });
+
+    Object.entries(companySummary).sort((a, b) => b[1].hours - a[1].hours).forEach(([company, data]) => {
+      html += `
+            <tr>
+                <td>${company}</td>
+                <td class="number-cell">${data.hours.toFixed(1)}</td>
+                <td class="number-cell">${data.workers.size}</td>
+                <td class="number-cell">${data.entries}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Generated by Copper Mine Processing Facility Management System</p>
+        <p>${new Date().toLocaleString()}</p>
+    </div>
+    </body>
+    </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+  }
 </script>
 {% endblock %}

@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Employee
+from django.utils import timezone
+
+from .models import Employee, Timesheet
+from construction.models import WorkPackage
 
 User = get_user_model()
 
@@ -143,5 +146,225 @@ class EmployeeSearchForm(forms.Form):
 			widget=forms.Select(attrs={
 					'class': 'form-select form-select-sm',
 					'onchange': 'this.form.submit()'
+					})
+			)
+
+class TimesheetSearchForm(forms.Form):
+	"""Form for searching and filtering timesheets."""
+	
+	employee = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	work_package = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	project = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	company = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'Filter by company...'
+					})
+			)
+	
+	trade = forms.ChoiceField(
+			choices=[('', 'All Trades')] + list(Employee.Trade.choices),
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	is_approved = forms.ChoiceField(
+			choices=[('', 'All'), ('true', 'Approved'), ('false', 'Pending')],
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	date_from = forms.DateField(
+			required=False,
+			widget=forms.DateInput(attrs={
+					'class': 'form-control form-control-sm',
+					'type': 'date',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	date_to = forms.DateField(
+			required=False,
+			widget=forms.DateInput(attrs={
+					'class': 'form-control form-control-sm',
+					'type': 'date',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	search = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'Search employee, WP code...'
+					})
+			)
+
+class TimesheetForm(forms.ModelForm):
+	"""Form for creating and updating timesheet entries."""
+	
+	class Meta:
+		model = Timesheet
+		fields = ['employee', 'work_package', 'date', 'hours_worked', 'overtime_hours', 'notes']
+		widgets = {
+				'employee': forms.Select(attrs={
+						'class': 'form-select',
+						'required': 'required'
+						}),
+				'work_package': forms.Select(attrs={
+						'class': 'form-select',
+						'required': 'required'
+						}),
+				'date': forms.DateInput(attrs={
+						'class': 'form-control',
+						'type': 'date',
+						'required': 'required'
+						}),
+				'hours_worked': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'min': '0',
+						'max': '24',
+						'step': '0.5',
+						'required': 'required',
+						'style': 'width: 80px; text-align: center; font-size: 1.2rem; font-weight: bold;'
+						}),
+				'overtime_hours': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'min': '0',
+						'max': '12',
+						'step': '0.5',
+						'style': 'width: 80px; text-align: center; font-size: 1.2rem; font-weight: bold;'
+						}),
+				'notes': forms.Textarea(attrs={
+						'class': 'form-control',
+						'rows': 2,
+						'placeholder': 'Optional notes about work performed...'
+						}),
+				}
+	
+	def __init__(self, *args, **kwargs):
+		employee_id = kwargs.pop('employee_id', None)
+		super().__init__(*args, **kwargs)
+		
+		# Filter active employees
+		self.fields['employee'].queryset = Employee.objects.filter(
+				is_active=True
+				).order_by('company', 'last_name', 'first_name')
+		
+		# Filter active work packages
+		self.fields['work_package'].queryset = WorkPackage.objects.filter(
+				status__in=['IPRO', 'MOB', 'NSTA']
+				).select_related('project').order_by('code')
+		
+		if employee_id:
+			self.fields['employee'].initial = employee_id
+			self.fields['employee'].widget = forms.HiddenInput()
+	
+	def clean(self):
+		cleaned_data = super().clean()
+		hours_worked = cleaned_data.get('hours_worked', 0)
+		overtime_hours = cleaned_data.get('overtime_hours', 0)
+		
+		total_hours = hours_worked + overtime_hours
+		
+		if total_hours > 24:
+			raise forms.ValidationError(
+					f'Total hours ({total_hours}) cannot exceed 24 hours in a day.'
+					)
+		
+		if total_hours <= 0:
+			raise forms.ValidationError('Please enter at least some hours worked.')
+		
+		return cleaned_data
+
+
+class TimesheetBulkForm(forms.Form):
+	"""Form for bulk creating timesheet entries."""
+	
+	work_package = forms.ModelChoiceField(
+			queryset=WorkPackage.objects.filter(status__in=['IPRO', 'MOB', 'NSTA']),
+			widget=forms.Select(attrs={
+					'class': 'form-select',
+					'required': 'required'
+					})
+			)
+	
+	date = forms.DateField(
+			widget=forms.DateInput(attrs={
+					'class': 'form-control',
+					'type': 'date',
+					'required': 'required'
+					}),
+			initial=timezone.now().date()
+			)
+	
+	employees = forms.ModelMultipleChoiceField(
+			queryset=Employee.objects.filter(is_active=True).order_by('company', 'last_name'),
+			widget=forms.SelectMultiple(attrs={
+					'class': 'form-select',
+					'size': '15',
+					'required': 'required'
+					})
+			)
+	
+	default_hours = forms.DecimalField(
+			max_digits=4,
+			decimal_places=1,
+			initial=8.0,
+			widget=forms.NumberInput(attrs={
+					'class': 'form-control',
+					'min': '0',
+					'max': '24',
+					'step': '0.5'
+					})
+			)
+	
+	overtime_hours = forms.DecimalField(
+			max_digits=4,
+			decimal_places=1,
+			initial=0.0,
+			required=False,
+			widget=forms.NumberInput(attrs={
+					'class': 'form-control',
+					'min': '0',
+					'max': '12',
+					'step': '0.5'
+					})
+			)
+	
+	notes = forms.CharField(
+			required=False,
+			widget=forms.Textarea(attrs={
+					'class': 'form-control',
+					'rows': 2,
+					'placeholder': 'Optional notes for all entries...'
 					})
 			)

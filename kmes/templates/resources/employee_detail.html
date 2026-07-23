@@ -1,0 +1,696 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ employee.full_name }} - Employee Details{% endblock %}
+
+{% block extra_css %}
+<style>
+  .employee-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .employee-avatar-lg {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 2.5rem;
+    border: 3px solid rgba(255,255,255,0.5);
+  }
+
+  .stat-card {
+    border-radius: 0.5rem;
+    transition: transform 0.15s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .cert-card {
+    border-left: 4px solid #dee2e6;
+    transition: all 0.15s;
+  }
+  .cert-card.valid {
+    border-left-color: #198754;
+  }
+  .cert-card.expiring {
+    border-left-color: #ffc107;
+  }
+  .cert-card.expired {
+    border-left-color: #dc3545;
+    opacity: 0.8;
+  }
+
+  .nav-pills .nav-link {
+    color: #6c757d;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+  .nav-pills .nav-link.active {
+    background: #0d6efd;
+    color: white;
+  }
+  .nav-pills .nav-link .badge {
+    font-size: 0.7rem;
+  }
+
+  .chart-bar-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 120px;
+    padding: 0 5px;
+  }
+  .chart-bar {
+    flex: 1;
+    background: #0d6efd;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s;
+    position: relative;
+    min-height: 2px;
+
+  }
+  .chart-bar:hover {
+    background: #0b5ed7;
+  }
+  .chart-bar .bar-value {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .chart-bar .bar-label {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    white-space: nowrap;
+    color: #6c757d;
+  }
+  .chart-bar.overtime {
+    background: #ffc107;
+  }
+  .chart-bar.weekend {
+    background: #e9ecef;
+  }
+  .chart-bar.today {
+    background: #198754;
+  }
+
+  .timesheet-row {
+    transition: background 0.15s;
+  }
+  .timesheet-row:hover {
+    background: #f8f9fa !important;
+  }
+  .timesheet-row.pending {
+    border-left: 3px solid #ffc107;
+  }
+
+  .work-package-item {
+    border-left: 3px solid #dee2e6;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.25rem;
+    transition: border-color 0.15s;
+  }
+  .work-package-item:hover {
+    border-left-color: #0d6efd;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'resources:employee_list' %}">Employees</a></li>
+      <li class="breadcrumb-item active">{{ employee.full_name }}</li>
+    </ol>
+  </nav>
+
+  <!-- Employee Header -->
+  <div class="employee-header">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <div class="d-flex align-items-center">
+          <div class="employee-avatar-lg me-3">
+            {{ employee.first_name|first|upper }}{{ employee.last_name|first|upper }}
+          </div>
+          <div>
+            <h2 class="mb-1">{{ employee.full_name }}</h2>
+            <p class="mb-1 opacity-75">
+              <span class="badge bg-light text-dark me-2">{{ employee.employee_id }}</span>
+              <span class="badge bg-light text-dark">{{ employee.get_trade_display }}</span>
+            </p>
+            <p class="mb-0 opacity-75">
+              <i class="bi bi-building"></i> {{ employee.company }}
+              {% if employee.is_active %}
+              <span class="badge bg-success ms-2">Active</span>
+              {% else %}
+              <span class="badge bg-danger ms-2">Inactive</span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          <a href="#" class="btn btn-light">
+            <i class="bi bi-pencil"></i> Edit
+          </a>
+          <a href="#" class="btn btn-outline-light">
+            <i class="bi bi-patch-plus"></i> Add Certification
+          </a>
+          <a href="#" class="btn btn-outline-light">
+            <i class="bi bi-clock"></i> Add Timesheet
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="card stat-card bg-primary bg-opacity-10 border-primary">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-clock fs-3 text-primary"></i>
+          <div class="fs-4 fw-bold text-primary">{{ total_hours|floatformat:1 }}</div>
+          <small class="text-muted">Total Hours</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-warning bg-opacity-10 border-warning">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-clock-history fs-3 text-warning"></i>
+          <div class="fs-4 fw-bold text-warning">{{ total_overtime|floatformat:1 }}</div>
+          <small class="text-muted">Overtime Hours</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-info bg-opacity-10 border-info">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-calendar-check fs-3 text-info"></i>
+          <div class="fs-4 fw-bold text-info">{{ total_days_worked }}</div>
+          <small class="text-muted">Days Worked</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-success bg-opacity-10 border-success">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-patch-check fs-3 text-success"></i>
+          <div class="fs-4 fw-bold text-success">{{ valid_certifications.count }}</div>
+          <small class="text-muted">Valid Certs</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-danger bg-opacity-10 border-danger">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
+          <div class="fs-4 fw-bold text-danger">{{ pending_count }}</div>
+          <small class="text-muted">Pending Approval</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-secondary bg-opacity-10 border-secondary">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-diagram-3 fs-3 text-secondary"></i>
+          <div class="fs-4 fw-bold text-secondary">{{ work_package_history|length }}</div>
+          <small class="text-muted">Work Packages</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Tabs -->
+  <div class="card">
+    <div class="card-header bg-white py-3">
+      <ul class="nav nav-pills" id="employeeTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
+            <i class="bi bi-info-circle"></i> Overview
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#timesheets">
+            <i class="bi bi-clock"></i> Timesheets
+            <span class="badge bg-primary ms-1">{{ total_entries }}</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#certifications">
+            <i class="bi bi-patch-check"></i> Certifications
+            <span class="badge bg-primary ms-1">{{ certifications.count }}</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#work-history">
+            <i class="bi bi-diagram-3"></i> Work History
+            <span class="badge bg-primary ms-1">{{ work_package_history|length }}</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card-body">
+      <div class="tab-content">
+
+        <!-- Overview Tab -->
+        <div class="tab-pane fade show active" id="overview">
+          <div class="row">
+            <div class="col-lg-8">
+              <!-- Employee Details -->
+              <h5 class="mb-3">Employee Information</h5>
+              <table class="table table-bordered">
+                <tr><th class="bg-light" width="200">Employee ID</th><td>{{ employee.employee_id }}</td></tr>
+                <tr><th class="bg-light">Full Name</th><td>{{ employee.full_name }}</td></tr>
+                <tr><th class="bg-light">Company</th><td>{{ employee.company }}</td></tr>
+                <tr><th class="bg-light">Trade / Role</th><td>{{ employee.get_trade_display }}</td></tr>
+                {% if employee.email %}<tr><th class="bg-light">Email</th><td><a href="mailto:{{ employee.email }}">{{ employee.email }}</a></td></tr>{% endif %}
+                {% if employee.phone %}<tr><th class="bg-light">Phone</th><td><a href="tel:{{ employee.phone }}">{{ employee.phone }}</a></td></tr>{% endif %}
+                <tr><th class="bg-light">Status</th><td>{% if employee.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Inactive</span>{% endif %}</td></tr>
+                <tr><th class="bg-light">Hire Date</th><td>{{ employee.hire_date|date:"F d, Y"|default:"-" }}</td></tr>
+                {% if employee.termination_date %}<tr><th class="bg-light">Termination Date</th><td class="text-danger">{{ employee.termination_date|date:"F d, Y" }}</td></tr>{% endif %}
+                {% if employee.user %}<tr><th class="bg-light">User Account</th><td>{{ employee.user.username }} ({{ employee.user.email }})</td></tr>{% endif %}
+              </table>
+
+              {% if employee.notes %}
+              <div class="mt-3">
+                <h6>Notes</h6>
+                <p class="text-muted">{{ employee.notes|linebreaks }}</p>
+              </div>
+              {% endif %}
+
+              <!-- Daily Hours Chart -->
+              <h5 class="mt-4 mb-3">Daily Hours (Last 14 Days)</h5>
+              <div class="chart-bar-container mb-4">
+                {% for day in daily_hours %}
+                <div class="chart-bar {% if day.is_today %}today{% elif day.is_weekend %}weekend{% endif %}" style="height: {% if day.hours > 0 %}{% widthratio day.hours 12 100 %}%{% else %}3px{% endif %}; max-height: 100px;margin: 12px;" title="{{ day.date|date:'M d' }}: {{ day.hours|floatformat:1 }}h">
+                  {% if day.hours > 0 %}
+                  <span class="bar-value">{{ day.hours|floatformat:1 }}</span>
+                  {% endif %}
+                  <span class="bar-label">{{ day.day_name|slice:":1" }}{{ day.day_number }}</span>
+
+                </div>
+                {% endfor %}
+              </div>
+
+              <!-- Weekly Hours Chart -->
+              <h5 class="mt-4 mb-3">Weekly Hours (Last 8 Weeks)</h5>
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead class="table-light">
+                  <tr>
+                    <th>Week</th>
+                    <th>Regular Hours</th>
+                    <th>Overtime</th>
+                    <th>Total</th>
+                    <th>Progress</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% for week in weekly_hours %}
+                  <tr>
+                    <td><small>{{ week.week_start|date:"M d" }} - {{ week.week_end|date:"M d" }}</small></td>
+                    <td><span class="badge bg-primary">{{ week.hours|floatformat:1 }}h</span></td>
+                    <td>
+                      {% if week.overtime > 0 %}
+                      <span class="badge bg-warning text-dark">{{ week.overtime|floatformat:1 }}h</span>
+                      {% else %}
+                      <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td><strong>{{ week.hours|add:week.overtime|floatformat:1 }}h</strong></td>
+                    <td>
+                      <div class="progress" style="height: 6px;">
+                        <div class="progress-bar {% if week.hours > 40 %}bg-danger{% elif week.hours > 30 %}bg-warning{% else %}bg-success{% endif %}"
+                             style="width: {% widthratio week.hours|add:week.overtime 60 100 %}%">
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <!-- This Week Summary -->
+              <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                  <h6 class="mb-0"><i class="bi bi-calendar-week me-2"></i>This Week</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row text-center">
+                    <div class="col-6 border-end">
+                      <div class="fs-4 fw-bold">{{ week_hours|floatformat:1 }}h</div>
+                      <small class="text-muted">Regular</small>
+                    </div>
+                    <div class="col-6">
+                      <div class="fs-4 fw-bold">{{ week_overtime|floatformat:1 }}h</div>
+                      <small class="text-muted">Overtime</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- This Month Summary -->
+              <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                  <h6 class="mb-0"><i class="bi bi-calendar-month me-2"></i>This Month</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row text-center">
+                    <div class="col-6 border-end">
+                      <div class="fs-4 fw-bold">{{ month_hours|floatformat:1 }}h</div>
+                      <small class="text-muted">Regular</small>
+                    </div>
+                    <div class="col-6">
+                      <div class="fs-4 fw-bold">{{ month_overtime|floatformat:1 }}h</div>
+                      <small class="text-muted">Overtime</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Certifications Summary -->
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="bi bi-patch-check me-2"></i>Certifications</h6>
+                </div>
+                <div class="card-body">
+                  <div class="d-flex justify-content-around text-center">
+                    <div>
+                      <div class="fs-4 fw-bold text-success">{{ valid_certifications.count }}</div>
+                      <small class="text-muted">Valid</small>
+                    </div>
+                    <div>
+                      <div class="fs-4 fw-bold text-warning">{{ expiring_soon_certifications.count }}</div>
+                      <small class="text-muted">Expiring</small>
+                    </div>
+                    <div>
+                      <div class="fs-4 fw-bold text-danger">{{ expired_certifications.count }}</div>
+                      <small class="text-muted">Expired</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pending Timesheets -->
+              {% if pending_timesheets %}
+              <div class="card border-warning">
+                <div class="card-header bg-warning bg-opacity-10">
+                  <h6 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>Pending Approval
+                    <span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>
+                  </h6>
+                </div>
+                <div class="card-body p-0">
+                  <div class="list-group list-group-flush">
+                    {% for ts in pending_timesheets %}
+                    <div class="list-group-item small d-flex justify-content-between align-items-center">
+                      <div>
+                        <strong>{{ ts.date|date:"M d, Y" }}</strong>
+                        <span class="badge bg-primary ms-1">{{ ts.hours_worked }}h</span>
+                      </div>
+                      <small class="text-muted">{{ ts.work_package.code }}</small>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Timesheets Tab -->
+        <div class="tab-pane fade" id="timesheets">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Timesheet History</h5>
+            <a href="#" class="btn btn-primary btn-sm">
+              <i class="bi bi-plus-lg"></i> Add Timesheet
+            </a>
+          </div>
+
+          {% if recent_timesheets %}
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Work Package</th>
+                <th>Regular Hours</th>
+                <th>Overtime</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Approved By</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for ts in recent_timesheets %}
+              <tr class="timesheet-row {% if not ts.is_approved %}pending{% endif %}">
+                <td>
+                  <strong>{{ ts.date|date:"M d, Y" }}</strong>
+                  <br>
+                  <small class="text-muted">{{ ts.date|date:"D" }}</small>
+                </td>
+                <td>
+                  <a href="{% url 'construction:work_package_detail' ts.work_package.pk %}">
+                    {{ ts.work_package.code }}
+                  </a>
+                  <br>
+                  <small class="text-muted">{{ ts.work_package.name|truncatechars:40 }}</small>
+                </td>
+                <td><span class="badge bg-primary">{{ ts.hours_worked }}h</span></td>
+                <td>
+                  {% if ts.overtime_hours > 0 %}
+                  <span class="badge bg-warning text-dark">{{ ts.overtime_hours }}h</span>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td><strong>{{ ts.hours_worked|add:ts.overtime_hours }}h</strong></td>
+                <td>
+                  {% if ts.is_approved %}
+                  <span class="badge bg-success"><i class="bi bi-check-circle"></i> Approved</span>
+                  {% else %}
+                  <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Pending</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <small>{{ ts.approved_by.get_full_name|default:"-" }}</small>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-clock" style="font-size: 3rem;"></i>
+            <p class="mt-2">No timesheets recorded yet.</p>
+            <a href="#" class="btn btn-primary">
+              <i class="bi bi-plus-lg"></i> Add First Timesheet
+            </a>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Certifications Tab -->
+        <div class="tab-pane fade" id="certifications">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Certifications</h5>
+            <a href="#" class="btn btn-primary btn-sm">
+              <i class="bi bi-plus-lg"></i> Add Certification
+            </a>
+          </div>
+
+          {% if certifications %}
+          <div class="row g-3">
+            {% for cert in certifications %}
+            <div class="col-md-6">
+              <div class="card cert-card h-100
+                                {% if cert.is_valid and cert.expiry_date >= today %}valid
+                                {% elif cert.is_valid and cert.expiry_date < today|date:'Y-m-d'|add:'30 days' %}expiring
+                                {% else %}expired{% endif %}">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="mb-1">{{ cert.name }}</h6>
+                      <small class="text-muted">{{ cert.issuing_body }}</small>
+                      {% if cert.certificate_number %}
+                      <br><small>Certificate #: {{ cert.certificate_number }}</small>
+                      {% endif %}
+                    </div>
+                    <span class="badge
+                                            {% if cert.is_valid and cert.expiry_date >= today %}bg-success
+                                            {% elif cert.is_valid %}bg-warning text-dark
+                                            {% else %}bg-danger{% endif %}">
+                                            {% if cert.is_valid and cert.expiry_date >= today %}Valid
+                                            {% elif cert.is_valid %}Expiring Soon
+                                            {% else %}Expired{% endif %}
+                                        </span>
+                  </div>
+
+                  <div class="mt-2 small">
+                    <div>
+                      <strong>Issued:</strong> {{ cert.issue_date|date:"M d, Y" }}
+                    </div>
+                    <div>
+                      <strong>Expires:</strong>
+                      <span class="{% if cert.expiry_date < today %}text-danger fw-bold{% elif cert.expiry_date < today|date:'Y-m-d'|add:'30 days' %}text-warning fw-bold{% endif %}">
+                                                {{ cert.expiry_date|date:"M d, Y" }}
+                                                {% if cert.expiry_date >= today %}
+                                                    ({{ cert.expiry_date|timeuntil }})
+                                                {% else %}
+                                                    (Expired {{ cert.expiry_date|timesince }} ago)
+                                                {% endif %}
+                                            </span>
+                    </div>
+                  </div>
+
+                  {% if cert.notes %}
+                  <div class="mt-2">
+                    <small class="text-muted">{{ cert.notes|truncatechars:100 }}</small>
+                  </div>
+                  {% endif %}
+
+                  {% if cert.document_upload %}
+                  <div class="mt-2">
+                    <a href="{{ cert.document_upload.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                      <i class="bi bi-file-earmark"></i> View Document
+                    </a>
+                  </div>
+                  {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                  <div class="btn-group btn-group-sm">
+                    <a href="#" class="btn btn-outline-secondary">
+                      <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a href="#" class="btn btn-outline-danger">
+                      <i class="bi bi-trash"></i> Delete
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-patch-check" style="font-size: 3rem;"></i>
+            <p class="mt-2">No certifications recorded.</p>
+            <a href="#" class="btn btn-primary">
+              <i class="bi bi-plus-lg"></i> Add Certification
+            </a>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Work History Tab -->
+        <div class="tab-pane fade" id="work-history">
+          <h5 class="mb-3">Work Package History</h5>
+
+          {% if work_package_history %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+              <tr>
+                <th>Work Package</th>
+                <th>Project</th>
+                <th>Total Hours</th>
+                <th>Overtime</th>
+                <th>Days Worked</th>
+                <th>Period</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for wp in work_package_history %}
+              <tr>
+                <td>
+                  <a href="{% url 'construction:work_package_detail' wp.work_package_id %}">
+                    <strong>{{ wp.work_package__code }}</strong>
+                  </a>
+                  <br>
+                  <small class="text-muted">{{ wp.work_package__name|truncatechars:50 }}</small>
+                </td>
+                <td><small>{{ wp.work_package__project__name|truncatechars:30 }}</small></td>
+                <td><span class="badge bg-primary">{{ wp.total_hours|floatformat:1 }}h</span></td>
+                <td>
+                  {% if wp.total_overtime %}
+                  <span class="badge bg-warning text-dark">{{ wp.total_overtime|floatformat:1 }}h</span>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td><span class="badge bg-info">{{ wp.days_worked }}</span></td>
+                <td>
+                  <small>{{ wp.first_date|date:"M d, Y" }} - {{ wp.last_date|date:"M d, Y" }}</small>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-diagram-3" style="font-size: 3rem;"></i>
+            <p class="mt-2">No work history recorded yet.</p>
+          </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Preserve active tab on page reload
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('#employeeTabs button[data-bs-toggle="pill"]');
+    const activeTab = localStorage.getItem('activeEmployeeTab');
+
+    if (activeTab) {
+      const tab = document.querySelector(`#employeeTabs button[data-bs-target="${activeTab}"]`);
+      if (tab) {
+        const bsTab = new bootstrap.Tab(tab);
+        bsTab.show();
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('shown.bs.tab', function(e) {
+        localStorage.setItem('activeEmployeeTab', e.target.getAttribute('data-bs-target'));
+      });
+    });
+  });
+</script>
+{% endblock %}
