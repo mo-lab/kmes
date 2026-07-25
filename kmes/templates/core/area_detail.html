@@ -1,0 +1,602 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ area.code }} - Area Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .area-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .area-code {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .stat-card {
+        border-radius: 0.5rem;
+        transition: transform 0.15s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .progress-thick {
+        height: 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .nav-pills .nav-link {
+        color: #6c757d;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+    .nav-pills .nav-link.active {
+        background: #0d6efd;
+        color: white;
+    }
+    .nav-pills .nav-link .badge {
+        font-size: 0.7rem;
+    }
+
+    .equipment-row {
+        transition: background 0.15s;
+    }
+    .equipment-row:hover {
+        background: #f8f9fa !important;
+    }
+
+    .activity-timeline {
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    .activity-timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.25rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .activity-item {
+        position: relative;
+        padding-bottom: 1rem;
+    }
+    .activity-item::before {
+        content: '';
+        position: absolute;
+        left: -1.4rem;
+        top: 0.25rem;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid white;
+    }
+    .activity-item.equipment::before { background: #0d6efd; }
+    .activity-item.report::before { background: #198754; }
+    .activity-item.timesheet::before { background: #ffc107; }
+    .activity-item.location::before { background: #fd7e14; }
+
+    .chart-mini {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        display: flex;
+    }
+    .chart-mini .segment {
+        height: 100%;
+    }
+
+    .empty-tab {
+        text-align: center;
+        padding: 3rem;
+        color: #adb5bd;
+    }
+    .empty-tab i {
+        font-size: 3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:area_list' %}">Areas</a></li>
+            {% if area.project %}
+            <li class="breadcrumb-item"><a href="{% url 'core:project-detail' area.project.pk %}">{{ area.project.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ area.code }}</li>
+        </ol>
+    </nav>
+
+    <!-- Area Header -->
+    <div class="area-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="area-code me-3">{{ area.code }}</div>
+                    <span class="badge bg-light text-dark fs-6">{{ area.project.name|default:"No Project" }}</span>
+                </div>
+                <h4 class="mb-1">{{ area.name }}</h4>
+                {% if area.description %}
+                <p class="mb-0 opacity-75">{{ area.description|truncatechars:200 }}</p>
+                {% endif %}
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="#" class="btn btn-light">
+                    <i class="bi bi-pencil"></i> Edit Area
+                </a>
+                <a href="#" class="btn btn-outline-light">
+                    <i class="bi bi-plus-lg"></i> Add Equipment
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="card stat-card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-tag fs-3 text-primary"></i>
+                    <div class="fs-4 fw-bold text-primary">{{ total_equipment }}</div>
+                    <small class="text-muted">Equipment Tags</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-check-circle fs-3 text-success"></i>
+                    <div class="fs-4 fw-bold text-success">{{ equipment_stats.installed }}</div>
+                    <small class="text-muted">Installed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-clipboard-check fs-3 text-warning"></i>
+                    <div class="fs-4 fw-bold text-warning">{{ total_work_packages }}</div>
+                    <small class="text-muted">Work Packages</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-clock fs-3 text-info"></i>
+                    <div class="fs-4 fw-bold text-info">{{ timesheet_stats.total_hours|floatformat:0|default:"0" }}</div>
+                    <small class="text-muted">Total Hours</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-danger bg-opacity-10 border-danger">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-flag fs-3 text-danger"></i>
+                    <div class="fs-4 fw-bold text-danger">{{ open_punch_items }}</div>
+                    <small class="text-muted">Open Punch Items</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-secondary bg-opacity-10 border-secondary">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-geo-alt fs-3 text-secondary"></i>
+                    <div class="fs-4 fw-bold text-secondary">{{ total_locations }}</div>
+                    <small class="text-muted">Locations</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Installation Progress -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="fw-semibold">Equipment Installation Progress</span>
+                <span class="fw-bold">{{ installation_progress }}%</span>
+            </div>
+            <div class="progress progress-thick">
+                <div class="progress-bar bg-success" style="width: {{ installation_progress }}%"></div>
+            </div>
+            <div class="chart-mini mt-2" style="height: 12px;">
+                {% for status in equipment_by_status %}
+                <div class="segment"
+                     style="width: {% widthratio status.count total_equipment 100 %}%;
+                            background: {% if status.status == 'INST' %}#198754{% elif status.status == 'COMM' %}#0d6efd{% elif status.status == 'DLVD' %}#0dcaf0{% elif status.status == 'DEF' %}#dc3545{% else %}#6c757d{% endif %};"
+                     title="{{ status.get_status_display }}: {{ status.count }}">
+                </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex flex-wrap gap-3 mt-1 small">
+                {% for status in equipment_by_status %}
+                <span>
+                    <span class="badge bg-{% if status.status == 'INST' %}success{% elif status.status == 'COMM' %}primary{% elif status.status == 'DLVD' %}info{% elif status.status == 'DEF' %}danger{% else %}secondary{% endif %} me-1">&nbsp;</span>
+                    {{ status.get_status_display }}: {{ status.count }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <ul class="nav nav-pills" id="areaTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#equipment">
+                        <i class="bi bi-tag"></i> Equipment Tags
+                        <span class="badge bg-primary ms-1">{{ total_equipment }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#work-packages">
+                        <i class="bi bi-clipboard-check"></i> Work Packages
+                        <span class="badge bg-primary ms-1">{{ total_work_packages }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#timesheets">
+                        <i class="bi bi-clock"></i> Timesheets
+                        <span class="badge bg-primary ms-1">{{ total_timesheets }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#locations">
+                        <i class="bi bi-geo-alt"></i> Locations
+                        <span class="badge bg-primary ms-1">{{ total_locations }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#punch-items">
+                        <i class="bi bi-flag"></i> Punch Items
+                        <span class="badge bg-danger ms-1">{{ open_punch_items }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#activity">
+                        <i class="bi bi-activity"></i> Activity
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content">
+
+                <!-- Equipment Tags Tab -->
+                <div class="tab-pane fade show active" id="equipment">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Equipment Tags</h5>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Add Tag
+                        </a>
+                    </div>
+
+                    {% if equipment_tags %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Tag Number</th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>System</th>
+                                <th>Documents</th>
+                                <th>Children</th>
+                                <th>Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for tag in equipment_tags %}
+                            <tr class="equipment-row" onclick="window.location='#'">
+                                <td><strong class="text-primary">{{ tag.tag_number }}</strong></td>
+                                <td>{{ tag.description|truncatechars:50 }}</td>
+                                <td><span class="badge bg-light text-dark small">{{ tag.get_equipment_type_display }}</span></td>
+                                <td>
+                                        <span class="badge small {% if tag.status == 'INST' %}bg-success{% elif tag.status == 'COMM' %}bg-primary{% elif tag.status == 'DEF' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ tag.get_status_display }}
+                                        </span>
+                                </td>
+                                <td>{{ tag.system.code|default:"-" }}</td>
+                                <td>{% if tag.document_count > 0 %}<span class="badge bg-info">{{ tag.document_count }}</span>{% else %}-{% endif %}</td>
+                                <td>{% if tag.child_count > 0 %}<span class="badge bg-light text-dark">{{ tag.child_count }}</span>{% else %}-{% endif %}</td>
+                                <td><small class="text-muted">{{ tag.updated_at|timesince }} ago</small></td>
+                                <td onclick="event.stopPropagation()">
+                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-tag"></i>
+                        <p>No equipment tags in this area.</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Add Equipment Tag
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Work Packages Tab -->
+                <div class="tab-pane fade" id="work-packages">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Work Packages</h5>
+                        <a href="{% url 'construction:work_package_create' %}?area={{ area.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Create Work Package
+                        </a>
+                    </div>
+
+                    {% if work_packages %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Items</th>
+                                <th>Hours</th>
+                                <th>Reports</th>
+                                <th>Dates</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for wp in work_packages %}
+                            <tr onclick="window.location='{% url 'construction:work_package_detail' wp.pk %}'">
+                                <td><strong>{{ wp.code }}</strong></td>
+                                <td>{{ wp.name|truncatechars:50 }}</td>
+                                <td>
+                                        <span class="badge small {% if wp.status == 'COMP' %}bg-success{% elif wp.status == 'IPRO' %}bg-warning text-dark{% elif wp.status == 'HOLD' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ wp.get_status_display }}
+                                        </span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height:6px; width:80px;">
+                                        <div class="progress-bar {% if wp.percent_complete >= 100 %}bg-success{% elif wp.percent_complete >= 50 %}bg-warning{% else %}bg-primary{% endif %}"
+                                             style="width:{{ wp.percent_complete }}%"></div>
+                                    </div>
+                                    <small>{{ wp.percent_complete }}%</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark">{{ wp.item_count }}</span></td>
+                                <td><span class="badge bg-info">{{ wp.total_hours|floatformat:1|default:"0" }}h</span></td>
+                                <td><span class="badge bg-light text-dark">{{ wp.report_count }}</span></td>
+                                <td><small>{{ wp.planned_start|date:"M d" }} - {{ wp.planned_finish|date:"M d, Y" }}</small></td>
+                                <td onclick="event.stopPropagation()">
+                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-clipboard-check"></i>
+                        <p>No work packages in this area.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Timesheets Tab -->
+                <div class="tab-pane fade" id="timesheets">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Timesheets</h5>
+                        <span class="text-muted small">
+                            {{ timesheet_stats.total_hours|floatformat:1|default:"0" }}h total | 
+                            {{ timesheet_stats.total_overtime|floatformat:1|default:"0" }}h OT |
+                            {{ timesheet_stats.total_employees }} workers
+                        </span>
+                    </div>
+
+                    {% if timesheets %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Employee</th>
+                                <th>Work Package</th>
+                                <th>Regular</th>
+                                <th>Overtime</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for ts in timesheets %}
+                            <tr>
+                                <td>{{ ts.date|date:"M d, Y" }}</td>
+                                <td>{{ ts.employee.full_name }}</td>
+                                <td><a href="{% url 'construction:work_package_detail' ts.work_package.pk %}">{{ ts.work_package.code }}</a></td>
+                                <td><span class="badge bg-primary">{{ ts.hours_worked }}h</span></td>
+                                <td>{% if ts.overtime_hours > 0 %}<span class="badge bg-warning text-dark">{{ ts.overtime_hours }}h</span>{% else %}-{% endif %}</td>
+                                <td><strong>{{ ts.hours_worked|add:ts.overtime_hours }}h</strong></td>
+                                <td>{% if ts.is_approved %}<span class="badge bg-success small">Approved</span>{% else %}<span class="badge bg-warning text-dark small">Pending</span>{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-clock"></i>
+                        <p>No timesheets recorded for this area.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Locations Tab -->
+                <div class="tab-pane fade" id="locations">
+                    <h5 class="mb-3">Equipment Locations</h5>
+
+                    {% if locations %}
+                    <div class="row g-3">
+                        {% for loc in locations %}
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ loc.equipment_tag.tag_number }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ loc.get_location_type_display }}</small>
+                                        </div>
+                                        {% if loc.is_current %}
+                                        <span class="badge bg-success">Current</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <div>Lat: {{ loc.latitude }}</div>
+                                        <div>Lng: {{ loc.longitude }}</div>
+                                        {% if loc.elevation %}<div>Elev: {{ loc.elevation }}m</div>{% endif %}
+                                        {% if loc.accuracy %}<div>Accuracy: {{ loc.accuracy }}m</div>{% endif %}
+                                    </div>
+                                    <div class="mt-1">
+                                        <small class="text-muted">{{ loc.arrival_date|date:"M d, Y H:i" }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-geo-alt"></i>
+                        <p>No location records for this area.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Punch Items Tab -->
+                <div class="tab-pane fade" id="punch-items">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Punch Items</h5>
+                        {% if critical_punch_items > 0 %}
+                        <span class="badge bg-danger">{{ critical_punch_items }} Critical</span>
+                        {% endif %}
+                    </div>
+
+                    {% if punch_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Punch #</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Tag</th>
+                                <th>Raised</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for punch in punch_items %}
+                            <tr class="{% if punch.status in 'OPEN,IPRO' and punch.category == 'A' %}table-danger{% endif %}">
+                                <td><strong>{{ punch.punch_number }}</strong></td>
+                                <td>{{ punch.description|truncatechars:60 }}</td>
+                                <td><span class="badge {% if punch.category == 'A' %}bg-danger{% elif punch.category == 'B' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ punch.get_category_display }}</span></td>
+                                <td><span class="badge {% if punch.status == 'CLSD' %}bg-success{% elif punch.status == 'OPEN' %}bg-danger{% elif punch.status == 'IPRO' %}bg-info{% else %}bg-secondary{% endif %}">{{ punch.get_status_display }}</span></td>
+                                <td>{{ punch.equipment_tag.tag_number|default:"-" }}</td>
+                                <td><small>{{ punch.raised_date|date:"M d, Y" }}</small></td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-flag"></i>
+                        <p>No punch items for this area.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Activity Tab -->
+                <div class="tab-pane fade" id="activity">
+                    <h5 class="mb-3">Recent Activity</h5>
+
+                    {% if activities %}
+                    <div class="activity-timeline">
+                        {% for activity in activities %}
+                        <div class="activity-item {{ activity.type }}">
+                            <div class="d-flex">
+                                <div class="me-2">
+                                    <i class="bi bi-{{ activity.icon }}"></i>
+                                </div>
+                                <div>
+                                    <div>{{ activity.description }}</div>
+                                    <small class="text-muted">{{ activity.date|timesince }} ago</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-tab">
+                        <i class="bi bi-activity"></i>
+                        <p>No recent activity.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('#areaTabs button[data-bs-toggle="pill"]');
+        const activeTab = localStorage.getItem('activeAreaTab');
+
+        if (activeTab) {
+            const tab = document.querySelector(`#areaTabs button[data-bs-target="${activeTab}"]`);
+            if (tab) {
+                const bsTab = new bootstrap.Tab(tab);
+                bsTab.show();
+            }
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                localStorage.setItem('activeAreaTab', e.target.getAttribute('data-bs-target'));
+            });
+        });
+    });
+</script>
+{% endblock %}

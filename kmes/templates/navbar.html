@@ -1,0 +1,394 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+  <div class="container-fluid">
+
+    <!-- Brand Logo -->
+    <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
+      <i class="bi bi-gear-fill text-warning me-2 fs-4"></i>
+      <div>
+        <span class="fw-bold">Copper Mine</span>
+        <small class="d-block text-white-50" style="font-size: 0.65rem; margin-top: -2px;">
+          Processing Facility Management
+        </small>
+      </div>
+    </a>
+
+    <!-- Mobile Toggle Button -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="mainNavbar">
+
+      <!-- Main Navigation Links -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+             href="{% url 'dashboard' %}">
+            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+          </a>
+        </li>
+
+        <!-- Projects Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'project' in request.resolver_match.url_name or 'area' in request.resolver_match.url_name or 'system' in request.resolver_match.url_name or 'equipment' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-folder me-1"></i> Projects
+          </a>
+          <ul class="dropdown-menu dropdown-menu-lg">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-folder"></i> Project Management
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:project-list' %}">
+                <i class="bi bi-list-ul"></i> All Projects
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:project-create' %}">
+                <i class="bi bi-plus-circle"></i> New Project
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-geo-alt"></i> Areas & Systems
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:area_list' %}">
+                <i class="bi bi-map"></i> Areas
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-diagram-3"></i> Systems
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Equipment Tags -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'equipment_tag' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-tag me-1"></i> Equipment
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-tag"></i> Equipment Tags
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:equipment-tag-list' %}">
+                <i class="bi bi-list-ul"></i> All Equipment Tags
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-plus-circle"></i> New Equipment Tag
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:equipment-tag-list' %}?view=card">
+                <i class="bi bi-grid-3x3-gap"></i> Card View
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Documents Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'document' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-file-earmark-text me-1"></i> Documents
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-file-earmark-text"></i> Document Management
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'documents:document_list' %}">
+                <i class="bi bi-list-ul"></i> All Documents
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-cloud-upload"></i> Upload Document
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-upload"></i> Bulk Upload
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="#S">
+                <i class="bi bi-share"></i> Shared With Me
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Construction Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'work_package' in request.resolver_match.url_name or 'daily_report' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-tools me-1"></i> Construction
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-clipboard-check"></i> Work Packages
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:work_package_list' %}">
+                <i class="bi bi-list-ul"></i> All Work Packages
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:work_package_create' %}">
+                <i class="bi bi-plus-circle"></i> New Work Package
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-journal-text"></i> Daily Reports
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-list-ul"></i> All Reports
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:daily_report_create' %}">
+                <i class="bi bi-plus-circle"></i> New Report
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Commissioning Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'commissioning' in request.resolver_match.url_name or 'punch' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-clipboard-check me-1"></i> Commissioning
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-clipboard-check"></i> Commissioning
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-diagram-3"></i> Systems
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-flag"></i> Punch Items
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-list-ul"></i> All Punch Items
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-plus-circle"></i> New Punch Item
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Resources Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'employee' in request.resolver_match.url_name or 'timesheet' in request.resolver_match.url_name or 'tool' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-people me-1"></i> Resources
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-people"></i> Workforce
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:employee_list' %}">
+                <i class="bi bi-list-ul"></i> All Employees
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:employee_create' %}">
+                <i class="bi bi-person-plus"></i> Add Employee
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-clock"></i> Timesheets
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:timesheet_list' %}">
+                <i class="bi bi-list-ul"></i> All Timesheets
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:timesheet_create' %}">
+                <i class="bi bi-plus-circle"></i> Add Timesheet
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:timesheet_bulk_create' %}">
+                <i class="bi bi-plus-lg"></i> Bulk Add Timesheets
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <!-- Right Side Navigation -->
+      <ul class="navbar-nav ms-auto">
+
+        <!-- Quick Search -->
+        <li class="nav-item me-2">
+          <form class="d-flex" role="search" action="#" method="get">
+            <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-transparent border-secondary text-white-50">
+                                <i class="bi bi-search"></i>
+                            </span>
+              <input class="form-control form-control-sm bg-transparent border-secondary text-white"
+                     type="search"
+                     name="search"
+                     placeholder="Quick search tags..."
+                     style="width: 180px;">
+            </div>
+          </form>
+        </li>
+
+        <!-- Notifications -->
+        <li class="nav-item dropdown me-2">
+          <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-bell"></i>
+            {% if notifications_count > 0 %}
+            <span class="position-absolute top-25 start-75 translate-middle badge rounded-pill bg-danger"
+                  style="font-size: 0.6rem;">
+                            {{ notifications_count }}
+                            <span class="visually-hidden">unread notifications</span>
+                        </span>
+            {% endif %}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" style="width: 320px;">
+            <li>
+              <h6 class="dropdown-header d-flex justify-content-between">
+                <span>Notifications</span>
+                <a href="#" class="small text-decoration-none">Mark all read</a>
+              </h6>
+            </li>
+            {% if notifications %}
+            {% for notification in notifications|slice:":5" %}
+            <li>
+              <a class="dropdown-item small" href="{{ notification.url|default:'#' }}">
+                <div class="d-flex">
+                  <div class="me-2">
+                    <i class="bi bi-{{ notification.icon|default:'info-circle' }} text-{{ notification.color|default:'primary' }}"></i>
+                  </div>
+                  <div>
+                    <div>{{ notification.message }}</div>
+                    <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                  </div>
+                </div>
+              </a>
+            </li>
+            {% endfor %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item text-center small" href="#">
+                View all notifications
+              </a>
+            </li>
+            {% else %}
+            <li>
+              <div class="text-center py-3 text-muted small">
+                <i class="bi bi-bell-slash"></i> No new notifications
+              </div>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+
+        <!-- User Menu -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-1"
+                 style="width: 30px; height: 30px; font-size: 0.8rem; font-weight: 600;">
+              {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+            </div>
+            <span class="d-none d-lg-inline">{{ request.user.get_full_name|default:request.user.username }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <h6 class="dropdown-header">
+                Signed in as<br>
+                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                <br>
+                <small class="text-muted">{{ request.user.email }}</small>
+              </h6>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-person"></i> My Profile
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-gear"></i> Settings
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-share"></i> Shared With Me
+              </a>
+            </li>
+            {% if request.user.is_staff %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="{% url 'admin:index' %}">
+                <i class="bi bi-shield-lock"></i> Admin Panel
+              </a>
+            </li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item text-danger" href="#">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+<!-- Spacer for fixed navbar -->
+<div style="height: 56px;"></div>

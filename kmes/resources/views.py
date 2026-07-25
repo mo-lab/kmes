@@ -878,6 +878,7 @@ class TimesheetListView(LoginRequiredMixin, generic.ListView):
 		
 		return context
 
+
 class TimesheetCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new timesheet entry."""
 	model = Timesheet
@@ -1025,7 +1026,6 @@ class TimesheetUpdateView(LoginRequiredMixin, generic.UpdateView):
 				f'Timesheet entry for {form.cleaned_data["employee"].full_name} was updated successfully.'
 				)
 		return super().form_valid(form)
-
 
 
 def timesheet_bulk_create_view(request):

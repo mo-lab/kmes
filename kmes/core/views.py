@@ -1,6 +1,6 @@
-from datetime import timezone
+from datetime import timezone, timedelta
 
-from django.db.models import Q, Count, Case, When, Value, CharField
+from django.db.models import Q, Count, Case, When, Value, CharField,Sum
 from django.http import HttpResponse
 # views.py
 from django.urls import reverse_lazy, reverse
@@ -10,9 +10,10 @@ from django.views.generic import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Project, Area, System, EquipmentTag
 from .forms import ProjectForm, AreaForm, SystemForm, EquipmentTagForm, EquipmentTagFilterForm
-from construction.models import WorkPackage
+from construction.models import WorkPackage,DailyProgressReport,WorkPackageItem
 from commissioning.models import PunchItem
 from documents.models import Document
+from resources.models import Timesheet
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -909,3 +910,379 @@ def verify_location(request, location_id):
 		messages.success(request, 'Location verified successfully.')
 	
 	return redirect('core:equipment_location_detail', pk=location.pk)
+
+
+class AreaListView(LoginRequiredMixin, generic.ListView):
+	model = Area
+	template_name = 'core/area_list.html'
+	context_object_name = 'areas'
+	paginate_by = 20
+	
+	def get_queryset(self):
+		queryset = Area.objects.select_related('project').annotate(
+				equipment_count=Count('equipment_tags', distinct=True),
+				work_package_count=Count('work_packages', distinct=True),
+				installed_count=Count(
+						'equipment_tags',
+						filter=Q(equipment_tags__status='INST'),
+						distinct=True
+						),
+				commissioned_count=Count(
+						'equipment_tags',
+						filter=Q(equipment_tags__status='COMM'),
+						distinct=True
+						),
+				location_count=Count('equipment_locations', distinct=True)
+				)
+		
+		# Apply filters
+		project_id = self.request.GET.get('project')
+		if project_id:
+			queryset = queryset.filter(project_id=project_id)
+		
+		search = self.request.GET.get('search')
+		if search:
+			queryset = queryset.filter(
+					Q(code__icontains=search) |
+					Q(name__icontains=search) |
+					Q(description__icontains=search)
+					)
+		
+		has_equipment = self.request.GET.get('has_equipment')
+		if has_equipment == 'true':
+			queryset = queryset.filter(equipment_count__gt=0)
+		elif has_equipment == 'false':
+			queryset = queryset.filter(equipment_count=0)
+		
+		# Apply sorting
+		sort = self.request.GET.get('sort', 'code')
+		allowed_sorts = [
+				'code', '-code',
+				'name', '-name',
+				'project__name', '-project__name',
+				'equipment_count', '-equipment_count',
+				'work_package_count', '-work_package_count',
+				]
+		if sort in allowed_sorts:
+			queryset = queryset.order_by(sort)
+		
+		return queryset
+	
+	def get_paginate_by(self, queryset):
+		per_page = self.request.GET.get('per_page', '20')
+		try:
+			return min(int(per_page), 100)
+		except ValueError:
+			return 20
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		
+		# View mode
+		context['view_mode'] = self.request.GET.get('view', 'table')
+		
+		# Statistics
+		base_queryset = Area.objects.all()
+		project_id = self.request.GET.get('project')
+		if project_id:
+			base_queryset = base_queryset.filter(project_id=project_id)
+		
+		context['total_areas'] = base_queryset.count()
+		context['total_equipment'] = EquipmentTag.objects.filter(
+				area__in=base_queryset
+				).count()
+		context['total_installed'] = EquipmentTag.objects.filter(
+				area__in=base_queryset,
+				status='INST'
+				).count()
+		context['total_work_packages'] = WorkPackage.objects.filter(
+				area__in=base_queryset
+				).count()
+		
+		# Projects for filter dropdown
+		context['projects'] = Project.objects.all().order_by('code')
+		
+		# Selected project
+		if project_id:
+			context['selected_project'] = Project.objects.filter(pk=project_id).first()
+		
+		return context
+
+
+class AreaDetailView(LoginRequiredMixin, generic.DetailView):
+	model = Area
+	template_name = 'core/area_detail.html'
+	context_object_name = 'area'
+	
+	def get_queryset(self):
+		return Area.objects.select_related('project')
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		area = self.get_object()
+		
+		# Equipment Tags
+		equipment_tags = EquipmentTag.objects.filter(area=area).select_related(
+				'system', 'parent_tag'
+				).prefetch_related(
+				'tag_documents', 'child_tags'
+				).annotate(
+				child_count=Count('child_tags', distinct=True),
+				document_count=Count('tag_documents', distinct=True)
+				).order_by('tag_number')
+		
+		context['equipment_tags'] = equipment_tags
+		context['total_equipment'] = equipment_tags.count()
+		
+		# Equipment statistics
+		equipment_stats = equipment_tags.aggregate(
+				installed=Count('pk', filter=Q(status='INST')),
+				delivered=Count('pk', filter=Q(status='DLVD')),
+				commissioned=Count('pk', filter=Q(status='COMM')),
+				defective=Count('pk', filter=Q(status='DEF')),
+				engineering=Count('pk', filter=Q(status='ENG')),
+				)
+		context['equipment_stats'] = equipment_stats
+		
+		# Equipment by type
+		context['equipment_by_type'] = equipment_tags.values(
+				'equipment_type'
+				).annotate(
+				count=Count('id')
+				).order_by('-count')
+		
+		# Equipment by status
+		context['equipment_by_status'] = equipment_tags.values(
+				'status'
+				).annotate(
+				count=Count('id')
+				).order_by('status')
+		
+		# Installation progress
+		if context['total_equipment'] > 0:
+			context['installation_progress'] = int(
+					(equipment_stats['installed'] / context['total_equipment']) * 100
+					)
+		else:
+			context['installation_progress'] = 0
+		
+		# Work Packages
+		work_packages = WorkPackage.objects.filter(area=area).select_related(
+				'project', 'supervisor'
+				).prefetch_related(
+				'items'
+				).annotate(
+				item_count=Count('items', distinct=True),
+				completed_items=Count('items', filter=Q(items__is_complete=True), distinct=True),
+				report_count=Count('daily_reports', distinct=True),
+				total_hours=Sum('timesheets__hours_worked'),
+				total_overtime=Sum('timesheets__overtime_hours')
+				).order_by('-created_at')
+		
+		context['work_packages'] = work_packages
+		context['total_work_packages'] = work_packages.count()
+		
+		# Work package statistics
+		wp_stats = work_packages.aggregate(
+				in_progress=Count('pk', filter=Q(status='IPRO')),
+				completed=Count('pk', filter=Q(status='COMP')),
+				not_started=Count('pk', filter=Q(status='NSTA')),
+				on_hold=Count('pk', filter=Q(status='HOLD')),
+				total_hours=Sum('timesheets__hours_worked'),
+				total_overtime=Sum('timesheets__overtime_hours')
+				)
+		context['wp_stats'] = wp_stats
+		
+		# Timesheets for work packages in this area
+		timesheets = Timesheet.objects.filter(
+				work_package__area=area
+				).select_related(
+				'employee', 'work_package', 'approved_by'
+				).order_by('-date')[:50]
+		
+		context['timesheets'] = timesheets
+		context['total_timesheets'] = Timesheet.objects.filter(
+				work_package__area=area
+				).count()
+		
+		# Timesheet statistics
+		timesheet_stats = Timesheet.objects.filter(work_package__area=area).aggregate(
+				total_hours=Sum('hours_worked'),
+				total_overtime=Sum('overtime_hours'),
+				total_entries=Count('id'),
+				total_employees=Count('employee', distinct=True)
+				)
+		context['timesheet_stats'] = timesheet_stats
+		
+		# This week's hours
+		today = timezone.now().date()
+		week_start = today - timedelta(days=today.weekday())
+		week_timesheets = Timesheet.objects.filter(
+				work_package__area=area,
+				date__gte=week_start
+				)
+		context['week_hours'] = week_timesheets.aggregate(
+				total=Sum('hours_worked')
+				)['total'] or 0
+		# Daily reports - Get base queryset first, then slice for display
+		daily_reports_base = DailyProgressReport.objects.filter(
+				work_package__area=area
+				).select_related(
+				'work_package', 'reported_by'
+				).order_by('-report_date')
+		context['total_daily_reports'] = daily_reports_base.count()
+	
+		# Daily reports
+		daily_reports = DailyProgressReport.objects.filter(
+				work_package__area=area
+				).select_related(
+				'work_package', 'reported_by'
+				).order_by('-report_date')[:20]
+		
+		context['daily_reports'] = daily_reports
+		# Recent reports (last 7 days)
+		seven_days_ago = timezone.now().date() - timedelta(days=7)
+		context['recent_reports'] = daily_reports_base.filter(
+				report_date__gte=seven_days_ago
+				)
+		context['recent_reports_count'] = context['recent_reports'].count()
+		
+		# Reports with issues in last 7 days
+		context['reports_with_issues'] = daily_reports_base.filter(
+				report_date__gte=seven_days_ago
+				).exclude(issues_encountered='').count()
+
+
+		# Systems in this area
+		context['systems'] = System.objects.filter(
+				equipment_tags__area=area
+				).distinct().annotate(
+				equipment_count=Count('equipment_tags', filter=Q(equipment_tags__area=area))
+				).order_by('code')
+		
+		# Equipment Locations
+		locations = EquipmentLocation.objects.filter(
+				area=area
+				).select_related(
+				'equipment_tag', 'recorded_by'
+				).prefetch_related('images').order_by('-arrival_date')[:20]
+		
+		context['locations'] = locations
+		context['total_locations'] = EquipmentLocation.objects.filter(area=area).count()
+		
+		# Current locations (most recent per equipment)
+		context['current_locations'] = EquipmentLocation.objects.filter(
+				area=area,
+				is_current=True
+				).select_related('equipment_tag').order_by('equipment_tag__tag_number')
+		
+		# Punch Items
+		punch_items = PunchItem.objects.filter(
+				Q(equipment_tag__area=area) | Q(system__equipment_tags__area=area)
+				).distinct().select_related(
+				'equipment_tag', 'raised_by', 'assigned_to'
+				).order_by('-raised_date')
+		
+		context['punch_items'] = punch_items
+		context['total_punch_items'] = punch_items.count()
+		context['open_punch_items'] = punch_items.filter(
+				status__in=['OPEN', 'IPRO']
+				).count()
+		context['critical_punch_items'] = punch_items.filter(
+				status__in=['OPEN', 'IPRO'],
+				category='A'
+				).count()
+		
+		# Recent activities
+		context['activities'] = self.get_area_activities(area)
+		
+		# Today's date
+		context['today'] = today
+		
+		return context
+
+	def get_area_activities(self, area):
+		"""Get recent activities for this area."""
+		from datetime import datetime, date, time
+		from django.utils import timezone as django_timezone
+		
+		def to_aware_datetime(d):
+			"""Convert any date/datetime to timezone-aware datetime."""
+			if d is None:
+				return django_timezone.make_aware(
+						datetime.min,
+						django_timezone.get_current_timezone()
+						)
+			
+			if isinstance(d, datetime):
+				if django_timezone.is_aware(d):
+					return d
+				return django_timezone.make_aware(d, django_timezone.get_current_timezone())
+			
+			if isinstance(d, date):
+				naive_dt = datetime.combine(d, time.min)
+				return django_timezone.make_aware(naive_dt, django_timezone.get_current_timezone())
+			
+			return django_timezone.make_aware(
+					datetime.min,
+					django_timezone.get_current_timezone()
+					)
+		
+		activities = []
+		
+		# Recent equipment updates
+		for tag in EquipmentTag.objects.filter(area=area).order_by('-updated_at')[:5]:
+			activities.append({
+					'icon': 'tag',
+					'description': f'Equipment {tag.tag_number} updated - Status: {tag.get_status_display()}',
+					'date': to_aware_datetime(tag.updated_at),
+					'type': 'equipment'
+					})
+		
+		# Recent daily reports
+		for report in DailyProgressReport.objects.filter(
+				work_package__area=area
+				).select_related('work_package', 'reported_by').order_by('-created_at')[:5]:
+			activities.append({
+					'icon': 'journal-text',
+					'description': f'Daily report for {report.work_package.code} on {report.report_date}',
+					'date': to_aware_datetime(report.created_at),
+					'type': 'report'
+					})
+		
+		# Recent timesheets
+		for ts in Timesheet.objects.filter(
+				work_package__area=area
+				).select_related('employee', 'work_package').order_by('-date', '-id')[:5]:
+			activities.append({
+					'icon': 'clock',
+					'description': f'{ts.employee.full_name} logged {ts.hours_worked}h on {ts.work_package.code}',
+					'date': to_aware_datetime(ts.date),
+					'type': 'timesheet'
+					})
+		
+		# Recent locations
+		for loc in EquipmentLocation.objects.filter(
+				area=area
+				).select_related('equipment_tag').order_by('-created_at')[:5]:
+			activities.append({
+					'icon': 'geo-alt',
+					'description': f'Location recorded for {loc.equipment_tag.tag_number}',
+					'date': to_aware_datetime(loc.created_at),
+					'type': 'location'
+					})
+		
+		# Recent punch items
+		for punch in PunchItem.objects.filter(
+				Q(equipment_tag__area=area) | Q(system__equipment_tags__area=area)
+				).distinct().order_by('-raised_date')[:5]:
+			activities.append({
+					'icon': 'flag',
+					'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
+					'date': to_aware_datetime(punch.raised_date),
+					'type': 'punch'
+					})
+		
+		# Sort by date - all dates are now timezone-aware datetime objects
+		activities.sort(key=lambda x: x['date'], reverse=True)
+		return activities[:15]
