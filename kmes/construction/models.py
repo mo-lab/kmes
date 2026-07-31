@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from resources.models import Employee,Timesheet
+
+
 User = get_user_model()
 
 
@@ -104,7 +107,7 @@ class DailyProgressReport(models.Model):
 	reported_by = models.ForeignKey(
 			User, on_delete=models.SET_NULL, null=True, related_name='daily_reports'
 			)
-
+	
 	work_performed_description = models.TextField()
 	issues_encountered = models.TextField(blank=True)
 	weather_conditions = models.CharField(max_length=200, blank=True)
@@ -121,7 +124,7 @@ class DailyProgressReport(models.Model):
 
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
-
+	
 	class Meta:
 		unique_together = ['work_package', 'report_date']
 		ordering = ['-report_date']
@@ -130,7 +133,7 @@ class DailyProgressReport(models.Model):
 
 	def __str__(self):
 		return f"Report {self.work_package.code} - {self.report_date}"
-
+	
 
 class InstalledItemCheck(models.Model):
 	"""Installation checklist for a single equipment tag."""
@@ -182,3 +185,20 @@ class InstallationCheckPhoto(models.Model):
 	class Meta:
 		verbose_name = 'Installation Check Photo'
 		verbose_name_plural = 'Installation Check Photos'
+
+
+class DailyProccessReportEmployees (models.Model):
+	
+	employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='daily_employees')
+	daily_report= models.ForeignKey(DailyProgressReport, on_delete=models.CASCADE, related_name='employees')
+	is_working = models.BooleanField(default=False)
+	timesheet =models.ForeignKey(Timesheet, on_delete=models.CASCADE, related_name='daily_reports')
+	
+	class Meta:
+		unique_together = ['employee', 'daily_report']
+		ordering = ['employee', 'daily_report']
+		verbose_name = 'Daily Proccess Report Employee'
+		verbose_name_plural = 'Daily Proccess Report Employees'
+		
+	def __str__(self):
+		return f"{self.employee} - {self.daily_report}"

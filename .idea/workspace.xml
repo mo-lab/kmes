@@ -4,21 +4,29 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="timesheet">
-      <change afterPath="$PROJECT_DIR$/kmes/kmes/context_processors.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/core/area_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/core/area_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/navbar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/km.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/km.iml" afterDir="false" />
+    <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="area">
+      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/daily_process_employee_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/daily_report_list.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/daily_report_list2.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/core/system_detail.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/core/system_list.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/documents/shared_with_me.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/construction/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/construction/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/construction/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/construction/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/core/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/documents/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/documents/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/kmes/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/resources/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/resources/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/core/project_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/project_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/core/project_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/project_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/core/system_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/system_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/navbar.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/navbar.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,7 +116,10 @@
       <workItem from="1784806872229" duration="1883000" />
       <workItem from="1784818273695" duration="8829000" />
       <workItem from="1784895466230" duration="3618000" />
-      <workItem from="1784993186920" duration="4970000" />
+      <workItem from="1784993186920" duration="5126000" />
+      <workItem from="1785075633346" duration="4553000" />
+      <workItem from="1785165175131" duration="5637000" />
+      <workItem from="1785505935130" duration="7250000" />
     </task>
     <task id="LOCAL‎−۰۰۰۰۱" summary="init">
       <option name="closed" value="true" />
@@ -180,7 +191,14 @@
       <option name="presentableId" value="LOCAL‎−۰۰۰۱۰" />
       <updated>1784829064744</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL‎−۰۰۰۱۱" summary="area">
+      <option name="closed" value="true" />
+      <created>1785000826513</created>
+      <option name="number" value="LOCAL‎−۰۰۰۱۱" />
+      <option name="presentableId" value="LOCAL‎−۰۰۰۱۱" />
+      <updated>1785000826513</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -190,17 +208,7 @@
     <MESSAGE value="init" />
     <MESSAGE value="init files" />
     <MESSAGE value="timesheet" />
-    <option name="LAST_COMMIT_MESSAGE" value="timesheet" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/kmes/construction/views.py</url>
-          <line>15</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="area" />
+    <option name="LAST_COMMIT_MESSAGE" value="area" />
   </component>
 </project>

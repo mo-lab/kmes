@@ -1,0 +1,641 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Systems - Project Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 0.5rem;
+        border-right: 1px solid rgba(255,255,255,0.2);
+    }
+    .stat-item:last-child {
+        border-right: none;
+    }
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+    }
+    .stat-label {
+        font-size: 0.75rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+    }
+
+    .filter-sidebar {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        position: sticky;
+        top: 1rem;
+    }
+
+    .system-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-left: 4px solid #0d6efd;
+    }
+    .system-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .system-card.has-defects {
+        border-left-color: #dc3545;
+    }
+    .system-card.commissioning {
+        border-left-color: #198754;
+    }
+
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 0.25em 0.65em;
+    }
+
+    .view-toggle .btn {
+        padding: 0.25rem 0.75rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+    }
+
+    .table-hover tbody tr {
+        cursor: pointer;
+    }
+
+    .pagination-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .progress-thin {
+        height: 6px;
+        border-radius: 3px;
+    }
+
+    .mini-stat {
+        text-align: center;
+        padding: 0.25rem;
+    }
+    .mini-stat .mini-value {
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    .mini-stat .mini-label {
+        font-size: 0.65rem;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+
+    .commissioning-badge {
+        font-size: 0.7rem;
+    }
+
+    .defect-warning {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Systems</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Systems</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="view-toggle btn-group" role="group">
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=table"
+                   class="btn btn-outline-secondary btn-sm {% if view_mode == 'table' %}active{% endif %}">
+                    <i class="bi bi-list-ul"></i>
+                </a>
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=card"
+                   class="btn btn-outline-secondary btn-sm {% if view_mode == 'card' %}active{% endif %}">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </a>
+            </div>
+            <a href="{% url 'core:system_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add System
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Banner -->
+    <div class="stats-banner">
+        <div class="row">
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_systems }}</div>
+                    <div class="stat-label">Total Systems</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_equipment }}</div>
+                    <div class="stat-label">Equipment Tags</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_installed }}</div>
+                    <div class="stat-label">Installed</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_commissioned }}</div>
+                    <div class="stat-label">Commissioned</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value">{{ systems_in_commissioning }}</div>
+                    <div class="stat-label">In Commissioning</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-item">
+                    <div class="stat-value text-warning">{{ systems_with_defects }}</div>
+                    <div class="stat-label">With Defects</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filter Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-sidebar">
+                <h5 class="mb-3">
+                    <i class="bi bi-funnel"></i> Filters
+                </h5>
+
+                <form method="get" id="filterForm">
+                    <!-- Project -->
+                    <div class="mb-3">
+                        <label class="form-label small">Project</label>
+                        <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Projects</option>
+                            {% for proj in projects %}
+                            <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ proj.code }} - {{ proj.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <label class="form-label small">Search</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" class="form-control"
+                                   placeholder="Code, name, description..."
+                                   value="{{ request.GET.search|default:'' }}">
+                        </div>
+                    </div>
+
+                    <!-- Commissioning Filter -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="has_commissioning"
+                                   value="true" id="hasCommissioning"
+                                   {% if request.GET.has_commissioning == 'true' %}checked{% endif %}
+                            onchange="this.form.submit()">
+                            <label class="form-check-label small" for="hasCommissioning">
+                                In commissioning only
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Commissioning Status -->
+                    <div class="mb-3">
+                        <label class="form-label small">Commissioning Status</label>
+                        <select name="commissioning_status" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Statuses</option>
+                            <option value="PREC" {% if request.GET.commissioning_status == 'PREC' %}selected{% endif %}>Pre-Commissioning</option>
+                            <option value="COLD" {% if request.GET.commissioning_status == 'COLD' %}selected{% endif %}>Cold Commissioning</option>
+                            <option value="HOT" {% if request.GET.commissioning_status == 'HOT' %}selected{% endif %}>Hot Commissioning</option>
+                            <option value="RAMP" {% if request.GET.commissioning_status == 'RAMP' %}selected{% endif %}>Ramp-Up</option>
+                            <option value="PERF" {% if request.GET.commissioning_status == 'PERF' %}selected{% endif %}>Performance Test</option>
+                            <option value="HNDO" {% if request.GET.commissioning_status == 'HNDO' %}selected{% endif %}>Handed Over</option>
+                        </select>
+                    </div>
+
+                    <!-- Has Defects -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="has_defects"
+                                   value="true" id="hasDefects"
+                                   {% if request.GET.has_defects == 'true' %}checked{% endif %}
+                            onchange="this.form.submit()">
+                            <label class="form-check-label small" for="hasDefects">
+                                Has defective equipment only
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search"></i> Apply Filters
+                        </button>
+                        {% if request.GET %}
+                        <a href="{% url 'core:system_list' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i> Clear All Filters
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+
+            <!-- Results Info -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="pagination-info">
+                    {% if is_paginated %}
+                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} systems
+                    {% else %}
+                    {{ systems.count }} system(s) found
+                    {% endif %}
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <select name="sort" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                        <option value="code" {% if request.GET.sort == 'code' %}selected{% endif %}>Code (A-Z)</option>
+                        <option value="-code" {% if request.GET.sort == '-code' %}selected{% endif %}>Code (Z-A)</option>
+                        <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="-equipment_count" {% if request.GET.sort == '-equipment_count' %}selected{% endif %}>Most Equipment</option>
+                        <option value="-installed_count" {% if request.GET.sort == '-installed_count' %}selected{% endif %}>Most Installed</option>
+                        <option value="-defective_count" {% if request.GET.sort == '-defective_count' %}selected{% endif %}>Most Defects</option>
+                        <option value="-open_punch_count" {% if request.GET.sort == '-open_punch_count' %}selected{% endif %}>Most Open Punch Items</option>
+                    </select>
+                    <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
+                        <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>20 per page</option>
+                        <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>50 per page</option>
+                        <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>100 per page</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if systems %}
+
+            <!-- Table View -->
+            {% if view_mode == 'table' %}
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Project</th>
+                            <th>Equipment</th>
+                            <th>Installed</th>
+                            <th>Commissioned</th>
+                            <th>Defects</th>
+                            <th>Commissioning</th>
+                            <th>Work Packages</th>
+                            <th>Punch Items</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for system in systems %}
+                        <tr onclick="window.location='#'"
+                            class="{% if system.defective_count > 0 %}table-danger{% elif system.commissioned_count >= system.equipment_count and system.equipment_count > 0 %}table-success{% endif %}">
+                            <td>
+                                <strong class="text-primary">{{ system.code }}</strong>
+                            </td>
+                            <td>
+                                <div>{{ system.name|truncatechars:50 }}</div>
+                                {% if system.description %}
+                                <small class="text-muted">{{ system.description|truncatechars:60 }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">{{ system.project.code }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ system.equipment_count }}</span>
+                            </td>
+                            <td>
+                                {% if system.equipment_count > 0 %}
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 progress-thin me-1">
+                                        <div class="progress-bar bg-success"
+                                             style="width: {% widthratio system.installed_count system.equipment_count 100 %}%">
+                                        </div>
+                                    </div>
+                                    <small>{{ system.installed_count }}</small>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ system.commissioned_count }}</span>
+                            </td>
+                            <td>
+                                {% if system.defective_count > 0 %}
+                                <span class="badge bg-danger defect-warning">{{ system.defective_count }}</span>
+                                {% else %}
+                                <span class="badge bg-success">0</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% with commissioning=system.commissioning_phases.first %}
+                                {% if commissioning %}
+                                <span class="badge commissioning-badge
+                                                {% if commissioning.status == 'PREC' %}bg-secondary
+                                                {% elif commissioning.status == 'COLD' %}bg-info
+                                                {% elif commissioning.status == 'HOT' %}bg-warning text-dark
+                                                {% elif commissioning.status == 'RAMP' %}bg-orange text-dark
+                                                {% elif commissioning.status == 'PERF' %}bg-primary
+                                                {% elif commissioning.status == 'HNDO' %}bg-success
+                                                {% endif %}">
+                                                {{ commissioning.get_status_display }}
+                                            </span>
+                                {% else %}
+                                <span class="badge bg-light text-dark">Not Started</span>
+                                {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ system.work_package_count }}</span>
+                            </td>
+                            <td>
+                                {% if system.open_punch_count > 0 %}
+                                <span class="badge bg-warning text-dark">{{ system.open_punch_count }} open</span>
+                                <br>
+                                <small class="text-muted">{{ system.punch_item_count }} total</small>
+                                {% else %}
+                                <span class="badge bg-light text-dark">{{ system.punch_item_count }}</span>
+                                {% endif %}
+                            </td>
+                            <td onclick="event.stopPropagation()">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#"
+                                       class="btn btn-outline-primary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="#"
+                                       class="btn btn-outline-secondary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="#"
+                                       class="btn btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Card View -->
+            {% else %}
+            <div class="row g-3">
+                {% for system in systems %}
+                <div class="col-xl-4 col-md-6">
+                    <div class="card system-card h-100 
+                        {% if system.defective_count > 0 %}has-defects
+                        {% elif system.commissioning_phases.first %}commissioning{% endif %}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-0">
+                                        <a href="#"
+                                           class="text-decoration-none stretched-link">
+                                            {{ system.code }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">{{ system.project.code }}</small>
+                                </div>
+                                {% with commissioning=system.commissioning_phases.first %}
+                                {% if commissioning %}
+                                <span class="badge status-badge
+                                            {% if commissioning.status == 'HNDO' %}bg-success
+                                            {% elif commissioning.status == 'HOT' %}bg-warning text-dark
+                                            {% elif commissioning.status == 'COLD' %}bg-info
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ commissioning.get_status_display }}
+                                        </span>
+                                {% endif %}
+                                {% endwith %}
+                            </div>
+
+                            <p class="card-text small mb-3">{{ system.name|truncatechars:80 }}</p>
+
+                            <!-- Equipment Stats -->
+                            <div class="row g-1 mb-2">
+                                <div class="col-3">
+                                    <div class="mini-stat">
+                                        <div class="mini-value text-primary">{{ system.equipment_count }}</div>
+                                        <div class="mini-label">Total</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="mini-stat">
+                                        <div class="mini-value text-success">{{ system.installed_count }}</div>
+                                        <div class="mini-label">Installed</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="mini-stat">
+                                        <div class="mini-value text-info">{{ system.commissioned_count }}</div>
+                                        <div class="mini-label">Comm.</div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="mini-stat">
+                                        <div class="mini-value {% if system.defective_count > 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {{ system.defective_count }}
+                                        </div>
+                                        <div class="mini-label">Defects</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            {% if system.equipment_count > 0 %}
+                            <div class="mb-2">
+                                <div class="progress progress-thin">
+                                    <div class="progress-bar bg-success"
+                                         style="width: {% widthratio system.installed_count system.equipment_count 100 %}%">
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    {% widthratio system.installed_count system.equipment_count 100 %}% installed
+                                </small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Additional Info -->
+                            <div class="d-flex flex-wrap gap-1 mt-2">
+                                {% if system.work_package_count > 0 %}
+                                <span class="badge bg-light text-dark small">
+                                    <i class="bi bi-clipboard-check"></i> {{ system.work_package_count }} WP
+                                </span>
+                                {% endif %}
+                                {% if system.open_punch_count > 0 %}
+                                <span class="badge bg-warning text-dark small">
+                                    <i class="bi bi-flag"></i> {{ system.open_punch_count }} open
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent border-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    {{ system.equipment_count }} equipment tags
+                                </small>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#"
+                                       class="btn btn-outline-secondary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="#"
+                                       class="btn btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="pagination-info">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <nav aria-label="System pagination">
+                    <ul class="pagination mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <!-- Empty State -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="empty-state">
+                        <i class="bi bi-diagram-3"></i>
+                        <h3 class="mt-3">No Systems Found</h3>
+                        <p class="text-muted">
+                            {% if request.GET %}
+                            No systems match your search criteria. Try adjusting your filters.
+                            {% else %}
+                            Get started by creating your first system to organize equipment by functional groups.
+                            {% endif %}
+                        </p>
+                        <div class="mt-3">
+                            {% if request.GET %}
+                            <a href="{% url 'core:system_list' %}" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-x-circle"></i> Clear Filters
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'core:system_create' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-lg"></i> Create First System
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updatePerPage(value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('per_page', value);
+        url.searchParams.delete('page');
+        window.location.href = url.toString();
+    }
+
+    function updateSort(value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort', value);
+        window.location.href = url.toString();
+    }
+</script>
+{% endblock %}

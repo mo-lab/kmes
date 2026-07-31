@@ -34,11 +34,6 @@ urlpatterns = [
 				views.tag_document_list_view,
 				name='tag_document_list'
 				),
-		# # Create document for a specific project
-		# path('create/project/<int:project_id>/',
-		#      views.DocumentCreateView.as_view(),
-		#      name='document_create_for_project'),
-		#
 		# # Document detail view
 		path('<int:pk>/', views.DocumentDetailView.as_view(), name='document_detail'),
 		path(
@@ -103,50 +98,9 @@ urlpatterns = [
 			views.document_download_multiple_view,
 			name='document_download_multiple'
 			),
-		#
-		# # Update existing document
-		# path('<int:pk>/update/', views.DocumentUpdateView.as_view(), name='document_update'),
-		#
-		# # Delete document
-		# path('<int:pk>/delete/', views.DocumentDeleteView.as_view(), name='document_delete'),
-		#
-		# # Create new revision of a document
-		# path('<int:pk>/new-revision/',
-		#      views.DocumentRevisionCreateView.as_view(),
-		#      name='document_revision'),
-		#
-		# # ============================================
-		# # BULK OPERATIONS
-		# # ============================================
-		#
-		# # Bulk upload multiple documents
-		# path('bulk-upload/', views.document_bulk_upload_view, name='document_bulk_upload'),
-		#
-		# # Bulk upload for specific project
-		# path('bulk-upload/project/<int:project_id>/',
-		#      views.document_bulk_upload_view,
-		#      name='document_bulk_upload_for_project'),
-		#
-		# # ============================================
-		# # TAG-DOCUMENT RELATIONSHIPS
-		# # ============================================
-		#
-		# # Link document to equipment tag
-		# path('tag-document/create/',
-		#      views.TagDocumentCreateView.as_view(),
-		#      name='tag_document_create'),
-		#
-		# # Unlink document from equipment tag
-		# path('tag-document/<int:pk>/delete/',
-		#      views.TagDocumentDeleteView.as_view(),
-		#      name='tag_document_delete'),
-		#
-		# # ============================================
-		# # DOCUMENT DOWNLOAD
-		# # ============================================
-		#
-		# # Download document file
-		# path('<int:pk>/download/',
-		#      views.document_download_view,
-		#      name='document_download'),
+		# Shared with me
+		path('shared-with-me/', views.shared_with_me_view, name='shared_with_me'),
+		path('share/<int:pk>/mark-seen/', views.mark_document_as_seen, name='mark_document_as_seen'),
+		path('share/<int:pk>/mark-unread/', views.mark_document_as_unread, name='mark_document_as_unread'),
+		path('share/mark-all-seen/', views.mark_all_as_seen, name='mark_all_as_seen'),
 		]

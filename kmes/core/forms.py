@@ -9,44 +9,80 @@ DATE_INPUT = forms.DateInput(attrs={'class': 'form-control','type': 'date'})
 
 
 class ProjectForm(forms.ModelForm):
+	"""Form for creating and updating projects."""
+	
 	class Meta:
 		model = Project
 		fields = [
 				'name', 'code', 'location', 'description',
 				'start_date', 'target_completion_date', 'actual_completion_date',
-				'status',
+				'status'
 				]
 		widgets = {
-				'description': forms.Textarea(attrs={'rows': 4}),
-				'start_date': DATE_INPUT,
-				'target_completion_date': DATE_INPUT,
-				'actual_completion_date': DATE_INPUT,
-				'status': forms.Select(attrs={
-						'class': 'form-select'
+				'name': forms.TextInput(attrs={
+						'class': 'form-control',
+						'placeholder': 'e.g., Copper Mine Phase 2 Expansion',
+						'required': 'required'
 						}),
-				}
-		help_texts = {
-				'code': _("Short code, e.g., 'CU-PH2'"),
+				'code': forms.TextInput(attrs={
+						'class': 'form-control',
+						'placeholder': 'Auto-generated if left blank',
+						}),
+				'location': forms.TextInput(attrs={
+						'class': 'form-control',
+						'placeholder': 'e.g., Site A, Antofagasta, Chile',
+						'required': 'required'
+						}),
+				'description': forms.Textarea(attrs={
+						'class': 'form-control',
+						'rows': 4,
+						'placeholder': 'Brief description of the project scope, objectives, and key deliverables...'
+						}),
+				'start_date': forms.DateInput(attrs={
+						'class': 'form-control',
+						'type': 'date',
+						'required': 'required'
+						}),
+				'target_completion_date': forms.DateInput(attrs={
+						'class': 'form-control',
+						'type': 'date',
+						'required': 'required'
+						}),
+				'actual_completion_date': forms.DateInput(attrs={
+						'class': 'form-control',
+						'type': 'date'
+						}),
+				'status': forms.HiddenInput(),
 				}
 	
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.fields['actual_completion_date'].required = False
+	
 	def clean(self):
-		cleaned = super().clean()
-		start = cleaned.get('start_date')
-		target = cleaned.get('target_completion_date')
-		actual = cleaned.get('actual_completion_date')
+		cleaned_data = super().clean()
+		start_date = cleaned_data.get('start_date')
+		target_completion_date = cleaned_data.get('target_completion_date')
+		actual_completion_date = cleaned_data.get('actual_completion_date')
 		
-		if start and target and target < start:
-			raise ValidationError({
-					'target_completion_date': _("Target completion date cannot be before start date.")
-					})
+		if start_date and target_completion_date and target_completion_date < start_date:
+			self.add_error('target_completion_date', 'Target completion date cannot be before start date.')
 		
-		if start and actual and actual < start:
-			raise ValidationError({
-					'actual_completion_date': _("Actual completion date cannot be before start date.")
-					})
+		if actual_completion_date and start_date and actual_completion_date < start_date:
+			self.add_error('actual_completion_date', 'Actual completion date cannot be before start date.')
 		
-		return cleaned
-
+		return cleaned_data
+	
+	def clean_code(self):
+		code = self.cleaned_data.get('code')
+		if code:
+			# Check uniqueness
+			qs = Project.objects.filter(code=code)
+			if self.instance.pk:
+				qs = qs.exclude(pk=self.instance.pk)
+			if qs.exists():
+				raise forms.ValidationError('A project with this code already exists.')
+		return code
 
 class AreaForm(forms.ModelForm):
 	class Meta:
@@ -73,28 +109,53 @@ class AreaForm(forms.ModelForm):
 
 
 class SystemForm(forms.ModelForm):
+	"""Form for creating and updating systems."""
+	
 	class Meta:
 		model = System
 		fields = ['project', 'code', 'name', 'description']
 		widgets = {
-				'description': forms.Textarea(attrs={'rows': 3}),
+				'project': forms.Select(attrs={
+						'class': 'form-select',
+						'required': 'required'
+						}),
+				'code': forms.TextInput(attrs={
+						'class': 'form-control',
+						'placeholder': 'Auto-generated if left blank',
+						}),
+				'name': forms.TextInput(attrs={
+						'class': 'form-control',
+						'placeholder': 'e.g., High-Pressure Grinding Roll Lubrication System',
+						'required': 'required'
+						}),
+				'description': forms.Textarea(attrs={
+						'class': 'form-control',
+						'rows': 3,
+						'placeholder': 'Describe the function and scope of this system...'
+						}),
 				}
 	
-	def clean(self):
-		cleaned = super().clean()
-		project = cleaned.get('project')
-		code = cleaned.get('code')
+	def __init__(self, *args, **kwargs):
+		project_id = kwargs.pop('project_id', None)
+		super().__init__(*args, **kwargs)
 		
-		if project and code:
+		if project_id:
+			self.fields['project'].queryset = Project.objects.filter(pk=project_id)
+			self.fields['project'].initial = project_id
+	
+	def clean_code(self):
+		code = self.cleaned_data.get('code')
+		project = self.cleaned_data.get('project')
+		
+		if code and project:
+			# Check uniqueness within project
 			qs = System.objects.filter(project=project, code=code)
 			if self.instance.pk:
 				qs = qs.exclude(pk=self.instance.pk)
 			if qs.exists():
-				raise ValidationError({
-						'code': _("A system with this code already exists for the selected project.")
-						})
-		return cleaned
-
+				raise forms.ValidationError('A system with this code already exists in this project.')
+		
+		return code
 
 class EquipmentTagForm(forms.ModelForm):
 	class Meta:
@@ -398,4 +459,58 @@ class EquipmentLocationSearchForm(forms.Form):
 					'type': 'date'
 					})
 			)
+
+
+class SystemSearchForm(forms.Form):
+	"""Form for searching and filtering systems."""
 	
+	project = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	search = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'Search by code, name, description...'
+					})
+			)
+	
+	has_commissioning = forms.ChoiceField(
+			choices=[('', 'All'), ('true', 'In Commissioning Only')],
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	commissioning_status = forms.ChoiceField(
+			choices=[
+					('', 'All Statuses'),
+					('PREC', 'Pre-Commissioning'),
+					('COLD', 'Cold Commissioning'),
+					('HOT', 'Hot Commissioning'),
+					('RAMP', 'Ramp-Up'),
+					('PERF', 'Performance Test'),
+					('HNDO', 'Handed Over'),
+					],
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	has_defects = forms.ChoiceField(
+			choices=[('', 'All'), ('true', 'Has Defects Only')],
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)

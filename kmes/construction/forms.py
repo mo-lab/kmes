@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from .models import (
 	WorkPackage, WorkPackageItem, DailyProgressReport,
-	InstalledItemCheck, InstallationCheckPhoto
+	InstalledItemCheck, InstallationCheckPhoto, DailyProccessReportEmployees
 	)
 from core.models import EquipmentTag
 
@@ -569,3 +569,103 @@ class WorkPackageItemBulkForm(forms.Form):
 		work_package_id = kwargs.pop('work_package_id', None)
 		super().__init__(*args, **kwargs)
 		self.work_package_id = work_package_id
+
+
+class DailyReportSearchForm(forms.Form):
+	"""Form for searching and filtering daily progress reports."""
+	
+	project = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	work_package = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	area = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	reported_by = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	has_issues = forms.BooleanField(
+			required=False,
+			widget=forms.CheckboxInput(attrs={
+					'class': 'form-check-input',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	is_approved = forms.ChoiceField(
+			choices=[('', 'All'), ('true', 'Approved'), ('false', 'Pending')],
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	weather = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'e.g., Sunny, Rainy...'
+					})
+			)
+	
+	date_from = forms.DateField(
+			required=False,
+			widget=forms.DateInput(attrs={
+					'class': 'form-control form-control-sm',
+					'type': 'date',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	date_to = forms.DateField(
+			required=False,
+			widget=forms.DateInput(attrs={
+					'class': 'form-control form-control-sm',
+					'type': 'date',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	
+	search = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'Search reports...'
+					})
+			)
+
+class DailyProccessReportEmployeeForm(forms.ModelForm):
+	class Meta:
+		model = DailyProccessReportEmployees
+		fields = ['employee', 'daily_report', 'is_working', 'timesheet']
+		
+		# Optional: Add widgets for styling (e.g., Bootstrap classes)
+		widgets = {
+				'employee': forms.Select(attrs={'class': 'form-control'}),
+				'daily_report': forms.Select(attrs={'class': 'form-control'}),
+				'is_working': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+				'timesheet': forms.Select(attrs={'class': 'form-control'}),
+				}

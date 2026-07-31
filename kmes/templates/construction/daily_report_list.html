@@ -1,0 +1,1064 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Daily Progress Reports - Construction Management{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stats-banner {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 0.5rem;
+    border-right: 1px solid rgba(255,255,255,0.2);
+  }
+  .stat-item:last-child {
+    border-right: none;
+  }
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+  }
+
+  .filter-sidebar {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    position: sticky;
+    top: 1rem;
+  }
+
+  .report-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #dee2e6;
+  }
+  .report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .report-card.has-issues {
+    border-left-color: #ffc107;
+  }
+  .report-card.pending {
+    border-left-color: #dc3545;
+  }
+
+  .weather-icon {
+    font-size: 1.5rem;
+  }
+
+  .view-toggle .btn {
+    padding: 0.25rem 0.75rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+  }
+
+  .table-hover tbody tr {
+    cursor: pointer;
+  }
+
+  .pagination-info {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  .chart-bar-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 100px;
+    padding: 0 5px;
+  }
+  .chart-bar {
+    flex: 1;
+    background: #0d6efd;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s;
+    position: relative;
+    min-height: 2px;
+  }
+  .chart-bar:hover {
+    background: #0b5ed7;
+  }
+  .chart-bar .bar-value {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .chart-bar .bar-label {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    white-space: nowrap;
+    color: #6c757d;
+  }
+  .chart-bar.today { background: #198754; }
+  .chart-bar.weekend { background: #e9ecef; }
+
+  .issue-badge {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+  .quick-stats-row .card {
+    transition: transform 0.15s;
+  }
+  .quick-stats-row .card:hover {
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">Daily Progress Reports</h1>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+          <li class="breadcrumb-item active">Daily Reports</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="view-toggle btn-group" role="group">
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=table"
+           class="btn btn-outline-secondary btn-sm {% if view_mode == 'table' %}active{% endif %}">
+          <i class="bi bi-list-ul"></i>
+        </a>
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=card"
+           class="btn btn-outline-secondary btn-sm {% if view_mode == 'card' %}active{% endif %}">
+          <i class="bi bi-grid-3x3-gap"></i>
+        </a>
+      </div>
+      <a href="{% url 'construction:daily_report_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Add Daily Report
+      </a>
+    </div>
+  </div>
+
+  <!-- Statistics Banner -->
+  <div class="stats-banner">
+    <div class="row">
+      <div class="col">
+        <div class="stat-item">
+          <div class="stat-value">{{ total_reports }}</div>
+          <div class="stat-label">Total Reports</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-item">
+          <div class="stat-value">{{ total_manpower }}</div>
+          <div class="stat-label">Total Manpower</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-item">
+          <div class="stat-value">{{ total_hours }}</div>
+          <div class="stat-label">Total Hours</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-item">
+          <div class="stat-value text-warning">{{ reports_with_issues }}</div>
+          <div class="stat-label">With Issues</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-item">
+          <div class="stat-value">{{ pending_approval }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-item">
+          <div class="stat-value">{{ week_reports }}</div>
+          <div class="stat-label">This Week</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Filter Sidebar -->
+    <div class="col-lg-3 mb-4">
+      <div class="filter-sidebar">
+        <h5 class="mb-3">
+          <i class="bi bi-funnel"></i> Filters
+        </h5>
+
+        <form method="get" id="filterForm">
+          <!-- Project -->
+          <div class="mb-3">
+            <label class="form-label small">Project</label>
+            <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="">All Projects</option>
+              {% for proj in projects %}
+              <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}>
+              {{ proj.code }} - {{ proj.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Work Package -->
+          <div class="mb-3">
+            <label class="form-label small">Work Package</label>
+            <select name="work_package" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="">All Work Packages</option>
+              {% for wp in work_packages %}
+              <option value="{{ wp.pk }}" {% if request.GET.work_package == wp.pk|stringformat:"s" %}selected{% endif %}>
+              {{ wp.code }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Area -->
+          <div class="mb-3">
+            <label class="form-label small">Area</label>
+            <select name="area" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="">All Areas</option>
+              {% for area in areas %}
+              <option value="{{ area.pk }}" {% if request.GET.area == area.pk|stringformat:"s" %}selected{% endif %}>
+              {{ area.code }} - {{ area.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Has Issues -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="has_issues"
+                     value="true" id="hasIssuesFilter"
+                     {% if request.GET.has_issues == 'true' %}checked{% endif %}
+              onchange="this.form.submit()">
+              <label class="form-check-label small" for="hasIssuesFilter">
+                Has issues only
+              </label>
+            </div>
+          </div>
+
+          <!-- Approval Status -->
+          <div class="mb-3">
+            <label class="form-label small">Approval Status</label>
+            <select name="is_approved" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="">All</option>
+              <option value="true" {% if request.GET.is_approved == 'true' %}selected{% endif %}>Approved</option>
+              <option value="false" {% if request.GET.is_approved == 'false' %}selected{% endif %}>Pending</option>
+            </select>
+          </div>
+
+          <!-- Weather -->
+          <div class="mb-3">
+            <label class="form-label small">Weather</label>
+            <input type="text" name="weather" class="form-control form-control-sm"
+                   placeholder="e.g., Sunny, Rainy..."
+                   value="{{ request.GET.weather|default:'' }}">
+          </div>
+
+          <!-- Date Range -->
+          <div class="mb-3">
+            <label class="form-label small">Date From</label>
+            <input type="date" name="date_from" class="form-control form-control-sm"
+                   value="{{ request.GET.date_from|default:'' }}"
+                   onchange="this.form.submit()">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small">Date To</label>
+            <input type="date" name="date_to" class="form-control form-control-sm"
+                   value="{{ request.GET.date_to|default:'' }}"
+                   onchange="this.form.submit()">
+          </div>
+
+          <!-- Quick Date Filters -->
+          <div class="mb-3">
+            <label class="form-label small">Quick Filter</label>
+            <div class="d-grid gap-1">
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Today</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Yesterday</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Last 7 Days</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Last 30 Days</a>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="mb-3">
+            <label class="form-label small">Search</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" name="search" class="form-control"
+                     placeholder="Search reports..."
+                     value="{{ request.GET.search|default:'' }}">
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-sm">
+              <i class="bi bi-search"></i> Apply Filters
+            </button>
+            {% if request.GET %}
+            <a href="{% url 'construction:daily_report_list' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-x-circle"></i> Clear All Filters
+            </a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+
+      <!-- Quick Stats Row -->
+      <div class="row g-2 mb-3 quick-stats-row">
+        <div class="col-md-2 col-4">
+          <div class="card bg-light h-100">
+            <div class="card-body text-center py-2">
+              <div class="fw-bold text-primary">{{ today_reports }}</div>
+              <small class="text-muted">Today</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-4">
+          <div class="card bg-light h-100">
+            <div class="card-body text-center py-2">
+              <div class="fw-bold text-info">{{ week_reports }}</div>
+              <small class="text-muted">This Week</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-4">
+          <div class="card bg-light h-100">
+            <div class="card-body text-center py-2">
+              <div class="fw-bold text-success">{{ avg_manpower }}</div>
+              <small class="text-muted">Avg Workers</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-4">
+          <div class="card bg-light h-100">
+            <div class="card-body text-center py-2">
+              <div class="fw-bold text-warning">{{ week_hours }}</div>
+              <small class="text-muted">Week Hours</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-4">
+          <div class="card bg-light h-100">
+            <div class="card-body text-center py-2">
+              <div class="fw-bold text-danger">{{ reports_with_issues }}</div>
+              <small class="text-muted">Issues</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 col-4">
+          <div class="card bg-light h-100">
+            <div class="card-body text-center py-2">
+              <div class="fw-bold text-secondary">{{ pending_approval }}</div>
+              <small class="text-muted">Pending</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Results Info -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="pagination-info">
+          {% if is_paginated %}
+          Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} reports
+          {% else %}
+          {{ reports.count }} report(s) found
+          {% endif %}
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <select name="sort" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+            <option value="-report_date" {% if request.GET.sort == '-report_date' %}selected{% endif %}>Newest First</option>
+            <option value="report_date" {% if request.GET.sort == 'report_date' %}selected{% endif %}>Oldest First</option>
+            <option value="work_package__code" {% if request.GET.sort == 'work_package__code' %}selected{% endif %}>Work Package</option>
+            <option value="-manpower_count" {% if request.GET.sort == '-manpower_count' %}selected{% endif %}>Most Workers</option>
+            <option value="-hours_worked" {% if request.GET.sort == '-hours_worked' %}selected{% endif %}>Most Hours</option>
+          </select>
+          <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
+            <option value="25" {% if request.GET.per_page == '25' %}selected{% endif %}>25 per page</option>
+            <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>50 per page</option>
+            <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>100 per page</option>
+          </select>
+        </div>
+      </div>
+      <!-- Bulk Actions Bar -->
+      <div id="bulkActionsBar" class="alert alert-warning d-none mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span id="selectedCount">0 reports selected</span>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success btn-sm" onclick="bulkApproveReports()">
+              <i class="bi bi-check-all"></i> Approve Selected
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
+              Clear Selection
+            </button>
+          </div>
+        </div>
+      </div>
+      {% if reports %}
+
+      <!-- Table View -->
+      {% if view_mode == 'table' %}
+      <div class="card">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Work Package</th>
+              <th>Weather</th>
+              <th>Work Performed</th>
+              <th>Manpower</th>
+              <th>Hours</th>
+              <th>Issues</th>
+              <th>Status</th>
+              <th>Reported By</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for report in reports %}
+            <tr class="{% if report.issues_encountered %}table-warning{% endif %}"
+                onclick="window.location='#'">
+              <td>
+                <strong>{{ report.report_date|date:"M d, Y" }}</strong>
+                <br>
+                <small class="text-muted">{{ report.report_date|date:"D" }}</small>
+              </td>
+              <td>
+                <a href="{% url 'construction:work_package_detail' report.work_package.pk %}"
+                   class="fw-bold text-decoration-none"
+                   onclick="event.stopPropagation()">
+                  {{ report.work_package.code }}
+                </a>
+                <br>
+                <small class="text-muted">{{ report.work_package.name|truncatechars:30 }}</small>
+              </td>
+              <td>
+                {% if report.weather_conditions %}
+                <span class="badge bg-light text-dark">
+                                            {% if 'Sunny' in report.weather_conditions %}
+                                                <i class="bi bi-sun text-warning"></i>
+                                            {% elif 'Rain' in report.weather_conditions %}
+                                                <i class="bi bi-cloud-rain text-primary"></i>
+                                            {% elif 'Cloud' in report.weather_conditions %}
+                                                <i class="bi bi-cloud text-secondary"></i>
+                                            {% elif 'Snow' in report.weather_conditions %}
+                                                <i class="bi bi-snow text-info"></i>
+                                            {% elif 'Wind' in report.weather_conditions %}
+                                                <i class="bi bi-wind text-secondary"></i>
+                                            {% else %}
+                                                <i class="bi bi-cloud"></i>
+                                            {% endif %}
+                                            {{ report.weather_conditions }}
+                                        </span>
+                {% if report.temperature_celsius %}
+                <br><small>{{ report.temperature_celsius }}°C</small>
+                {% endif %}
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="small">{{ report.work_performed_description|truncatechars:100 }}</div>
+              </td>
+              <td>
+                <span class="badge bg-primary">{{ report.manpower_count }}</span>
+              </td>
+              <td>
+                {% if report.hours_worked %}
+                <span class="badge bg-info">{{ report.hours_worked }}h</span>
+                {% else %}
+                <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if report.issues_encountered %}
+                <span class="badge bg-warning text-dark issue-badge"
+                      title="{{ report.issues_encountered|truncatechars:150 }}">
+                                            <i class="bi bi-exclamation-triangle"></i> Yes
+                                        </span>
+                {% else %}
+                <span class="text-success"><i class="bi bi-check-circle"></i></span>
+                {% endif %}
+              </td>
+              <td>
+                {% if report.is_approved %}
+                <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Approved
+                                        </span>
+                {% else %}
+                <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-clock"></i> Pending
+                                        </span>
+                {% endif %}
+              </td>
+              <td>
+                <small>{{ report.reported_by.get_full_name|default:"System"|truncatechars:15 }}</small>
+              </td>
+              <td onclick="event.stopPropagation()">
+                <div class="btn-group btn-group-sm">
+                  {% if not report.is_approved %}
+                  <button class="btn btn-outline-success"
+                          onclick="approveReport({{ report.pk }}, this)"
+                          title="Approve Report">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                  {% else %}
+                  <button class="btn btn-outline-warning"
+                          onclick="unapproveReport({{ report.pk }}, this)"
+                          title="Unapprove Report">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                  {% endif %}
+
+                  <!-- Quick View Modal -->
+                  <div class="modal fade" id="reportModal{{ report.pk }}" tabindex="-1">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h6 class="modal-title">
+                            Daily Report - {{ report.report_date|date:"F d, Y" }}
+                          </h6>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                          <p><strong>Work Package:</strong> {{ report.work_package.code }} - {{ report.work_package.name }}</p>
+                          <p><strong>Weather:</strong> {{ report.weather_conditions|default:"N/A" }}
+                            {% if report.temperature_celsius %} | {{ report.temperature_celsius }}°C{% endif %}</p>
+                          <p><strong>Manpower:</strong> {{ report.manpower_count }} workers |
+                            {{ report.hours_worked|default:"0" }} hours</p>
+                          <hr>
+                          <h6>Work Performed:</h6>
+                          <p class="small">{{ report.work_performed_description|linebreaks }}</p>
+                          {% if report.issues_encountered %}
+                          <hr>
+                          <h6 class="text-warning"><i class="bi bi-exclamation-triangle"></i> Issues Encountered:</h6>
+                          <p class="small">{{ report.issues_encountered|linebreaks }}</p>
+                          {% endif %}
+                          <hr>
+                          <small class="text-muted">
+                            Reported by: {{ report.reported_by.get_full_name|default:"System" }}<br>
+                            Submitted: {{ report.created_at|date:"F d, Y H:i" }}
+                            {% if report.is_approved %}
+                            <br>Approved by: {{ report.approved_by.get_full_name|default:"System" }}
+                            {% endif %}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-outline-info"
+                          title="Quick View"
+                          data-bs-toggle="modal"
+                          data-bs-target="#reportModal{{ report.pk }}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <a href="#"
+                     class="btn btn-outline-secondary" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Card View -->
+      {% else %}
+      <div class="row g-3">
+        {% for report in reports %}
+        <div class="col-xl-4 col-md-6">
+          <div class="card report-card h-100
+                        {% if report.issues_encountered %}has-issues{% endif %}
+                        {% if not report.is_approved %}pending{% endif %}">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <strong>{{ report.report_date|date:"F d, Y" }}</strong>
+                  <br>
+                  <small class="text-muted">{{ report.report_date|date:"l" }}</small>
+                </div>
+                <div class="d-flex gap-1">
+                  {% if report.issues_encountered %}
+                  <span class="badge bg-warning text-dark" title="Has issues">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </span>
+                  {% endif %}
+                  {% if not report.is_approved %}
+                  <span class="badge bg-danger">Pending</span>
+                  {% else %}
+                  <span class="badge bg-success">Approved</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <h6 class="mb-2">
+                <a href="{% url 'construction:work_package_detail' report.work_package.pk %}"
+                   class="text-decoration-none">
+                  {{ report.work_package.code }}
+                </a>
+              </h6>
+              <small class="text-muted d-block mb-2">{{ report.work_package.name|truncatechars:60 }}</small>
+
+              <!-- Weather & Stats -->
+              <div class="d-flex gap-2 mb-2">
+                {% if report.weather_conditions %}
+                <span class="badge bg-light text-dark">
+                                    {% if 'Sunny' in report.weather_conditions %}☀️
+                                    {% elif 'Rain' in report.weather_conditions %}🌧️
+                                    {% elif 'Cloud' in report.weather_conditions %}☁️
+                                    {% elif 'Snow' in report.weather_conditions %}🌨️
+                                    {% else %}🌤️{% endif %}
+                                    {{ report.weather_conditions }}
+                                    {% if report.temperature_celsius %}{{ report.temperature_celsius }}°C{% endif %}
+                                </span>
+                {% endif %}
+                <span class="badge bg-primary">{{ report.manpower_count }} workers</span>
+                {% if report.hours_worked %}
+                <span class="badge bg-info">{{ report.hours_worked }}h</span>
+                {% endif %}
+              </div>
+
+              <!-- Work Description -->
+              <p class="card-text small text-muted mb-2">
+                {{ report.work_performed_description|truncatechars:120 }}
+              </p>
+
+              {% if report.issues_encountered %}
+              <div class="alert alert-warning py-1 px-2 mb-2 small">
+                <i class="bi bi-exclamation-triangle"></i>
+                {{ report.issues_encountered|truncatechars:100 }}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="card-footer bg-transparent border-top">
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                  {{ report.reported_by.get_full_name|default:"System"|truncatechars:15 }}
+                </small>
+                <div class="btn-group btn-group-sm">
+                  <a href="#"
+                     class="btn btn-outline-secondary">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="pagination-info">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+        <nav aria-label="Report pagination">
+          <ul class="pagination mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="bi bi-chevron-double-left"></i>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+              <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                {{ num }}
+              </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="bi bi-chevron-double-right"></i>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+      {% else %}
+      <!-- Empty State -->
+      <div class="card">
+        <div class="card-body">
+          <div class="empty-state">
+            <i class="bi bi-journal-text"></i>
+            <h3 class="mt-3">No Daily Reports Found</h3>
+            <p class="text-muted">
+              {% if request.GET %}
+              No reports match your search criteria. Try adjusting your filters.
+              {% else %}
+              Get started by creating your first daily progress report.
+              {% endif %}
+            </p>
+            <div class="mt-3">
+              {% if request.GET %}
+              <a href="{% url 'construction:daily_report_list' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-x-circle"></i> Clear Filters
+              </a>
+              {% endif %}
+              <a href="{% url 'construction:daily_report_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Create First Report
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function updatePerPage(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', value);
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+  }
+
+  function updateSort(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', value);
+    window.location.href = url.toString();
+  }
+
+  // Auto-submit when date fields change
+  document.querySelectorAll('input[type="date"]').forEach(input => {
+    input.addEventListener('change', function() {
+      this.form.submit();
+    });
+  });
+
+  // ============================================
+  // REPORT APPROVAL FUNCTIONALITY
+  // ============================================
+
+  // Approve single report
+  function approveReport(reportId, button) {
+    if (confirm('Approve this daily report?')) {
+      // Show loading state
+      const originalHtml = button.innerHTML;
+      button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+      button.disabled = true;
+
+      fetch(`/construction/daily-reports/${reportId}/approve/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json',
+        },
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  // Update the button to show approved state
+                  const cell = button.closest('td');
+                  if (cell) {
+                    cell.innerHTML = `
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-warning"
+                                    onclick="unapproveReport(${reportId}, this)"
+                                    title="Unapprove Report">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-info"
+                                    title="Quick View"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reportModal${reportId}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <a href="/construction/daily-reports/${reportId}/update/"
+                               class="btn btn-outline-secondary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    `;
+                  }
+
+                  // Update the row status badge
+                  const row = button.closest('tr');
+                  if (row) {
+                    const statusCell = row.querySelector('td:nth-last-child(3)');
+                    if (statusCell) {
+                      statusCell.innerHTML = `
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Approved
+                            </span>
+                            <br><small class="text-muted">${data.approved_by}</small>
+                        `;
+                    }
+                  }
+
+                  // Disable the checkbox for this row
+                  const checkbox = row?.querySelector('.report-checkbox');
+                  if (checkbox) {
+                    checkbox.disabled = true;
+                    checkbox.checked = false;
+                  }
+
+                  showToast(data.message, 'success');
+                } else {
+                  showToast(data.message, 'warning');
+                }
+              })
+              .catch(error => {
+                button.innerHTML = originalHtml;
+                button.disabled = false;
+                showToast('Error approving report. Please try again.', 'danger');
+                console.error('Error:', error);
+              });
+    }
+  }
+
+  // Unapprove single report
+  function unapproveReport(reportId, button) {
+    if (confirm('Unapprove this daily report? This will revert it to pending status.')) {
+      const originalHtml = button.innerHTML;
+      button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+      button.disabled = true;
+
+      fetch(`/construction/daily-reports/${reportId}/unapprove/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json',
+        },
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  // Update the button to show pending state
+                  const cell = button.closest('td');
+                  if (cell) {
+                    cell.innerHTML = `
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-success"
+                                    onclick="approveReport(${reportId}, this)"
+                                    title="Approve Report">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-info"
+                                    title="Quick View"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reportModal${reportId}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <a href="/construction/daily-reports/${reportId}/update/"
+                               class="btn btn-outline-secondary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    `;
+                  }
+
+                  // Update the row status badge
+                  const row = button.closest('tr');
+                  if (row) {
+                    const statusCell = row.querySelector('td:nth-last-child(3)');
+                    if (statusCell) {
+                      statusCell.innerHTML = `
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-clock"></i> Pending
+                            </span>
+                        `;
+                    }
+                  }
+
+                  showToast(data.message, 'success');
+                } else {
+                  showToast(data.message, 'warning');
+                }
+              })
+              .catch(error => {
+                button.innerHTML = originalHtml;
+                button.disabled = false;
+                showToast('Error unapproving report.', 'danger');
+                console.error('Error:', error);
+              });
+    }
+  }
+
+  // Bulk selection
+  function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.report-checkbox:not([disabled])');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateBulkActions();
+  }
+
+  function updateBulkActions() {
+    const selected = document.querySelectorAll('.report-checkbox:checked');
+    const bar = document.getElementById('bulkActionsBar');
+    const count = document.getElementById('selectedCount');
+
+    if (selected.length > 0) {
+      bar.classList.remove('d-none');
+      count.textContent = `${selected.length} report(s) selected`;
+    } else {
+      bar.classList.add('d-none');
+    }
+  }
+
+  function clearSelection() {
+    document.querySelectorAll('.report-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('selectAllReports').checked = false;
+    updateBulkActions();
+  }
+
+  // Bulk approve reports
+  function bulkApproveReports() {
+    const selected = document.querySelectorAll('.report-checkbox:checked');
+
+    if (selected.length === 0) {
+      showToast('No reports selected.', 'warning');
+      return;
+    }
+
+    if (confirm(`Approve ${selected.length} selected report(s)?`)) {
+      const reportIds = Array.from(selected).map(cb => cb.value);
+
+      // Create form data
+      const formData = new FormData();
+      reportIds.forEach(id => formData.append('report_ids', id));
+
+      fetch('/construction/daily-reports/bulk-approve/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  showToast(data.message, 'success');
+                  setTimeout(() => location.reload(), 1000);
+                } else {
+                  showToast(data.message, 'warning');
+                }
+              })
+              .catch(error => {
+                showToast('Error approving reports.', 'danger');
+                console.error('Error:', error);
+              });
+    }
+  }
+
+  // Toast notification
+  function showToast(message, type) {
+    const toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+      const container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.style.position = 'fixed';
+      container.style.bottom = '20px';
+      container.style.right = '20px';
+      container.style.zIndex = '9999';
+      document.body.appendChild(container);
+    }
+
+    const container = document.getElementById('toastContainer');
+    const toastId = 'toast-' + Date.now();
+
+    const bgClass = {
+      'success': 'bg-success text-white',
+      'danger': 'bg-danger text-white',
+      'warning': 'bg-warning text-dark',
+      'info': 'bg-info text-white'
+    }[type] || 'bg-secondary text-white';
+
+    container.innerHTML += `
+        <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 mb-2" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+
+    const toastEl = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+    toast.show();
+
+    toastEl.addEventListener('hidden.bs.toast', () => {
+      toastEl.remove();
+    });
+  }
+</script>
+{% endblock %}

@@ -67,7 +67,7 @@
               </a>
             </li>
             <li>
-              <a class="dropdown-item" href="#">
+              <a class="dropdown-item" href="{% url 'core:system_list' %}">
                 <i class="bi bi-diagram-3"></i> Systems
               </a>
             </li>
@@ -122,18 +122,18 @@
               </a>
             </li>
             <li>
-              <a class="dropdown-item" href="#">
+              <a class="dropdown-item" href="{% url 'documents:document-create' %}">
                 <i class="bi bi-cloud-upload"></i> Upload Document
               </a>
             </li>
             <li>
-              <a class="dropdown-item" href="#">
+              <a class="dropdown-item" href="{% url 'documents:tag_document_bulk_link' %}">
                 <i class="bi bi-upload"></i> Bulk Upload
               </a>
             </li>
             <li><hr class="dropdown-divider"></li>
             <li>
-              <a class="dropdown-item" href="#S">
+              <a class="dropdown-item" href="{% url 'documents:shared_with_me' %}">
                 <i class="bi bi-share"></i> Shared With Me
               </a>
             </li>
@@ -169,7 +169,7 @@
               </h6>
             </li>
             <li>
-              <a class="dropdown-item" href="#">
+              <a class="dropdown-item" href="{% url 'construction:daily_report_list' %}">
                 <i class="bi bi-list-ul"></i> All Reports
               </a>
             </li>
@@ -187,34 +187,7 @@
              href="#" role="button" data-bs-toggle="dropdown">
             <i class="bi bi-clipboard-check me-1"></i> Commissioning
           </a>
-          <ul class="dropdown-menu">
-            <li>
-              <h6 class="dropdown-header">
-                <i class="bi bi-clipboard-check"></i> Commissioning
-              </h6>
-            </li>
-            <li>
-              <a class="dropdown-item" href="#">
-                <i class="bi bi-diagram-3"></i> Systems
-              </a>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <h6 class="dropdown-header">
-                <i class="bi bi-flag"></i> Punch Items
-              </h6>
-            </li>
-            <li>
-              <a class="dropdown-item" href="#">
-                <i class="bi bi-list-ul"></i> All Punch Items
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="#">
-                <i class="bi bi-plus-circle"></i> New Punch Item
-              </a>
-            </li>
-          </ul>
+
         </li>
 
         <!-- Resources Dropdown -->
@@ -267,21 +240,6 @@
       <!-- Right Side Navigation -->
       <ul class="navbar-nav ms-auto">
 
-        <!-- Quick Search -->
-        <li class="nav-item me-2">
-          <form class="d-flex" role="search" action="#" method="get">
-            <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-transparent border-secondary text-white-50">
-                                <i class="bi bi-search"></i>
-                            </span>
-              <input class="form-control form-control-sm bg-transparent border-secondary text-white"
-                     type="search"
-                     name="search"
-                     placeholder="Quick search tags..."
-                     style="width: 180px;">
-            </div>
-          </form>
-        </li>
 
         <!-- Notifications -->
         <li class="nav-item dropdown me-2">
@@ -364,7 +322,7 @@
               </a>
             </li>
             <li>
-              <a class="dropdown-item" href="#">
+              <a class="dropdown-item" href="{% url 'documents:shared_with_me' %}">
                 <i class="bi bi-share"></i> Shared With Me
               </a>
             </li>

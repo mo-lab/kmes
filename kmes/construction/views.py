@@ -6,14 +6,23 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.db import transaction
 from django.utils import timezone
-from .models import WorkPackage, WorkPackageItem,DailyProgressReport
+from django.views.generic import CreateView
+
+from .models import WorkPackage, WorkPackageItem, DailyProgressReport, DailyProccessReportEmployees
 from core.models import Project, Area, System, EquipmentTag
 from .forms import WorkPackageForm, WorkPackageItemForm, WorkPackageSearchForm, DailyProgressReportForm, WorkPackageProgressUpdateForm, \
-	WorkPackageItemBulkForm
+	WorkPackageItemBulkForm, DailyProccessReportEmployeeForm
 from django.db.models import Q, Count, Case, When, Value, CharField, Sum, Avg
 from django.utils import timezone
 from datetime import timedelta
+from django.views import generic
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q, Count, Sum, Avg
+from django.utils import timezone
+from datetime import timedelta, date
 
+from .models import DailyProgressReport, WorkPackage
+from .forms import DailyReportSearchForm
 
 class WorkPackageCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new work package with optional equipment tags."""
@@ -1285,3 +1294,476 @@ def ajax_search_available_tags(request, work_package_id):
 				})
 	
 	return JsonResponse({'results': results})
+
+
+
+
+
+class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
+	model = DailyProgressReport
+	template_name = 'construction/daily_report_list.html'
+	context_object_name = 'reports'
+	paginate_by = 25
+	
+	def get_queryset(self):
+		queryset = DailyProgressReport.objects.select_related(
+				'work_package__project',
+				'work_package__area',
+				'reported_by',
+				'approved_by'
+				).prefetch_related(
+				'work_package__items__equipment_tag'
+				)
+		
+		# Apply filters
+		form = DailyReportSearchForm(self.request.GET)
+		if form.is_valid():
+			data = form.cleaned_data
+			
+			if data.get('project'):
+				queryset = queryset.filter(work_package__project=data['project'])
+			
+			if data.get('work_package'):
+				queryset = queryset.filter(work_package=data['work_package'])
+			
+			if data.get('area'):
+				queryset = queryset.filter(work_package__area=data['area'])
+			
+			if data.get('reported_by'):
+				queryset = queryset.filter(reported_by=data['reported_by'])
+			
+			if data.get('date_from'):
+				queryset = queryset.filter(report_date__gte=data['date_from'])
+			
+			if data.get('date_to'):
+				queryset = queryset.filter(report_date__lte=data['date_to'])
+			
+			if data.get('has_issues') == 'true':
+				queryset = queryset.filter(
+						issues_encountered__isnull=False
+						).exclude(issues_encountered='')
+			
+			if data.get('is_approved') in ['true', 'false']:
+				queryset = queryset.filter(is_approved=data['is_approved'] == 'true')
+			
+			if data.get('weather'):
+				queryset = queryset.filter(
+						weather_conditions__icontains=data['weather']
+						)
+			
+			if data.get('search'):
+				search = data['search']
+				queryset = queryset.filter(
+						Q(work_performed_description__icontains=search) |
+						Q(issues_encountered__icontains=search) |
+						Q(work_package__code__icontains=search) |
+						Q(work_package__name__icontains=search) |
+						Q(weather_conditions__icontains=search)
+						)
+		
+		# Apply sorting
+		sort = self.request.GET.get('sort', '-report_date')
+		allowed_sorts = [
+				'report_date', '-report_date',
+				'work_package__code', '-work_package__code',
+				'manpower_count', '-manpower_count',
+				'hours_worked', '-hours_worked',
+				'weather_conditions', '-weather_conditions',
+				'created_at', '-created_at',
+				]
+		if sort in allowed_sorts:
+			queryset = queryset.order_by(sort, '-created_at')
+		
+		return queryset
+	
+	def get_paginate_by(self, queryset):
+		per_page = self.request.GET.get('per_page', '25')
+		try:
+			return min(int(per_page), 100)
+		except ValueError:
+			return 25
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		
+		# Search form
+		context['search_form'] = DailyReportSearchForm(self.request.GET)
+		
+		# View mode
+		context['view_mode'] = self.request.GET.get('view', 'table')
+		
+		# Base queryset for statistics
+		base_queryset = DailyProgressReport.objects.all()
+		project_id = self.request.GET.get('project')
+		if project_id:
+			base_queryset = base_queryset.filter(work_package__project_id=project_id)
+		
+		# Statistics
+		stats = base_queryset.aggregate(
+				total_reports=Count('id'),
+				total_manpower=Sum('manpower_count'),
+				total_hours=Sum('hours_worked'),
+				avg_manpower=Avg('manpower_count'),
+				avg_hours=Avg('hours_worked')
+				)
+		
+		context['total_reports'] = stats['total_reports'] or 0
+		context['total_manpower'] = stats['total_manpower'] or 0
+		context['total_hours'] = round(stats['total_hours'] or 0, 1)
+		context['avg_manpower'] = round(stats['avg_manpower'] or 0, 1)
+		context['avg_hours'] = round(stats['avg_hours'] or 0, 1)
+		
+		# Reports with issues
+		context['reports_with_issues'] = base_queryset.filter(
+				issues_encountered__isnull=False
+				).exclude(issues_encountered='').count()
+		
+		# Pending approval
+		context['pending_approval'] = base_queryset.filter(is_approved=False).count()
+		
+		# This week's reports
+		today = timezone.now().date()
+		week_start = today - timedelta(days=today.weekday())
+		week_reports = base_queryset.filter(report_date__gte=week_start)
+		context['week_reports'] = week_reports.count()
+		context['week_hours'] = round(week_reports.aggregate(
+				total=Sum('hours_worked')
+				)['total'] or 0, 1)
+		
+		# Today's reports
+		context['today_reports'] = base_queryset.filter(report_date=today).count()
+		
+		# Weather summary
+		context['weather_summary'] = base_queryset.values(
+				'weather_conditions'
+				).annotate(
+				count=Count('id')
+				).exclude(
+				weather_conditions__isnull=True
+				).exclude(
+				weather_conditions=''
+				).order_by('-count')[:10]
+		
+		# Work package summary
+		context['wp_summary'] = base_queryset.values(
+				'work_package__code',
+				'work_package__name',
+				'work_package_id'
+				).annotate(
+				report_count=Count('id'),
+				total_hours=Sum('hours_worked'),
+				total_manpower=Sum('manpower_count')
+				).order_by('-report_count')[:10]
+		
+		# Daily hours for last 14 days (for chart)
+		daily_data = []
+		for i in range(13, -1, -1):
+			day = today - timedelta(days=i)
+			day_stats = base_queryset.filter(report_date=day).aggregate(
+					reports=Count('id'),
+					hours=Sum('hours_worked'),
+					manpower=Sum('manpower_count')
+					)
+			daily_data.append({
+					'date': day,
+					'day_name': day.strftime('%a'),
+					'day_number': day.strftime('%d'),
+					'reports': day_stats['reports'] or 0,
+					'hours': float(day_stats['hours'] or 0),
+					'manpower': day_stats['manpower'] or 0,
+					'is_today': day == today,
+					'is_weekend': day.weekday() >= 5
+					})
+		context['daily_data'] = daily_data
+		
+		# Projects for filter dropdown
+		context['projects'] = Project.objects.all()
+		
+		# Active work packages
+		context['work_packages'] = WorkPackage.objects.filter(
+				status__in=['IPRO', 'MOB', 'NSTA']
+				).select_related('project').order_by('code')
+		
+		# Areas for filter
+		context['areas'] = Area.objects.all()
+		
+		# # Current date
+		# context['today'] = today
+		# max_height_px = 120  # Maximum bar height in pixels
+		#
+		# for day in daily_hours:
+		# 	if max_hours > 0:
+		# 		day['bar_height'] = max(3, int((day['hours'] / max_hours) * max_height_px))
+		# 	else:
+		# 		day['bar_height'] = 3
+		return context
+class DailyProgressReportListView2(LoginRequiredMixin, generic.ListView):
+	model = DailyProgressReport
+	template_name = 'construction/daily_report_list2.html'
+	context_object_name = 'reports'
+	paginate_by = 25
+	
+	def get_queryset(self):
+		queryset = DailyProgressReport.objects.select_related(
+				'work_package__project', 'work_package__area', 'reported_by'
+				)
+		
+		work_package_id = self.request.GET.get('work_package')
+		if work_package_id:
+			queryset = queryset.filter(work_package_id=work_package_id)
+		
+		project_id = self.request.GET.get('project')
+		if project_id:
+			queryset = queryset.filter(work_package__project_id=project_id)
+		
+		date_from = self.request.GET.get('date_from')
+		if date_from:
+			queryset = queryset.filter(report_date__gte=date_from)
+		
+		date_to = self.request.GET.get('date_to')
+		if date_to:
+			queryset = queryset.filter(report_date__lte=date_to)
+		
+		return queryset.order_by('-report_date', '-created_at')
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		
+		# Get base queryset for statistics
+		base_queryset = DailyProgressReport.objects.all()
+		
+		work_package_id = self.request.GET.get('work_package')
+		if work_package_id:
+			base_queryset = base_queryset.filter(work_package_id=work_package_id)
+		
+		project_id = self.request.GET.get('project')
+		if project_id:
+			base_queryset = base_queryset.filter(work_package__project_id=project_id)
+		
+		# Statistics
+		stats = base_queryset.aggregate(
+				total_reports=Count('id'),
+				total_manpower=Sum('manpower_count'),
+				total_hours=Sum('hours_worked'),
+				)
+		context['total_reports'] = stats['total_reports'] or 0
+		context['total_manpower'] = stats['total_manpower'] or 0
+		context['total_hours'] = stats['total_hours'] or 0
+		
+		# DAILY CHART DATA
+		today = timezone.now().date()
+		daily_data = []
+		max_hours = 1  # Start with 1 to avoid division by zero
+		
+		for i in range(13, -1, -1):
+			day = today - timedelta(days=i)
+			day_reports = base_queryset.filter(report_date=day)
+			
+			day_stats = day_reports.aggregate(
+					hours=Sum('hours_worked'),
+					manpower=Sum('manpower_count'),
+					reports=Count('id')
+					)
+			
+			hours = float(day_stats['hours'] or 0)
+			
+			daily_data.append({
+					'date': day,
+					'day_name': day.strftime('%a'),
+					'day_number': day.strftime('%d'),
+					'hours': hours,
+					'manpower': int(day_stats['manpower'] or 0),
+					'reports': day_stats['reports'] or 0,
+					'is_today': day == today,
+					'is_weekend': day.weekday() >= 5,
+					})
+			
+			if hours > max_hours:
+				max_hours = hours
+		
+		# Calculate pixel heights (max 120px for tallest bar)
+		max_height = 120
+		for day in daily_data:
+			if day['hours'] > 0:
+				day['bar_height'] = max(4, int((day['hours'] / max_hours) * max_height))
+			else:
+				day['bar_height'] = 1
+		
+		context['daily_data'] = daily_data
+		context['max_hours'] = max_hours
+		context['work_packages'] = WorkPackage.objects.filter(status__in=['IPRO', 'MOB']).select_related('project')
+		context['projects'] = Project.objects.all()
+		
+		return context
+def daily_report_approve_view(request, pk):
+	"""
+	Approve a daily progress report.
+	Can be called via AJAX or regular form submission.
+	"""
+	report = get_object_or_404(DailyProgressReport, pk=pk)
+	
+	# Check if already approved
+	if report.is_approved:
+		if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+			return JsonResponse({
+					'success': False,
+					'message': 'This report is already approved.',
+					'status': 'already_approved'
+					})
+		messages.warning(request, 'This report is already approved.')
+		return redirect_to_referer(request, 'construction:daily_report_list')
+	
+	# Approve the report
+	report.is_approved = True
+	report.approved_by = request.user
+	report.save(update_fields=['is_approved', 'approved_by', 'updated_at'])
+	
+	# AJAX response
+	if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+		return JsonResponse({
+				'success': True,
+				'message': 'Report approved successfully.',
+				'approved_by': request.user.get_full_name() or request.user.username,
+				'approved_date': timezone.now().strftime('%b %d, %Y %H:%M'),
+				'report_id': report.pk
+				})
+	
+	# Regular response
+	messages.success(
+			request,
+			f'Daily report for {report.report_date.strftime("%B %d, %Y")} was approved successfully.'
+			)
+	
+	return redirect_to_referer(request, 'construction:daily_report_list')
+
+
+def daily_report_unapprove_view(request, pk):
+	"""
+	Unapprove a daily progress report (revert to pending).
+	"""
+	report = get_object_or_404(DailyProgressReport, pk=pk)
+	
+	# Check if already pending
+	if not report.is_approved:
+		if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+			return JsonResponse({
+					'success': False,
+					'message': 'This report is already pending approval.',
+					'status': 'already_pending'
+					})
+		messages.warning(request, 'This report is already pending approval.')
+		return redirect_to_referer(request, 'construction:daily_report_list')
+	
+	# Unapprove the report
+	report.is_approved = False
+	report.approved_by = None
+	report.save(update_fields=['is_approved', 'approved_by', 'updated_at'])
+	
+	# AJAX response
+	if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+		return JsonResponse({
+				'success': True,
+				'message': 'Report unapproved successfully.',
+				'report_id': report.pk
+				})
+	
+	# Regular response
+	messages.success(
+			request,
+			f'Daily report for {report.report_date.strftime("%B %d, %Y")} was unapproved.'
+			)
+	
+	return redirect_to_referer(request, 'construction:daily_report_list')
+
+
+
+def daily_report_bulk_approve_view(request):
+	"""
+	Bulk approve multiple daily progress reports.
+	"""
+	report_ids = request.POST.getlist('report_ids')
+	
+	if not report_ids:
+		if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+			return JsonResponse({
+					'success': False,
+					'message': 'No reports selected.'
+					})
+		messages.error(request, 'No reports selected for approval.')
+		return redirect('construction:daily_report_list')
+	
+	# Filter reports that are not yet approved
+	reports = DailyProgressReport.objects.filter(
+			pk__in=report_ids,
+			is_approved=False
+			)
+	
+	approved_count = reports.count()
+	skipped_count = len(report_ids) - approved_count
+	
+	# Bulk approve
+	reports.update(
+			is_approved=True,
+			approved_by=request.user,
+			updated_at=timezone.now()
+			)
+	
+	# AJAX response
+	if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+		return JsonResponse({
+				'success': True,
+				'message': f'{approved_count} report(s) approved successfully.',
+				'approved_count': approved_count,
+				'skipped_count': skipped_count
+				})
+	
+	# Regular response
+	if approved_count > 0:
+		messages.success(
+				request,
+				f'{approved_count} report(s) approved successfully.'
+				)
+	if skipped_count > 0:
+		messages.warning(
+				request,
+				f'{skipped_count} report(s) were already approved and skipped.'
+				)
+	
+	return redirect('construction:daily_report_list')
+
+
+def daily_report_approval_status_view(request, pk):
+	"""
+	Get the approval status of a report (for AJAX polling).
+	"""
+	report = get_object_or_404(DailyProgressReport, pk=pk)
+	
+	return JsonResponse({
+			'report_id': report.pk,
+			'is_approved': report.is_approved,
+			'approved_by': report.approved_by.get_full_name() if report.approved_by else None,
+			'approved_date': report.updated_at.strftime('%b %d, %Y %H:%M') if report.is_approved else None,
+			'report_date': report.report_date.strftime('%B %d, %Y'),
+			'work_package': report.work_package.code,
+			})
+
+
+def redirect_to_referer(request, fallback_url):
+	"""
+	Redirect to the referring page or fallback URL.
+	"""
+	referer = request.META.get('HTTP_REFERER')
+	if referer:
+		return redirect(referer)
+	return redirect(fallback_url)
+
+class DailyProccessReportEmployeeCreateView(LoginRequiredMixin, CreateView):
+	model = DailyProccessReportEmployees
+	form_class = DailyProccessReportEmployeeForm
+	template_name = 'construction/daily_process_employee_form.html' # Update with your app's template path
+	success_url = reverse_lazy('your_success_url_name') # Update with the view name to redirect to on success
+	
+	def form_valid(self, form):
+		# Adds a success message upon successful creation
+		messages.success(self.request, "Daily process report employee added successfully.")
+		return super().form_valid(form)

@@ -520,20 +520,151 @@ def document_share_delete_view(request, pk):
 
 
 def shared_with_me_view(request):
-	"""View documents shared with the current user."""
+	"""
+	View documents shared with the current user.
+	Includes options to mark documents as seen/read.
+	"""
 	shares = DocumentShare.objects.filter(
 			shared_with=request.user
 			).select_related(
-			'document__project', 'shared_by'
+			'document__project',
+			'document__submitted_by',
+			'shared_by'
+			).prefetch_related(
+			'document__tag_documents__equipment_tag'
 			).order_by('-shared_date')
 	
-	return render(
-		request, 'documents/shared_with_me.html', {
-					'shares':       shares,
-					'unread_count': shares.filter(is_accessed=False).count()
-					}
-		)
+	# Statistics
+	total_shared = shares.count()
+	unread_count = shares.filter(is_accessed=False).count()
+	read_count = shares.filter(is_accessed=True).count()
+	
+	# Get filter from query params
+	filter_type = request.GET.get('filter', 'all')
+	
+	if filter_type == 'unread':
+		shares = shares.filter(is_accessed=False)
+	elif filter_type == 'read':
+		shares = shares.filter(is_accessed=True)
+	
+	# Search
+	search = request.GET.get('search', '')
+	if search:
+		shares = shares.filter(
+				Q(document__document_number__icontains=search) |
+				Q(document__title__icontains=search) |
+				Q(shared_by__first_name__icontains=search) |
+				Q(shared_by__last_name__icontains=search) |
+				Q(message__icontains=search)
+				)
+	
+	# Sort
+	sort = request.GET.get('sort', '-shared_date')
+	allowed_sorts = [
+			'shared_date', '-shared_date',
+			'document__document_number', '-document__document_number',
+			'document__title', '-document__title',
+			'is_accessed', '-is_accessed',
+			]
+	if sort in allowed_sorts:
+		shares = shares.order_by(sort)
+	
+	context = {
+			'shares': shares,
+			'total_shared': total_shared,
+			'unread_count': unread_count,
+			'read_count': read_count,
+			'filter_type': filter_type,
+			'search': search,
+			'page_title': 'Documents Shared With Me',
+			}
+	
+	return render(request, 'documents/shared_with_me.html', context)
 
+
+def mark_document_as_seen(request, pk):
+	"""Mark a shared document as seen/read."""
+	share = get_object_or_404(
+			DocumentShare,
+			pk=pk,
+			shared_with=request.user
+			)
+	
+	if not share.is_accessed:
+		share.is_accessed = True
+		share.accessed_date = timezone.now()
+		share.save()
+		
+		if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+			return JsonResponse({
+					'success': True,
+					'message': 'Document marked as seen.',
+					'accessed_date': share.accessed_date.strftime('%b %d, %Y %H:%M')
+					})
+		
+		messages.success(request, 'Document marked as seen.')
+	else:
+		if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+			return JsonResponse({
+					'success': False,
+					'message': 'Document was already marked as seen.'
+					})
+	
+	# Redirect back to the referring page
+	referer = request.META.get('HTTP_REFERER')
+	if referer:
+		return redirect(referer)
+	return redirect('documents:shared_with_me')
+
+
+def mark_all_as_seen(request):
+	"""Mark all shared documents as seen."""
+	if request.method == 'POST':
+		updated_count = DocumentShare.objects.filter(
+				shared_with=request.user,
+				is_accessed=False
+				).update(
+				is_accessed=True,
+				accessed_date=timezone.now()
+				)
+		
+		if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+			return JsonResponse({
+					'success': True,
+					'message': f'{updated_count} document(s) marked as seen.',
+					'count': updated_count
+					})
+		
+		messages.success(
+				request,
+				f'{updated_count} document(s) marked as seen.'
+				)
+	
+	return redirect('documents:shared_with_me')
+
+
+def mark_document_as_unread(request, pk):
+	"""Mark a shared document as unread."""
+	share = get_object_or_404(
+			DocumentShare,
+			pk=pk,
+			shared_with=request.user
+			)
+	
+	if share.is_accessed:
+		share.is_accessed = False
+		share.accessed_date = None
+		share.save()
+		
+		if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+			return JsonResponse({
+					'success': True,
+					'message': 'Document marked as unread.'
+					})
+		
+		messages.success(request, 'Document marked as unread.')
+	
+	return redirect('documents:shared_with_me')
 
 
 def document_share_resend_view(request, pk):
