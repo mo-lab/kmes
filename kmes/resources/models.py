@@ -98,11 +98,11 @@ class Timesheet(models.Model):
 			Employee, on_delete=models.CASCADE, related_name='timesheets'
 			)
 	work_package = models.ForeignKey(
-			'construction.WorkPackage', on_delete=models.CASCADE, related_name='timesheets'
+			'construction.WorkPackage', on_delete=models.CASCADE, related_name='timesheets',null=True,blank=True
 			)
 	
-	date = models.DateField()
-	hours_worked = models.DecimalField(max_digits=4, decimal_places=2)
+	date = models.DateField(default=timezone.now)
+	hours_worked = models.DecimalField(max_digits=4, decimal_places=2,default=8)
 	overtime_hours = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
 	
 	is_approved = models.BooleanField(default=False)

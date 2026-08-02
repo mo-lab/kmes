@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (WorkPackageCreateView, WorkPackageListView, DailyProgressReportCreateView, WorkPackageDetailView, WorkPackageItemCreateView, \
                     work_package_item_bulk_add_view, work_package_item_toggle_complete_view, ajax_search_available_tags, DailyProgressReportListView,
                     daily_report_approve_view, daily_report_approval_status_view, daily_report_unapprove_view, daily_report_bulk_approve_view,
-                    DailyProgressReportListView2, DailyProccessReportEmployeeCreateView)
+                    DailyProgressReportListView2, DailyProgressReportCreateView2)
 
 app_name = 'construction'
 
@@ -16,6 +16,7 @@ urlpatterns = [
 		path('work-packages/<int:pk>/', WorkPackageDetailView.as_view(), name='work_package_detail'),
 		path('work-packages/create/', WorkPackageCreateView.as_view(), name='work_package_create'),
 		path('daily-proccess/create/', DailyProgressReportCreateView.as_view(), name='daily_report_create'),
+		path('daily-proccess2/create/', DailyProgressReportCreateView2.as_view(), name='daily_report_create2'),
 		path('daily-proccess/', DailyProgressReportListView.as_view(), name='daily_report_list'),
 		path('daily-proccess2/', DailyProgressReportListView2.as_view(), name='daily_report_list2'),
 		# Daily Report Approval
@@ -57,5 +58,4 @@ urlpatterns = [
 			ajax_search_available_tags,
 			name='ajax_search_available_tags'
 			),
-		path('daily-process-employee/add/', DailyProccessReportEmployeeCreateView.as_view(), name='daily_process_employee_create'),
 		]

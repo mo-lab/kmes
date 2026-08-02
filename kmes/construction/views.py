@@ -1,4 +1,4 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
@@ -6,15 +6,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.db import transaction
 from django.utils import timezone
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView
 
-from .models import WorkPackage, WorkPackageItem, DailyProgressReport, DailyProccessReportEmployees
+from .models import WorkPackage, WorkPackageItem, DailyProgressReport, DailyProcessReportEmployees
 from core.models import Project, Area, System, EquipmentTag
 from .forms import WorkPackageForm, WorkPackageItemForm, WorkPackageSearchForm, DailyProgressReportForm, WorkPackageProgressUpdateForm, \
-	WorkPackageItemBulkForm, DailyProccessReportEmployeeForm
+	WorkPackageItemBulkForm, DailyProccessReportEmployeeForm, DailyProgressReportForm2
 from django.db.models import Q, Count, Case, When, Value, CharField, Sum, Avg
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, Count, Sum, Avg
@@ -23,6 +23,8 @@ from datetime import timedelta, date
 
 from .models import DailyProgressReport, WorkPackage
 from .forms import DailyReportSearchForm
+from resources.models import Employee,Timesheet
+
 
 class WorkPackageCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new work package with optional equipment tags."""
@@ -1757,13 +1759,220 @@ def redirect_to_referer(request, fallback_url):
 		return redirect(referer)
 	return redirect(fallback_url)
 
-class DailyProccessReportEmployeeCreateView(LoginRequiredMixin, CreateView):
-	model = DailyProccessReportEmployees
-	form_class = DailyProccessReportEmployeeForm
-	template_name = 'construction/daily_process_employee_form.html' # Update with your app's template path
-	success_url = reverse_lazy('your_success_url_name') # Update with the view name to redirect to on success
+
+class DailyProgressReportCreateView2(LoginRequiredMixin, ListView):
+	model = Employee
+	template_name = 'construction/employee_simple_list.html'
+	context_object_name = 'employees'
+	ordering = ['company', 'last_name', 'first_name']
 	
+	def get_queryset(self):
+		queryset = super().get_queryset()
+		# Company filter from GET (or from POST if we store it)
+		company = self.request.GET.get('company') or self.request.POST.get('company')
+		if company:
+			queryset = queryset.filter(company=company)
+		return queryset
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		# Companies for dropdown
+		context['companies'] = Employee.objects.values_list('company', flat=True).distinct().order_by('company')
+		context['selected_company'] = self.request.GET.get('company', '') or self.request.POST.get('company', '')
+		# Date selection
+		selected_date = self.request.GET.get('report_date', '') or self.request.POST.get('report_date', '')
+		context['selected_date'] = selected_date
+		# Working employee IDs – empty on GET, filled on POST
+		context['working_employee_ids'] = []
+		return context
+	
+	def post(self, request, *args, **kwargs):
+		# Get the list of checked employee IDs from the form
+		working_ids = request.POST.getlist('working_employees')  # list of strings
+		working_ids = [int(pk) for pk in working_ids]
+		
+		# For demonstration – you can later save these to a model
+		messages.success(request, f"Captured {len(working_ids)} working employees: {working_ids}")
+		working_employees = Employee.objects.filter(pk__in=working_ids)
+		# 1. Capture the selected date
+		report_date_str = request.POST.get('report_date', '').strip()
+		report_date = timezone.now()
+		if report_date_str:
+			try:
+				report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
+			except ValueError:
+				messages.error(request, f"Invalid date format: '{report_date_str}'. Please use YYYY-MM-DD.")
+		for working_employee in working_employees:
+				Timesheet.objects.create(employee=working_employee,date=report_date)
+		timesheets_to_remove = Timesheet.objects.none()
+		if report_date:
+			timesheets_to_remove = Timesheet.objects.filter(
+					date=report_date
+					).exclude(
+					employee__in=working_employees
+					)
+			for timesheet in timesheets_to_remove:
+				timesheet.delete()
+		all_timesheets=Timesheet.objects.filter(date=report_date)
+		print(all_timesheets)
+			# Re‑render the page with the company filter preserved and toggles on
+			# We'll add the working_ids to context so the switches stay checked
+			# context = self.get_context_data()
+			# context['working_employee_ids'] = working_ids
+			# Manually set the object_list (queryset) because post doesn't call get
+			# self.object_list = self.get_queryset()
+			# context['employees'] = self.object_list
+		return redirect('construction:daily_report_create2')
+
+class DailyProgressReportCreateView3( generic.CreateView):
+	"""Create a daily progress report – only for the user's company employees."""
+	model = DailyProgressReport
+	form_class = DailyProgressReportForm2
+	template_name = 'construction/daily_report_form2.html'
+	success_message = "Daily progress report was created successfully."
+	
+	# ---------- User company check ----------
+	def test_func(self):
+		"""Ensure the logged-in user has an associated Employee record."""
+		try:
+			self.user_employee = Employee.objects.get(user=self.request.user)
+			return True
+		except Employee.DoesNotExist:
+			return False
+	
+	def handle_no_permission(self):
+		messages.error(self.request, "Your account is not linked to an employee profile. Please contact an administrator.")
+		return redirect('core:dashboard')
+	
+	def get_user_company(self):
+		"""Get the company of the logged-in user."""
+		if not hasattr(self, 'user_employee'):
+			self.user_employee = Employee.objects.get(user=self.request.user)
+		return self.user_employee.company
+	
+	# ---------- Standard CreateView methods ----------
+	def get_success_url(self):
+		return reverse('construction:work_package_detail', kwargs={'pk': self.object.work_package.pk})
+	
+	def get_initial(self):
+		initial = super().get_initial()
+		work_package_id = self.kwargs.get('work_package_id') or self.request.GET.get('work_package')
+		if work_package_id:
+			initial['work_package'] = get_object_or_404(WorkPackage, pk=work_package_id)
+		initial['report_date'] = timezone.now().date()
+		return initial
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['is_create'] = True
+		context['page_title'] = 'Create Daily Progress Report'
+		
+		user_company = self.get_user_company()
+		work_package_id = self.kwargs.get('work_package_id') or self.request.GET.get('work_package')
+		
+		if work_package_id:
+			work_package = get_object_or_404(WorkPackage, pk=work_package_id)
+			context['work_package'] = work_package
+			
+			# Get equipment tags (unchanged)
+			context['work_package_items'] = work_package.items.select_related('equipment_tag').order_by('sequence_number')
+			
+			# Previous reports
+			context['previous_reports'] = DailyProgressReport.objects.filter(
+					work_package=work_package
+					).select_related('reported_by').order_by('-report_date')[:5]
+			
+			today = timezone.now().date()
+			context['today_report'] = DailyProgressReport.objects.filter(
+					work_package=work_package,
+					report_date=today
+					).first()
+			
+			# ------ FILTER EMPLOYEES BY USER'S COMPANY ------
+			employees = Employee.objects.filter(
+					is_active=True,
+					company=user_company
+					).order_by('last_name', 'first_name')
+			context['employees'] = employees  # single list, no grouping needed
+			
+			# Today's working employees (pre‑check)
+			if context['today_report']:
+				today_working_ids = DailyProcessReportEmployees.objects.filter(
+						daily_report=context['today_report'],
+						is_working=True
+						).values_list('employee_id', flat=True)
+				context['today_working_employee_ids'] = list(today_working_ids)
+			else:
+				context['today_working_employee_ids'] = []
+			
+			# Yesterday's working employees for quick copy
+			if context['previous_reports']:
+				yesterday_report = context['previous_reports'].first()
+				yesterday_working = DailyProcessReportEmployees.objects.filter(
+						daily_report=yesterday_report,
+						is_working=True
+						).values_list('employee_id', flat=True)
+				context['yesterday_working_employee_ids'] = list(yesterday_working)
+		
+		# Weather options
+		context['weather_options'] = [
+				'Sunny', 'Partly Cloudy', 'Cloudy', 'Overcast',
+				'Light Rain', 'Rain', 'Heavy Rain', 'Thunderstorm',
+				'Snow', 'Windy', 'Foggy', 'Dust Storm'
+				]
+		return context
+	
+	@transaction.atomic
 	def form_valid(self, form):
-		# Adds a success message upon successful creation
-		messages.success(self.request, "Daily process report employee added successfully.")
-		return super().form_valid(form)
+		user_company = self.get_user_company()
+		form.instance.reported_by = self.request.user
+		self.object = form.save()
+		
+		# Get submitted employee IDs and validate they belong to user's company
+		working_employee_ids = self.request.POST.getlist('working_employees')
+		not_working_employee_ids = self.request.POST.getlist('not_working_employees')
+		
+		# Validate – only keep IDs that actually belong to the user's company
+		valid_working_ids = Employee.objects.filter(
+				pk__in=working_employee_ids,
+				company=user_company,
+				is_active=True
+				).values_list('id', flat=True)
+		
+		valid_not_working_ids = Employee.objects.filter(
+				pk__in=not_working_employee_ids,
+				company=user_company,
+				is_active=True
+				).values_list('id', flat=True)
+		
+		# Process working employees
+		for emp_id in valid_working_ids:
+			DailyProcessReportEmployees.objects.update_or_create(
+					employee_id=emp_id,
+					daily_report=self.object,
+					defaults={'is_working': True}
+					)
+		
+		# Process not working employees
+		for emp_id in valid_not_working_ids:
+			DailyProcessReportEmployees.objects.update_or_create(
+					employee_id=emp_id,
+					daily_report=self.object,
+					defaults={'is_working': False}
+					)
+		
+		# Update work package progress
+		self.update_work_package_progress(form)
+		
+		messages.success(
+				self.request,
+				f'Daily report created with {len(valid_working_ids)} employee(s) working.'
+				)
+		return redirect(self.get_success_url())
+	
+	def update_work_package_progress(self, form):
+		work_package = form.cleaned_data['work_package']
+		if work_package.status == 'NSTA':
+			work_package.status = 'IPRO'
+			work_package.actual_start = work_package.actual_start or form.cleaned_data['report_date']
+			work_package.save()

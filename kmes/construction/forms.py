@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from .models import (
 	WorkPackage, WorkPackageItem, DailyProgressReport,
-	InstalledItemCheck, InstallationCheckPhoto, DailyProccessReportEmployees
+	InstalledItemCheck, InstallationCheckPhoto, DailyProcessReportEmployees
 	)
 from core.models import EquipmentTag
 
@@ -659,7 +659,7 @@ class DailyReportSearchForm(forms.Form):
 
 class DailyProccessReportEmployeeForm(forms.ModelForm):
 	class Meta:
-		model = DailyProccessReportEmployees
+		model = DailyProcessReportEmployees
 		fields = ['employee', 'daily_report', 'is_working', 'timesheet']
 		
 		# Optional: Add widgets for styling (e.g., Bootstrap classes)
@@ -669,3 +669,79 @@ class DailyProccessReportEmployeeForm(forms.ModelForm):
 				'is_working': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
 				'timesheet': forms.Select(attrs={'class': 'form-control'}),
 				}
+
+
+class DailyProgressReportForm2(forms.ModelForm):
+	"""Form for daily progress reports – employee selection handled in template."""
+	
+	class Meta:
+		model = DailyProgressReport
+		fields = [
+				'work_package', 'report_date',
+				'work_performed_description', 'issues_encountered',
+				'weather_conditions', 'temperature_celsius',
+				'manpower_count', 'hours_worked'
+				]
+		widgets = {
+				'work_package': forms.Select(attrs={
+						'class': 'form-select',
+						'required': 'required'
+						}),
+				'report_date': forms.DateInput(attrs={
+						'class': 'form-control',
+						'type': 'date',
+						'required': 'required'
+						}),
+				'work_performed_description': forms.Textarea(attrs={
+						'class': 'form-control',
+						'rows': 4,
+						'placeholder': 'Describe the work performed today in detail...',
+						'required': 'required'
+						}),
+				'issues_encountered': forms.Textarea(attrs={
+						'class': 'form-control',
+						'rows': 2,
+						'placeholder': 'Any issues, delays, safety concerns...'
+						}),
+				'weather_conditions': forms.TextInput(attrs={
+						'class': 'form-control',
+						'readonly': 'readonly',
+						'style': 'display:none;'  # hidden, we use buttons
+						}),
+				'temperature_celsius': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'placeholder': '°C',
+						'min': -50, 'max': 60
+						}),
+				'manpower_count': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'min': 0,
+						'readonly': 'readonly',  # will be auto-calculated from selected employees
+						}),
+				'hours_worked': forms.NumberInput(attrs={
+						'class': 'form-control',
+						'min': 0,
+						'step': 0.5,
+						'placeholder': 'Total man-hours'
+						}),
+				}
+	
+	def __init__(self, *args, **kwargs):
+		work_package_id = kwargs.pop('work_package_id', None)
+		super().__init__(*args, **kwargs)
+		
+		# Filter work packages to those active
+		self.fields['work_package'].queryset = WorkPackage.objects.filter(
+				status__in=['IPRO', 'MOB', 'NSTA']
+				).select_related('project', 'area')
+		
+		if work_package_id:
+			self.fields['work_package'].initial = work_package_id
+			self.fields['work_package'].widget = forms.HiddenInput()
+	
+	def clean(self):
+		cleaned_data = super().clean()
+		date = cleaned_data.get('report_date')
+		if date and date > timezone.now().date():
+			self.add_error('report_date', 'Report date cannot be in the future.')
+		return cleaned_data
