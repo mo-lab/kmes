@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Employee, Certification, Timesheet, ToolPlant, ToolAssignment
+from .models import Employee, Certification, Timesheet, ToolPlant, ToolAssignment, Company
+
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
@@ -29,3 +30,9 @@ class ToolPlantAdmin(admin.ModelAdmin):
 class ToolAssignmentAdmin(admin.ModelAdmin):
 	list_display = ['tool_plant', 'work_package', 'assignment_start', 'assignment_end']
 	list_filter = ['assignment_start']
+	
+@admin.register(Company)
+class CompanyAdmin(admin.ModelAdmin):
+	list_display = ['title']
+	search_fields = ['title']
+	list_filter = ['title']

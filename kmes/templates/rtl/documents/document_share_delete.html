@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Remove Share Access{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-5">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Remove Share Access
+          </h5>
+        </div>
+        <div class="card-body text-center">
+          <i class="bi bi-person-x text-danger" style="font-size: 3rem;"></i>
+
+          <h4 class="mt-3">Are you sure?</h4>
+
+          <p class="text-muted">
+            You are about to remove access for:
+          </p>
+
+          <div class="alert alert-light text-start">
+            <p class="mb-1"><strong>User:</strong> {{ share.shared_with.get_full_name|default:share.shared_with.username }}</p>
+            <p class="mb-1"><strong>Email:</strong> {{ share.shared_with.email }}</p>
+            <p class="mb-1"><strong>Document:</strong> {{ share.document.document_number }}</p>
+            <p class="mb-0"><strong>Permission:</strong> {% if share.can_edit %}Can Edit{% else %}View Only{% endif %}</p>
+          </div>
+
+          <p class="text-muted small">
+            <i class="bi bi-info-circle"></i>
+            This user will no longer be able to view or edit this document.
+            This action cannot be undone.
+          </p>
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center gap-2">
+              <a href="{% url 'documents:document_share' share.document.pk %}"
+                 class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+              <button type="submit" class="btn btn-danger">
+                <i class="bi bi-person-x"></i> Remove Access
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

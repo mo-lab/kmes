@@ -1,0 +1,463 @@
+{% extends 'rtl/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Copper Mine Processing{% endblock %}
+
+{% block extra_css %}
+<style>
+  .welcome-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    border-radius: 0.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .stat-card .stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+  .stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+  .stat-card .stat-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-transform: uppercase;
+  }
+
+  .quick-link-card {
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #dee2e6;
+  }
+  .quick-link-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #0d6efd;
+  }
+  .quick-link-card .icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .activity-list .activity-item {
+    padding: 0.75rem;
+    border-left: 3px solid transparent;
+    transition: background 0.15s;
+  }
+  .activity-list .activity-item:hover {
+    background: #f8f9fa;
+    border-left-color: #0d6efd;
+  }
+
+  .badge-count {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Welcome Banner -->
+  <div class="welcome-banner">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="h3 mb-2">
+          <i class="bi bi-speedometer2 me-2"></i>
+          Welcome to the Dashboard
+        </h1>
+        <p class="mb-0 opacity-75">
+          Copper Mine Processing Facility - Construction & Assembly Management
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="#" class="btn btn-light">
+          <i class="bi bi-plus-lg"></i> New Project
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Statistics -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="card stat-card bg-primary bg-opacity-10">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-value text-primary">{{ total_projects }}</div>
+              <div class="stat-label">Total Projects</div>
+            </div>
+            <div class="stat-icon bg-primary text-white">
+              <i class="bi bi-folder"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-success">{{ active_projects }} Active</small>
+            <small class="text-muted ms-2">| {{ completed_projects }} Completed</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="card stat-card bg-success bg-opacity-10">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-value text-success">{{ total_equipment_tags }}</div>
+              <div class="stat-label">Equipment Tags</div>
+            </div>
+            <div class="stat-icon bg-success text-white">
+              <i class="bi bi-tag"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-info">{{ installed_tags }} Installed</small>
+            <small class="text-muted ms-2">| {{ commissioned_tags }} Commissioned</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="card stat-card bg-warning bg-opacity-10">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-value text-warning">{{ active_work_packages }}</div>
+              <div class="stat-label">Active Work Packages</div>
+            </div>
+            <div class="stat-icon bg-warning text-white">
+              <i class="bi bi-clipboard-check"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-success">{{ completed_work_packages }} Completed</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="card stat-card bg-danger bg-opacity-10">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-value text-danger">{{ open_punch_items }}</div>
+              <div class="stat-label">Open Punch Items</div>
+            </div>
+            <div class="stat-icon bg-danger text-white">
+              <i class="bi bi-flag"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <small class="text-danger fw-bold">{{ critical_punch_items }} Critical</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+      <a href="{% url 'core:project-list' %}" class="quick-link-card d-block">
+        <div class="icon-circle bg-primary bg-opacity-10 text-primary">
+          <i class="bi bi-folder"></i>
+        </div>
+        <h6 class="mb-1">Projects</h6>
+        <small class="text-muted">Manage projects</small>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <a href="{% url 'core:equipment-tag-list' %}" class="quick-link-card d-block">
+        <div class="icon-circle bg-success bg-opacity-10 text-success">
+          <i class="bi bi-tag"></i>
+        </div>
+        <h6 class="mb-1">Equipment Tags</h6>
+        <small class="text-muted">View all tags</small>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <a href="#" class="quick-link-card d-block">
+        <div class="icon-circle bg-info bg-opacity-10 text-info">
+          <i class="bi bi-file-earmark-text"></i>
+        </div>
+        <h6 class="mb-1">Documents</h6>
+        <small class="text-muted">All documents</small>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <a href="#" class="quick-link-card d-block">
+        <div class="icon-circle bg-warning bg-opacity-10 text-warning">
+          <i class="bi bi-tools"></i>
+        </div>
+        <h6 class="mb-1">Work Packages</h6>
+        <small class="text-muted">Construction</small>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <a href="#" class="quick-link-card d-block">
+        <div class="icon-circle bg-danger bg-opacity-10 text-danger">
+          <i class="bi bi-flag"></i>
+        </div>
+        <h6 class="mb-1">Punch Items</h6>
+        <small class="text-muted">Track issues</small>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <a href="#" class="quick-link-card d-block">
+        <div class="icon-circle bg-secondary bg-opacity-10 text-secondary">
+          <i class="bi bi-people"></i>
+        </div>
+        <h6 class="mb-1">Resources</h6>
+        <small class="text-muted">Workforce</small>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content Row -->
+  <div class="row">
+    <!-- Recent Projects -->
+    <div class="col-lg-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Recent Projects</h5>
+          <a href="{% url 'core:project-list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+          {% if recent_projects %}
+          <div class="list-group list-group-flush">
+            {% for project in recent_projects %}
+            <a href="{% url 'core:project-detail' project.pk %}"
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ project.name }}</strong>
+                <br>
+                <small class="text-muted">{{ project.code }}</small>
+              </div>
+              <span class="badge
+                                {% if project.status == 'EXEC' %}bg-warning text-dark
+                                {% elif project.status == 'COMM' %}bg-info
+                                {% elif project.status == 'CLSD' %}bg-success
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {{ project.get_status_display }}
+                            </span>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-3">No projects yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Equipment Tags -->
+    <div class="col-lg-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-tag me-2"></i>Recent Tags</h5>
+          <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+          {% if recent_tags %}
+          <div class="list-group list-group-flush">
+            {% for tag in recent_tags %}
+            <a href="{% url 'core:equipment-tag-detail' tag.pk %}"
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ tag.tag_number }}</strong>
+                <br>
+                <small class="text-muted">{{ tag.description|truncatechars:40 }}</small>
+              </div>
+              <span class="badge
+                                {% if tag.status == 'INST' %}bg-success
+                                {% elif tag.status == 'DLVD' %}bg-info
+                                {% elif tag.status == 'DEF' %}bg-danger
+                                {% else %}bg-secondary
+                                {% endif %}">
+                                {{ tag.get_status_display }}
+                            </span>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-3">No tags yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Open Punch Items & Alerts -->
+    <div class="col-lg-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Open Punch Items</h5>
+          <a href="#" class="btn btn-sm btn-outline-danger">View All</a>
+        </div>
+        <div class="card-body">
+          {% if recent_punch_items %}
+          <div class="list-group list-group-flush">
+            {% for punch in recent_punch_items %}
+            <a href="#"
+               class="list-group-item list-group-item-action">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong>{{ punch.punch_number }}</strong>
+                  <br>
+                  <small class="text-muted">{{ punch.description|truncatechars:50 }}</small>
+                </div>
+                <span class="badge
+                                    {% if punch.category == 'A' %}bg-danger
+                                    {% elif punch.category == 'B' %}bg-warning text-dark
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ punch.get_category_display }}
+                                </span>
+              </div>
+              {% if punch.equipment_tag %}
+              <small class="text-muted">
+                Tag: {{ punch.equipment_tag.tag_number }}
+              </small>
+              {% endif %}
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-3">
+            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+            <p class="text-muted mt-2">No open punch items. Great job!</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Second Row -->
+  <div class="row">
+    <!-- Overdue Work Packages -->
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-calendar-x me-2"></i>Overdue Work Packages</h5>
+          <a href="#" class="btn btn-sm btn-outline-warning">View All</a>
+        </div>
+        <div class="card-body">
+          {% if overdue_work_packages %}
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead class="table-light">
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Due Date</th>
+                <th>Days Overdue</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for wp in overdue_work_packages %}
+              <tr class="table-danger">
+                <td><strong>{{ wp.code }}</strong></td>
+                <td>{{ wp.name|truncatechars:40 }}</td>
+                <td>{{ wp.planned_finish|date:"M d, Y" }}</td>
+                <td>
+                  {% with days_overdue=wp.planned_finish|timesince %}
+                  <span class="text-danger fw-bold">{{ days_overdue }}</span>
+                  {% endwith %}
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-3">
+            <i class="bi bi-check-circle text-success"></i>
+            No overdue work packages.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Documents -->
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Recent Documents</h5>
+          <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+          {% if recent_documents %}
+          <div class="list-group list-group-flush">
+            {% for doc in recent_documents %}
+            <a href="#"
+               class="list-group-item list-group-item-action">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ doc.document_number }}</strong>
+                  <br>
+                  <small class="text-muted">{{ doc.title|truncatechars:50 }}</small>
+                </div>
+                <span class="badge
+                                    {% if doc.status == 'APPR' %}bg-success
+                                    {% elif doc.status == 'IFC' %}bg-primary
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ doc.get_status_display }}
+                                </span>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-3">No documents yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-refresh dashboard every 5 minutes
+  setTimeout(function() {
+    location.reload();
+  }, 300000);
+</script>
+{% endblock %}

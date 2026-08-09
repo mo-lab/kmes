@@ -20,18 +20,20 @@ from django.db.models import Q, Count, Case, When, Value, CharField
 
 User = get_user_model()
 
+
 class DocumentCreateView(LoginRequiredMixin, generic.CreateView):
 	model = Document
 	form_class = DocumentForm
-	template_name = 'documents/document_form.html'
+	template_name = 'rtl/documents/document_form.html'
 	success_message = "Document '%(document_number)s' was created successfully."
 	
 	def get_success_url(self):
-		HttpResponse('success')  # return reverse('documents:document_detail', kwargs={'pk': self.object.pk})
+		return reverse('documents:document_detail', kwargs={'pk': self.object.pk})
 	
 	def get_initial(self):
 		initial = super().get_initial()
 		project_id = self.kwargs.get('project_id') or self.request.GET.get('project')
+		rev = self.kwargs.get('revision') or self.request.GET.get('revision')
 		if project_id:
 			try:
 				from core.models import Project
@@ -41,6 +43,8 @@ class DocumentCreateView(LoginRequiredMixin, generic.CreateView):
 		
 		# Pre-fill some defaults
 		initial['revision'] = 'A'
+		if rev:
+			initial['revision'] = 'secondary rev'
 		initial['status'] = 'DRAFT'
 		
 		return initial
@@ -264,7 +268,7 @@ class DocumentUpdateView(LoginRequiredMixin, generic.UpdateView):
 
 class DocumentDetailView(LoginRequiredMixin, generic.DetailView):
 	model = Document
-	template_name = 'documents/document_detail.html'
+	template_name = 'rtl/documents/document_detail.html'
 	context_object_name = 'document'
 	
 	def get_queryset(self):

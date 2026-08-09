@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Project, Area, System, EquipmentTag,EquipmentLocation,EquipmentLocationImage
+from .models import Project, Area, System, EquipmentTag, EquipmentLocation, EquipmentLocationImage, ProfileSettings
+
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
@@ -34,3 +35,6 @@ class EquipmentTagAdmin(admin.ModelAdmin):
 	list_display = ['title', 'image_type', 'taken_date', 'is_primary', 'uploaded_by']
 	list_filter = ['uploaded_by', 'image_type', 'is_primary']
 	search_fields = ['title', 'description']
+@admin.register(ProfileSettings)
+class ProfileSettingsAdmin(admin.ModelAdmin):
+	list_display = ['language']

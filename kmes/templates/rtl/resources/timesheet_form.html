@@ -1,0 +1,479 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .required-field::after {
+    content: ' *';
+    color: #dc3545;
+  }
+
+  .employee-card {
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    transition: all 0.15s;
+  }
+  .employee-card:hover {
+    border-color: #0d6efd;
+    background: #f0f7ff;
+  }
+  .employee-card.selected {
+    border-color: #0d6efd;
+    background: #d1e7ff;
+    border-width: 2px;
+  }
+
+  .employee-avatar-sm {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .hours-input-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .hours-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .hours-btn:hover {
+    background: #0d6efd;
+    color: white;
+  }
+
+  .quick-hours-btn {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .recent-entry {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .recent-entry:hover {
+    background: #f0f7ff;
+  }
+
+  .date-shortcut {
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+  }
+  .date-shortcut:hover {
+    background: #0d6efd;
+    color: white;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'resources:timesheet_list' %}">Timesheets</a></li>
+      {% if selected_employee %}
+      <li class="breadcrumb-item"><a href="{% url 'resources:employee_detail' selected_employee.pk %}">{{ selected_employee.full_name }}</a></li>
+      {% endif %}
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">{{ page_title }}</h1>
+      <p class="text-muted mb-0">
+        {% if is_create %}
+        Record a new timesheet entry
+        {% else %}
+        Update timesheet entry
+        {% endif %}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'resources:timesheet_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to List
+      </a>
+      <a href="{% url 'resources:timesheet_bulk_create' %}" class="btn btn-outline-primary ms-2">
+        <i class="bi bi-plus-lg"></i> Bulk Add
+      </a>
+    </div>
+  </div>
+
+  {% if today_entry and is_create %}
+  <div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle"></i>
+    A timesheet entry for today already exists.
+    <a href="#" class="alert-link">Click here to edit it</a>.
+  </div>
+  {% endif %}
+
+  <form method="post" novalidate id="timesheetForm">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle"></i>
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+      <!-- Main Form -->
+      <div class="col-lg-7">
+
+        <!-- Timesheet Details -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-clock me-2"></i>Timesheet Details
+          </div>
+
+          <div class="row g-3">
+            <!-- Employee -->
+            <div class="col-md-6">
+              <label for="{{ form.employee.id_for_label }}" class="form-label required-field">
+                Employee
+              </label>
+              {{ form.employee }}
+              {% if form.employee.errors %}
+              <div class="invalid-feedback d-block">{{ form.employee.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Work Package -->
+            <div class="col-md-6">
+              <label for="{{ form.work_package.id_for_label }}" class="form-label required-field">
+                Work Package
+              </label>
+              {{ form.work_package }}
+              {% if form.work_package.errors %}
+              <div class="invalid-feedback d-block">{{ form.work_package.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Date -->
+            <div class="col-md-4">
+              <label for="{{ form.date.id_for_label }}" class="form-label required-field">
+                Date
+              </label>
+              {{ form.date }}
+              <div class="mt-1">
+                <span class="date-shortcut badge bg-light text-dark" onclick="setDate('today')">Today</span>
+                <span class="date-shortcut badge bg-light text-dark" onclick="setDate('yesterday')">Yesterday</span>
+              </div>
+              {% if form.date.errors %}
+              <div class="invalid-feedback d-block">{{ form.date.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Regular Hours -->
+            <div class="col-md-4">
+              <label for="{{ form.hours_worked.id_for_label }}" class="form-label required-field">
+                Regular Hours
+              </label>
+              <div class="hours-input-group">
+                <span class="hours-btn btn btn-outline-secondary" onclick="adjustHours('hours_worked', -0.5)">-</span>
+                {{ form.hours_worked }}
+                <span class="hours-btn btn btn-outline-secondary" onclick="adjustHours('hours_worked', 0.5)">+</span>
+              </div>
+              <div class="mt-1">
+                <span class="quick-hours-btn badge bg-light text-dark" onclick="setHours('hours_worked', 4)">4h</span>
+                <span class="quick-hours-btn badge bg-light text-dark" onclick="setHours('hours_worked', 8)">8h</span>
+                <span class="quick-hours-btn badge bg-light text-dark" onclick="setHours('hours_worked', 10)">10h</span>
+                <span class="quick-hours-btn badge bg-light text-dark" onclick="setHours('hours_worked', 12)">12h</span>
+              </div>
+              {% if form.hours_worked.errors %}
+              <div class="invalid-feedback d-block">{{ form.hours_worked.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Overtime Hours -->
+            <div class="col-md-4">
+              <label for="{{ form.overtime_hours.id_for_label }}" class="form-label">
+                Overtime Hours
+              </label>
+              <div class="hours-input-group">
+                <span class="hours-btn btn btn-outline-warning" onclick="adjustHours('overtime_hours', -0.5)">-</span>
+                {{ form.overtime_hours }}
+                <span class="hours-btn btn btn-outline-warning" onclick="adjustHours('overtime_hours', 0.5)">+</span>
+              </div>
+              <div class="mt-1">
+                <span class="quick-hours-btn badge bg-light text-dark" onclick="setHours('overtime_hours', 1)">1h</span>
+                <span class="quick-hours-btn badge bg-light text-dark" onclick="setHours('overtime_hours', 2)">2h</span>
+                <span class="quick-hours-btn badge bg-light text-dark" onclick="setHours('overtime_hours', 3)">3h</span>
+                <span class="quick-hours-btn badge bg-light text-dark" onclick="setHours('overtime_hours', 4)">4h</span>
+              </div>
+              {% if form.overtime_hours.errors %}
+              <div class="invalid-feedback d-block">{{ form.overtime_hours.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Total Hours Display -->
+          <div class="mt-3 p-3 bg-white rounded border text-center">
+            <div class="row">
+              <div class="col-6 border-end">
+                <small class="text-muted">Regular</small>
+                <div class="fs-4 fw-bold text-primary" id="displayRegular">8.0h</div>
+              </div>
+              <div class="col-6">
+                <small class="text-muted">Overtime</small>
+                <div class="fs-4 fw-bold text-warning" id="displayOvertime">0.0h</div>
+              </div>
+            </div>
+            <div class="mt-2 pt-2 border-top">
+              <small class="text-muted">Total</small>
+              <div class="fs-3 fw-bold" id="displayTotal">8.0h</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-sticky me-2"></i>Notes
+          </div>
+          {{ form.notes }}
+          {% if form.notes.errors %}
+          <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <a href="{% url 'resources:timesheet_list' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-x-circle"></i> Cancel
+            </a>
+          </div>
+          <div>
+            <button type="submit" name="save_add_another" class="btn btn-outline-primary">
+              <i class="bi bi-plus-circle"></i> Save & Add Another
+            </button>
+            <button type="submit" class="btn btn-primary ms-2">
+              <i class="bi bi-check-circle"></i>
+              {% if is_create %}Save Timesheet{% else %}Save Changes{% endif %}
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="col-lg-5">
+
+        <!-- Selected Employee Info -->
+        {% if selected_employee %}
+        <div class="card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-person me-2"></i>Employee</h6>
+          </div>
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="employee-avatar-sm me-2">
+                {{ selected_employee.first_name|first|upper }}{{ selected_employee.last_name|first|upper }}
+              </div>
+              <div>
+                <strong>{{ selected_employee.full_name }}</strong>
+                <br>
+                <small class="text-muted">{{ selected_employee.company }} | {{ selected_employee.get_trade_display }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Selected Work Package Info -->
+        {% if selected_work_package %}
+        <div class="card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-clipboard me-2"></i>Work Package</h6>
+          </div>
+          <div class="card-body">
+            <strong>{{ selected_work_package.code }}</strong>
+            <br>
+            <small class="text-muted">{{ selected_work_package.name }}</small>
+            <br>
+            <span class="badge bg-{% if selected_work_package.status == 'IPRO' %}warning text-dark{% elif selected_work_package.status == 'COMP' %}success{% else %}secondary{% endif %} mt-1">
+                            {{ selected_work_package.get_status_display }}
+                        </span>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Timesheets -->
+        {% if recent_timesheets %}
+        <div class="card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Entries</h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+              {% for ts in recent_timesheets %}
+              <div class="list-group-item recent-entry small"
+                   onclick="copyFromRecent({{ ts.hours_worked }}, {{ ts.overtime_hours }}, '{{ ts.work_package.code }}')">
+                <div class="d-flex justify-content-between">
+                  <span>{{ ts.date|date:"M d, Y" }}</span>
+                  <span class="badge bg-primary">{{ ts.hours_worked }}h</span>
+                </div>
+                <small class="text-muted">{{ ts.work_package.code }}</small>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Tips Card -->
+        <div class="card">
+          <div class="card-header bg-info bg-opacity-10">
+            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+          </div>
+          <div class="card-body small">
+            <ul class="mb-0">
+              <li class="mb-2">Use the +/- buttons to adjust hours quickly</li>
+              <li class="mb-2">Click quick hour buttons for common values</li>
+              <li class="mb-2">Click on recent entries to copy hours</li>
+              <li class="mb-2">Overtime should be approved separately</li>
+              <li>Total hours cannot exceed 24 per day</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Set date shortcuts
+  function setDate(option) {
+    const dateInput = document.getElementById('{{ form.date.id_for_label }}');
+    const today = new Date();
+
+    if (option === 'today') {
+      dateInput.value = today.toISOString().split('T')[0];
+    } else if (option === 'yesterday') {
+      today.setDate(today.getDate() - 1);
+      dateInput.value = today.toISOString().split('T')[0];
+    }
+  }
+
+  // Adjust hours with buttons
+  function adjustHours(fieldName, change) {
+    const input = document.getElementById(`id_${fieldName}`);
+    let value = parseFloat(input.value) || 0;
+    value = Math.max(0, value + change);
+    value = Math.round(value * 2) / 2; // Round to nearest 0.5
+    if (fieldName === 'hours_worked') {
+      value = Math.min(24, value);
+    }
+    input.value = value.toFixed(1);
+    updateTotalDisplay();
+  }
+
+  // Set hours directly
+  function setHours(fieldName, value) {
+    const input = document.getElementById(`id_${fieldName}`);
+    input.value = value.toFixed(1);
+    updateTotalDisplay();
+  }
+
+  // Copy from recent entry
+  function copyFromRecent(hours, overtime, wpCode) {
+    document.getElementById('id_hours_worked').value = hours;
+    document.getElementById('id_overtime_hours').value = overtime;
+    updateTotalDisplay();
+  }
+
+  // Update total display
+  function updateTotalDisplay() {
+    const regular = parseFloat(document.getElementById('id_hours_worked').value) || 0;
+    const overtime = parseFloat(document.getElementById('id_overtime_hours').value) || 0;
+    const total = regular + overtime;
+
+    document.getElementById('displayRegular').textContent = regular.toFixed(1) + 'h';
+    document.getElementById('displayOvertime').textContent = overtime.toFixed(1) + 'h';
+    document.getElementById('displayTotal').textContent = total.toFixed(1) + 'h';
+
+    // Change color if exceeds 24 hours
+    const totalDisplay = document.getElementById('displayTotal');
+    if (total > 24) {
+      totalDisplay.classList.add('text-danger');
+    } else {
+      totalDisplay.classList.remove('text-danger');
+    }
+  }
+
+  // Initialize display
+  document.addEventListener('DOMContentLoaded', function() {
+    updateTotalDisplay();
+
+    // Update display when inputs change
+    document.getElementById('id_hours_worked').addEventListener('input', updateTotalDisplay);
+    document.getElementById('id_overtime_hours').addEventListener('input', updateTotalDisplay);
+  });
+
+  // Confirm before leaving with unsaved changes
+  let formChanged = false;
+  document.querySelectorAll('#timesheetForm input, #timesheetForm select, #timesheetForm textarea').forEach(el => {
+    el.addEventListener('change', () => { formChanged = true; });
+    el.addEventListener('input', () => { formChanged = true; });
+  });
+
+  window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  });
+
+  document.getElementById('timesheetForm').addEventListener('submit', function() {
+    formChanged = false;
+  });
+</script>
+{% endblock %}

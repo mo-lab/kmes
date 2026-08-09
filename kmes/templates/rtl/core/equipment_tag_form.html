@@ -1,0 +1,445 @@
+{% extends 'rtl/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+  }
+  .required-field::after {
+    content: " *";
+    color: #dc3545;
+  }
+  .document-upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+    background: white;
+  }
+  .document-upload-zone:hover {
+    border-color: #0d6efd;
+    background: #f0f7ff;
+  }
+  .document-item {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .existing-doc-item {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .existing-doc-item:hover {
+    background: #f0f7ff;
+  }
+  .existing-doc-item.selected {
+    background: #d1e7ff;
+    border-color: #0d6efd;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'core:equipment-tag-list' %}">برچسب‌های تجهیزات</a></li>
+      {% if project %}
+      <li class="breadcrumb-item"><a href="{% url 'core:project_detail' project.pk %}">{{ project.name }}</a></li>
+      {% endif %}
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">{{ page_title }}</h1>
+      <p class="text-muted mb-0">
+        {% if is_create %}
+        ایجاد یک برچسب تجهیزات جدید و بارگذاری اسناد مرتبط
+        {% else %}
+        ویرایش اطلاعات برچسب تجهیزات
+        {% endif %}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> بازگشت به لیست
+      </a>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" novalidate id="equipmentTagForm">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle"></i>
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+      <!-- Left Column - Equipment Tag Fields -->
+      <div class="col-lg-7">
+
+        <!-- Basic Information -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-info-circle me-2"></i>اطلاعات پایه
+          </div>
+          <div class="row g-3">
+            <!-- Project -->
+            <div class="col-md-6">
+              <label for="{{ form.project.id_for_label }}" class="form-label required-field">پروژه</label>
+              {{ form.project }}
+              {% if form.project.errors %}<div class="invalid-feedback d-block">{{ form.project.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Tag Number -->
+            <div class="col-md-6">
+              <label for="{{ form.tag_number.id_for_label }}" class="form-label required-field">شماره برچسب</label>
+              {{ form.tag_number }}
+              {% if form.tag_number.errors %}<div class="invalid-feedback d-block">{{ form.tag_number.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Description -->
+            <div class="col-12">
+              <label for="{{ form.description.id_for_label }}" class="form-label required-field">توضیحات</label>
+              {{ form.description }}
+              {% if form.description.errors %}<div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Equipment Type -->
+            <div class="col-md-6">
+              <label for="{{ form.equipment_type.id_for_label }}" class="form-label required-field">نوع تجهیز</label>
+              {{ form.equipment_type }}
+              {% if form.equipment_type.errors %}<div class="invalid-feedback d-block">{{ form.equipment_type.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Discipline -->
+            <div class="col-md-6">
+              <label for="{{ form.discipline.id_for_label }}" class="form-label required-field">رشته</label>
+              {{ form.discipline }}
+              {% if form.discipline.errors %}<div class="invalid-feedback d-block">{{ form.discipline.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Location & Hierarchy -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-geo-alt me-2"></i>موقعیت و سلسله‌مراتب
+          </div>
+          <div class="row g-3">
+            <!-- Area -->
+            <div class="col-md-6">
+              <label for="{{ form.area.id_for_label }}" class="form-label">ناحیه</label>
+              {{ form.area }}
+              {% if form.area.errors %}<div class="invalid-feedback d-block">{{ form.area.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- System -->
+            <div class="col-md-6">
+              <label for="{{ form.system.id_for_label }}" class="form-label">سیستم</label>
+              {{ form.system }}
+              {% if form.system.errors %}<div class="invalid-feedback d-block">{{ form.system.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Parent Tag -->
+            <div class="col-md-6">
+              <label for="{{ form.parent_tag.id_for_label }}" class="form-label">برچسب والد</label>
+              {{ form.parent_tag }}
+              <div class="form-text">اگر این برچسب زیرمجموعه است، والد را انتخاب کنید</div>
+              {% if form.parent_tag.errors %}<div class="invalid-feedback d-block">{{ form.parent_tag.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Technical Details -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-gear me-2"></i>جزئیات فنی
+          </div>
+          <div class="row g-3">
+            <!-- Manufacturer -->
+            <div class="col-md-6">
+              <label for="{{ form.manufacturer.id_for_label }}" class="form-label">سازنده</label>
+              {{ form.manufacturer }}
+              {% if form.manufacturer.errors %}<div class="invalid-feedback d-block">{{ form.manufacturer.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Model Number -->
+            <div class="col-md-6">
+              <label for="{{ form.model_number.id_for_label }}" class="form-label">شماره مدل</label>
+              {{ form.model_number }}
+              {% if form.model_number.errors %}<div class="invalid-feedback d-block">{{ form.model_number.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Serial Number -->
+            <div class="col-md-4">
+              <label for="{{ form.serial_number.id_for_label }}" class="form-label">شماره سریال</label>
+              {{ form.serial_number }}
+              {% if form.serial_number.errors %}<div class="invalid-feedback d-block">{{ form.serial_number.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Weight -->
+            <div class="col-md-4">
+              <label for="{{ form.weight_kg.id_for_label }}" class="form-label">وزن (کیلوگرم)</label>
+              {{ form.weight_kg }}
+              {% if form.weight_kg.errors %}<div class="invalid-feedback d-block">{{ form.weight_kg.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Dimensions -->
+            <div class="col-md-4">
+              <label for="{{ form.dimensions.id_for_label }}" class="form-label">ابعاد (mm)</label>
+              {{ form.dimensions }}
+              <div class="form-text">طول×عرض×ارتفاع</div>
+              {% if form.dimensions.errors %}<div class="invalid-feedback d-block">{{ form.dimensions.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-check-circle me-2"></i>وضعیت و طبقه‌بندی
+          </div>
+          <div class="row g-3">
+            <!-- Status -->
+            <div class="col-md-6">
+              <label for="{{ form.status.id_for_label }}" class="form-label required-field">وضعیت</label>
+              {{ form.status }}
+              {% if form.status.errors %}<div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Criticality -->
+            <div class="col-md-6">
+              <label for="{{ form.criticality.id_for_label }}" class="form-label required-field">اهمیت</label>
+              {{ form.criticality }}
+              {% if form.criticality.errors %}<div class="invalid-feedback d-block">{{ form.criticality.errors.0 }}</div>{% endif %}
+            </div>
+            <!-- Installation Date -->
+            <div class="col-md-6">
+              <label for="{{ form.installation_date.id_for_label }}" class="form-label">تاریخ نصب</label>
+              {{ form.installation_date }}
+              {% if form.installation_date.errors %}<div class="invalid-feedback d-block">{{ form.installation_date.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-sticky me-2"></i>یادداشت‌ها
+          </div>
+          {{ form.notes }}
+          {% if form.notes.errors %}<div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>{% endif %}
+        </div>
+
+      </div>
+
+      <!-- Right Column - Document Upload & Link -->
+      <div class="col-lg-5">
+
+        <!-- Upload New Documents -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-cloud-upload me-2"></i>بارگذاری اسناد جدید
+          </div>
+          <div id="documentUploadContainer">
+            <div class="document-item" id="documentTemplate" style="display:none;">
+              <div class="flex-grow-1 me-2">
+                <input type="text" name="document_titles" class="form-control form-control-sm mb-1" placeholder="عنوان سند (اختیاری)">
+                <select name="document_types" class="form-select form-select-sm">
+                  <option value="DWG">Drawing</option>
+                  <option value="DATA">Datasheet</option>
+                  <option value="MAN">Manual</option>
+                  <option value="PROC">Procedure</option>
+                  <option value="SPEC">Specification</option>
+                  <option value="CERT">Certificate</option>
+                  <option value="RPT">Report</option>
+                  <option value="OTHR">Other</option>
+                </select>
+              </div>
+              <input type="file" name="documents" class="form-control form-control-sm" style="width:200px;">
+              <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="removeDocumentItem(this)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div id="documentList">
+              <!-- First document upload row -->
+              <div class="document-item">
+                <div class="flex-grow-1 me-2">
+                  <input type="text" name="document_titles" class="form-control form-control-sm mb-1" placeholder="عنوان سند (اختیاری)">
+                  <select name="document_types" class="form-select form-select-sm">
+                    <option value="DWG">Drawing</option>
+                    <option value="DATA">Datasheet</option>
+                    <option value="MAN">Manual</option>
+                    <option value="PROC">Procedure</option>
+                    <option value="SPEC">Specification</option>
+                    <option value="CERT">Certificate</option>
+                    <option value="RPT">Report</option>
+                    <option value="OTHR">Other</option>
+                  </select>
+                </div>
+                <input type="file" name="documents" class="form-control form-control-sm" style="width:200px;">
+                <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="removeDocumentItem(this)">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addDocumentItem()">
+            <i class="bi bi-plus-lg"></i> افزودن سند دیگر
+          </button>
+          <div class="form-text mt-2">
+            برگه‌های اطلاعات، نقشه‌ها، دفترچه‌های راهنما یا سایر اسناد مرتبط را بارگذاری کنید.
+          </div>
+        </div>
+
+        <!-- Link Existing Documents -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-link-45deg me-2"></i>اتصال اسناد موجود
+          </div>
+          {% if recent_documents %}
+          <div class="document-list" style="max-height: 300px; overflow-y: auto;">
+            {% for doc in recent_documents %}
+            <div class="document-item existing-doc-item"
+                 onclick="toggleDocumentSelection(this, '{{ doc.pk }}')"
+                 data-doc-id="{{ doc.pk }}">
+              <div>
+                <strong>{{ doc.document_number }}</strong>
+                <br>
+                <small class="text-muted">{{ doc.title|truncatechars:50 }}</small>
+                <br>
+                <span class="badge bg-light text-dark">{{ doc.get_doc_type_display }}</span>
+                <small class="text-muted">{{ doc.created_at|date:"Y/m/d" }}</small>
+              </div>
+              <i class="bi bi-check-circle text-primary" style="display:none;"></i>
+            </div>
+            {% endfor %}
+          </div>
+          <input type="hidden" name="linked_documents" id="linkedDocumentsInput">
+          {% else %}
+          <p class="text-muted text-center py-3">سند موجودی برای اتصال وجود ندارد.</p>
+          {% endif %}
+          <div class="form-text mt-2">
+            روی اسناد کلیک کنید تا برای اتصال انتخاب شوند.
+          </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card">
+          <div class="card-header bg-success bg-opacity-10">
+            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>نکات</h6>
+          </div>
+          <div class="card-body small">
+            <ul class="mb-0">
+              <li class="mb-2">از یک قرارداد نام‌گذاری واضح برای شماره برچسب استفاده کنید</li>
+              <li class="mb-2">برگه‌های اطلاعات و نقشه‌ها را برای ردیابی بهتر بارگذاری کنید</li>
+              <li class="mb-2">اسناد موجود را برای جلوگیری از تکرار متصل کنید</li>
+              <li class="mb-2">برچسب والد صحیح را برای سلسله‌مراتب مونتاژ تنظیم کنید</li>
+              <li>برچسب‌های با اهمیت بالا باید مستندات کامل داشته باشند</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <div>
+        <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-circle"></i> انصراف
+        </a>
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-circle"></i>
+          {% if is_create %}ایجاد برچسب تجهیزات{% else %}ذخیره تغییرات{% endif %}
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Add document upload row
+  function addDocumentItem() {
+    const template = document.getElementById('documentTemplate');
+    const clone = template.cloneNode(true);
+    clone.style.display = 'flex';
+    clone.id = '';
+    document.getElementById('documentList').appendChild(clone);
+  }
+
+  // Remove document upload row
+  function removeDocumentItem(button) {
+    const item = button.closest('.document-item');
+    if (document.querySelectorAll('#documentList .document-item').length > 1) {
+      item.remove();
+    } else {
+      // Clear inputs instead of removing last row
+      item.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+      item.querySelectorAll('input[type="file"]').forEach(input => input.value = '');
+    }
+  }
+
+  // Toggle document selection for linking
+  const selectedDocuments = new Set();
+
+  function toggleDocumentSelection(element, docId) {
+    if (selectedDocuments.has(docId)) {
+      selectedDocuments.delete(docId);
+      element.classList.remove('selected');
+      element.querySelector('.bi-check-circle').style.display = 'none';
+    } else {
+      selectedDocuments.add(docId);
+      element.classList.add('selected');
+      element.querySelector('.bi-check-circle').style.display = 'inline-block';
+    }
+    updateLinkedDocumentsInput();
+  }
+
+  function updateLinkedDocumentsInput() {
+    document.getElementById('linkedDocumentsInput').value = Array.from(selectedDocuments).join(',');
+  }
+
+  // Confirm before leaving with unsaved changes
+  let formChanged = false;
+  document.querySelectorAll('#equipmentTagForm input, #equipmentTagForm select, #equipmentTagForm textarea').forEach(el => {
+    el.addEventListener('change', () => { formChanged = true; });
+    el.addEventListener('input', () => { formChanged = true; });
+  });
+
+  window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+      e.preventDefault();
+      e.returnValue = 'تغییرات ذخیره نشده‌ای دارید. آیا مطمئن هستید که می‌خواهید خارج شوید؟';
+    }
+  });
+
+  document.getElementById('equipmentTagForm').addEventListener('submit', function() {
+    formChanged = false;
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .required-field::after { content: ' *'; color: #dc3545; }
+
+    .employee-toggle-card {
+        border: 2px solid #dee2e6;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .employee-toggle-card:hover {
+        border-color: #0d6efd;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .employee-toggle-card.working {
+        border-color: #198754;
+        background: #f0fff4;
+    }
+    .toggle-working-btn {
+        width: 100%;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        transition: all 0.2s;
+    }
+    .weather-btn { transition: all 0.2s; }
+    .weather-btn.active { background: #0d6efd; color: white; border-color: #0d6efd; }
+    .employee-grid {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">Work Packages</a></li>
+            {% if work_package %}
+            <li class="breadcrumb-item"><a href="{% url 'construction:work_package_detail' work_package.pk %}">{{ work_package.code }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ page_title }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">{{ page_title }}</h1>
+            {% if work_package %}
+            <p class="text-muted mb-0">Work Package: <strong>{{ work_package.code }}</strong> – {{ work_package.name }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{% url 'construction:daily_report_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    {% if today_report and is_create %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> A report for today already exists.
+        <a href="{% url 'construction:daily_report_update' today_report.pk %}" class="alert-link">Edit existing report</a>.
+    </div>
+    {% endif %}
+
+    <form method="post" novalidate id="dailyReportForm">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="row">
+            <!-- Left Column: Main Report Fields -->
+            <div class="col-lg-8">
+                <!-- Report Header -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-calendar-check me-2"></i>Report Header</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.work_package.id_for_label }}" class="form-label required-field">Work Package</label>
+                            {{ form.work_package }}
+                            {{ form.work_package.errors }}
+                        </div>
+                        <div class="col-md-3">
+                            <label for="{{ form.report_date.id_for_label }}" class="form-label required-field">Report Date</label>
+                            {{ form.report_date }}
+                            {{ form.report_date.errors }}
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-secondary btn-sm me-1" onclick="setDate('today')">Today</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDate('yesterday')">Yesterday</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weather -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-cloud-sun me-2"></i>Weather Conditions</div>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Weather</label>
+                            <div class="d-flex flex-wrap gap-1" id="weatherButtons">
+                                {% for w in weather_options %}
+                                <button type="button" class="btn btn-outline-secondary btn-sm weather-btn"
+                                        data-weather="{{ w }}" onclick="selectWeather('{{ w }}', this)">
+                                    <i class="bi bi-{% if 'Sunny' in w %}sun{% elif 'Rain' in w %}cloud-rain{% elif 'Cloud' in w %}cloud{% elif 'Snow' in w %}snow{% else %}cloud{% endif %} me-1"></i>{{ w }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                            {{ form.weather_conditions }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.temperature_celsius.id_for_label }}">Temperature (°C)</label>
+                            <div class="input-group">
+                                {{ form.temperature_celsius }}
+                                <span class="input-group-text">°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Performed -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-tools me-2"></i>Work Performed</div>
+                    <div class="mb-3">
+                        <label for="{{ form.work_performed_description.id_for_label }}" class="form-label required-field">Work Description</label>
+                        {{ form.work_performed_description }}
+                        {{ form.work_performed_description.errors }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.issues_encountered.id_for_label }}" class="form-label">Issues Encountered</label>
+                        {{ form.issues_encountered }}
+                    </div>
+                </div>
+
+                <!-- Manpower & Hours -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-people me-2"></i>Manpower & Hours</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.manpower_count.id_for_label }}" class="form-label">Workers Count <small class="text-muted">(auto)</small></label>
+                            {{ form.manpower_count }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.hours_worked.id_for_label }}" class="form-label">Total Man-Hours</label>
+                            {{ form.hours_worked }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Employee Working Status -->
+            <div class="col-lg-4">
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-people-fill me-2"></i>Employee Working Status
+                        <small class="text-muted">({{ request.user.employee_profile.company }})</small>
+                    </div>
+
+                    <p class="small text-muted mb-2">
+                        Toggle which employees of your company worked today. Timesheets will be created automatically.
+                    </p>
+
+                    <!-- Quick action buttons -->
+                    <div class="d-flex gap-1 mb-3">
+                        {% if previous_reports and previous_reports.0 %}
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="copyYesterdayEmployees()">
+                            <i class="bi bi-clipboard"></i> Copy Yesterday
+                        </button>
+                        {% endif %}
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="selectAllEmployees()">
+                            <i class="bi bi-check-all"></i> All Working
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="deselectAllEmployees()">
+                            <i class="bi bi-x-circle"></i> Clear All
+                        </button>
+                    </div>
+
+                    <!-- Employee list with toggle switches -->
+                    <div class="employee-list" style="max-height: 450px; overflow-y: auto;">
+                        {% for employee in employees %}
+                        <div class="d-flex align-items-center justify-content-between py-2 border-bottom
+                        {% if employee.pk in today_working_employee_ids %}bg-light{% endif %}"
+                             id="employee-row-{{ employee.pk }}">
+                            <div>
+                                <strong class="small">{{ employee.full_name }}</strong>
+                                <br>
+                                <span class="badge bg-light text-dark small">{{ employee.get_trade_display }}</span>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input employee-switch" type="checkbox"
+                                       id="switch-{{ employee.pk }}"
+                                       data-employee-id="{{ employee.pk }}"
+                                       {% if employee.pk in today_working_employee_ids %}checked{% endif %}
+                                       onchange="toggleEmployee(this)">
+                            </div>
+                            <!-- Hidden inputs for form submission -->
+                            <input type="checkbox" name="working_employees" value="{{ employee.pk }}"
+                                   class="d-none working-checkbox"
+                                   {% if employee.pk in today_working_employee_ids %}checked{% endif %}>
+                            <input type="checkbox" name="not_working_employees" value="{{ employee.pk }}"
+                                   class="d-none not-working-checkbox"
+                                   {% if employee.pk not in today_working_employee_ids %}checked{% endif %}>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted small">No employees found for your company.</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="mt-2 p-2 bg-light rounded small">
+                        <strong>Working today: <span id="workingCount">0</span></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="d-flex justify-content-between mt-4">
+            <a href="#" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Submit Report</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+    // Set date
+    function setDate(opt) {
+        const inp = document.getElementById('{{ form.report_date.id_for_label }}');
+        const d = new Date();
+        if (opt === 'yesterday') d.setDate(d.getDate()-1);
+        inp.value = d.toISOString().split('T')[0];
+    }
+
+    // Weather selection
+    function selectWeather(w, btn) {
+        document.getElementById('{{ form.weather_conditions.id_for_label }}').value = w;
+        document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    // Toggle employee
+    function toggleEmployeeWorking(btn, empId) {
+        const card = document.getElementById('employee-card-'+empId);
+        const isWorking = btn.classList.contains('btn-success');
+        const newState = !isWorking;
+
+        if (newState) {
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-success');
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> Working';
+            card.classList.add('working');
+            card.querySelector('.working-checkbox').checked = true;
+            card.querySelector('.not-working-checkbox').checked = false;
+        } else {
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+            btn.innerHTML = '<i class="bi bi-circle"></i>';
+            card.classList.remove('working');
+            card.querySelector('.working-checkbox').checked = false;
+            card.querySelector('.not-working-checkbox').checked = true;
+        }
+        updateCounts();
+    }
+
+
+    // Filter employees
+    document.getElementById('employeeSearch').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#employeeGrid .employee-toggle-card').forEach(card => {
+            const name = card.querySelector('strong').textContent.toLowerCase();
+            card.style.display = name.includes(q) ? '' : 'none';
+        });
+    });
+
+
+    // Initialize counts
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCounts();
+        // If weather already set, activate button
+        const weatherVal = document.getElementById('{{ form.weather_conditions.id_for_label }}').value;
+        if (weatherVal) {
+            const btn = document.querySelector(`.weather-btn[data-weather="${weatherVal}"]`);
+            if (btn) btn.classList.add('active');
+        }
+    });
+    // Toggle employee switch
+    function toggleEmployee(switchEl) {
+        const empId = switchEl.dataset.employeeId;
+        const row = document.getElementById('employee-row-' + empId);
+        const workingCheckbox = row.querySelector('.working-checkbox');
+        const notWorkingCheckbox = row.querySelector('.not-working-checkbox');
+
+        if (switchEl.checked) {
+            row.classList.add('bg-light');
+            workingCheckbox.checked = true;
+            notWorkingCheckbox.checked = false;
+        } else {
+            row.classList.remove('bg-light');
+            workingCheckbox.checked = false;
+            notWorkingCheckbox.checked = true;
+        }
+        updateCounts();
+    }
+
+    function updateCounts() {
+        const count = document.querySelectorAll('.employee-switch:checked').length;
+        document.getElementById('workingCount').textContent = count;
+        // Auto‑fill manpower count in the form
+        const mpInput = document.getElementById('{{ form.manpower_count.id_for_label }}');
+        if (mpInput) mpInput.value = count;
+    }
+
+    // Select / deselect all
+    function selectAllEmployees() {
+        document.querySelectorAll('.employee-switch:not(:checked)').forEach(s => s.click());
+    }
+    function deselectAllEmployees() {
+        document.querySelectorAll('.employee-switch:checked').forEach(s => s.click());
+    }
+
+    // Copy yesterday's working employees (pre‑check the same ones)
+    function copyYesterdayEmployees() {
+        const yesterdayIds = {{ yesterday_working_employee_ids|safe }};
+        document.querySelectorAll('.employee-switch').forEach(switchEl => {
+            const empId = parseInt(switchEl.dataset.employeeId);
+            if (yesterdayIds.includes(empId) && !switchEl.checked) {
+                switchEl.click();
+            }
+        });
+    }
+
+    // Initialize counts
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCounts();
+    });
+</script>
+{% endblock %}

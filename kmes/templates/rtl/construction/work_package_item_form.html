@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .tag-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tag-card:hover {
+    border-color: #0d6efd;
+    background: #f0f7ff;
+  }
+  .tag-card.selected {
+    border-color: #0d6efd;
+    background: #d1e7ff;
+    border-width: 2px;
+  }
+
+  .tag-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .existing-item {
+    border-left: 3px solid #198754;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    background: #f8f9fa;
+    border-radius: 0.25rem;
+  }
+
+  .area-group {
+    margin-bottom: 1rem;
+  }
+  .area-group-title {
+    background: #e9ecef;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .badge-count {
+    font-size: 0.7rem;
+  }
+
+  .search-highlight {
+    background: #fff3cd;
+    padding: 0.1rem 0.2rem;
+    border-radius: 2px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">Work Packages</a></li>
+      {% if work_package %}
+      <li class="breadcrumb-item">
+        <a href="{% url 'construction:work_package_detail' work_package.pk %}">
+          {{ work_package.code }}
+        </a>
+      </li>
+      {% endif %}
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">{{ page_title }}</h1>
+      {% if work_package %}
+      <p class="text-muted mb-0">
+        Work Package: <strong>{{ work_package.code }}</strong> - {{ work_package.name }}
+      </p>
+      {% endif %}
+    </div>
+    <div>
+      {% if work_package %}
+      <a href="{% url 'construction:work_package_detail' work_package.pk %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      <a href="#" class="btn btn-outline-primary ms-2">
+        <i class="bi bi-plus-lg"></i> Bulk Add
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Add Single Tag Form -->
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Single Tag</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="mb-3">
+              <label for="{{ form.equipment_tag.id_for_label }}" class="form-label required-field">
+                Equipment Tag
+              </label>
+              {{ form.equipment_tag }}
+              {% if form.equipment_tag.errors %}
+              <div class="invalid-feedback d-block">{{ form.equipment_tag.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="{{ form.sequence_number.id_for_label }}" class="form-label">
+                  Sequence Number
+                </label>
+                {{ form.sequence_number }}
+                <div class="form-text">Installation order</div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.notes.id_for_label }}" class="form-label">
+                Notes
+              </label>
+              {{ form.notes }}
+            </div>
+
+            <div class="d-flex justify-content-between">
+              {% if work_package %}
+              <a href="{% url 'construction:work_package_detail' work_package.pk %}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+              {% endif %}
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Tag
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Tags -->
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="bi bi-tag me-2"></i>Available Tags
+            {% if available_tags %}
+            <span class="badge bg-primary ms-1">{{ available_tags.count }}</span>
+            {% endif %}
+          </h5>
+          <div>
+            <input type="text" id="tagSearchInput" class="form-control form-control-sm"
+                   placeholder="Search tags...">
+          </div>
+        </div>
+        <div class="card-body p-0">
+          {% if available_tags %}
+          <div class="p-2 bg-light border-bottom">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-secondary active" onclick="filterTags('all')">All</button>
+              {% for area_code, tags in tags_by_area.items %}
+              <button type="button" class="btn btn-outline-secondary" onclick="filterTags('{{ area_code }}')">
+                {{ area_code }} ({{ tags|length }})
+              </button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="tag-list" id="tagList">
+            {% for area_code, tags in tags_by_area.items %}
+            <div class="area-group" data-area="{{ area_code }}">
+              <div class="area-group-title">
+                <i class="bi bi-map"></i> {{ area_code }}
+                <span class="badge bg-secondary ms-1 badge-count">{{ tags|length }}</span>
+              </div>
+              {% for tag in tags %}
+              <div class="tag-card m-2"
+                   data-tag-id="{{ tag.pk }}"
+                   data-tag-number="{{ tag.tag_number }}"
+                   data-area="{{ area_code }}"
+                   onclick="selectTag(this, {{ tag.pk }}, '{{ tag.tag_number|escapejs }}')">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <strong>{{ tag.tag_number }}</strong>
+                    <br>
+                    <small class="text-muted">{{ tag.description|truncatechars:60 }}</small>
+                  </div>
+                  <span class="badge bg-light text-dark">{{ tag.get_equipment_type_display }}</span>
+                </div>
+                <div class="mt-1">
+                                    <span class="badge 
+                                        {% if tag.status == 'INST' %}bg-success
+                                        {% elif tag.status == 'DLVD' %}bg-info
+                                        {% else %}bg-secondary
+                                        {% endif %} badge-count">
+                                        {{ tag.get_status_display }}
+                                    </span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-tag" style="font-size: 2rem;"></i>
+            <p class="mt-2">No available tags to add.</p>
+            <small>All project tags are already in this work package.</small>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Existing Items -->
+  {% if existing_items %}
+  <div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="bi bi-list-check me-2"></i>Current Items
+        <span class="badge bg-primary">{{ existing_items.count }}</span>
+      </h5>
+      <a href="#" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-down-up"></i> Reorder
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+          <tr>
+            <th width="50">#</th>
+            <th>Tag Number</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Complete</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for item in existing_items %}
+          <tr>
+            <td>{{ item.sequence_number }}</td>
+            <td>
+              <a href="{% url 'core:equipment-tag-detail' item.equipment_tag.pk %}">
+                <strong>{{ item.equipment_tag.tag_number }}</strong>
+              </a>
+            </td>
+            <td>{{ item.equipment_tag.description|truncatechars:50 }}</td>
+            <td><span class="badge bg-light text-dark small">{{ item.equipment_tag.get_equipment_type_display }}</span></td>
+            <td>
+              {% if item.is_complete %}
+              <span class="badge bg-success">Done</span>
+              {% else %}
+              <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox"
+                       {% if item.is_complete %}checked{% endif %}
+                       onchange="toggleComplete({{ item.pk }})">
+              </div>
+            </td>
+            <td>
+              <a href="#"
+                 class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Select tag from card
+  function selectTag(card, tagId, tagNumber) {
+    // Update the select dropdown
+    const select = document.getElementById('{{ form.equipment_tag.id_for_label }}');
+    if (select) {
+      select.value = tagId;
+    }
+
+    // Update visual selection
+    document.querySelectorAll('.tag-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  }
+
+  // Filter tags by area
+  function filterTags(area) {
+    const groups = document.querySelectorAll('.area-group');
+    groups.forEach(group => {
+      if (area === 'all' || group.dataset.area === area) {
+        group.style.display = 'block';
+      } else {
+        group.style.display = 'none';
+      }
+    });
+
+    // Update button states
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+  }
+
+  // Search tags
+  const searchInput = document.getElementById('tagSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const query = this.value.toLowerCase();
+      const cards = document.querySelectorAll('.tag-card');
+
+      cards.forEach(card => {
+        const tagNumber = card.dataset.tagNumber.toLowerCase();
+        const description = card.querySelector('small').textContent.toLowerCase();
+
+        if (tagNumber.includes(query) || description.includes(query)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Show all groups when searching
+      if (query.length > 0) {
+        document.querySelectorAll('.area-group').forEach(g => g.style.display = 'block');
+        document.querySelectorAll('.area-group-title').forEach(t => t.style.display = 'none');
+      } else {
+        document.querySelectorAll('.area-group-title').forEach(t => t.style.display = 'block');
+      }
+    });
+  }
+
+  // Toggle item completion
+  function toggleComplete(itemId) {
+    fetch(`/construction/work-packages/items/${itemId}/toggle-complete/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+    }).then(response => {
+      if (response.ok) {
+        location.reload();
+      }
+    });
+  }
+</script>
+{% endblock %}

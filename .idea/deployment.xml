@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="kmes" uploadOnCheckin="bdbe446c-93c4-4b75-a1d2-c41cf860151d" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="kmes">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myUploadOnCheckinName" value="kmes" />
+  </component>
+</project>

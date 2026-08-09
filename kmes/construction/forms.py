@@ -142,11 +142,9 @@ class DailyProgressReportForm(forms.ModelForm):
 								}
 						),
 				}
-
-
+		
+		
 class InstalledItemCheckForm(forms.ModelForm):
-	"""Form for installation quality checks."""
-	
 	class Meta:
 		model = InstalledItemCheck
 		fields = [
@@ -156,73 +154,35 @@ class InstalledItemCheckForm(forms.ModelForm):
 				]
 		widgets = {
 				'equipment_tag': forms.Select(attrs={'class': 'form-select'}),
-				'checked_date':  forms.DateInput(
-						attrs={
-								'class': 'form-control',
-								'type':  'date'
-								}
-						),
-				'foundation_ok': forms.Select(
-						choices=[(None, '---'), (True, 'OK'), (False, 'Not OK')],
-						attrs={'class': 'form-select'}
-						),
-				'grouting_ok':   forms.Select(
-						choices=[(None, '---'), (True, 'OK'), (False, 'Not OK')],
-						attrs={'class': 'form-select'}
-						),
-				'bolting_ok':    forms.Select(
-						choices=[(None, '---'), (True, 'OK'), (False, 'Not OK')],
-						attrs={'class': 'form-select'}
-						),
-				'alignment_ok':  forms.Select(
-						choices=[(None, '---'), (True, 'OK'), (False, 'Not OK')],
-						attrs={'class': 'form-select'}
-						),
-				'electrical_ok': forms.Select(
-						choices=[(None, '---'), (True, 'OK'), (False, 'Not OK')],
-						attrs={'class': 'form-select'}
-						),
-				'status':        forms.Select(attrs={'class': 'form-select'}),
-				'comments':      forms.Textarea(
-						attrs={
-								'class':       'form-control',
-								'rows':        3,
-								'placeholder': 'Inspection comments...'
-								}
-						),
+				'checked_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+				'foundation_ok': forms.NullBooleanSelect(attrs={'class': 'form-select'}),
+				'grouting_ok': forms.NullBooleanSelect(attrs={'class': 'form-select'}),
+				'bolting_ok': forms.NullBooleanSelect(attrs={'class': 'form-select'}),
+				'alignment_ok': forms.NullBooleanSelect(attrs={'class': 'form-select'}),
+				'electrical_ok': forms.NullBooleanSelect(attrs={'class': 'form-select'}),
+				'status': forms.Select(attrs={'class': 'form-select'}),
+				'comments': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
 				}
 	
 	def __init__(self, *args, **kwargs):
-		project_id = kwargs.pop('project_id', None)
+		tag_id = kwargs.pop('tag_id', None)
 		super().__init__(*args, **kwargs)
-		
-		if project_id:
-			self.fields['equipment_tag'].queryset = EquipmentTag.objects.filter(
-					project_id=project_id,
-					status__in=['INST', 'ALGN']  # Only installed or aligned tags
-					)
+		if tag_id:
+			self.fields['equipment_tag'].initial = tag_id
+			
 
-
-class InstallationCheckPhotoForm(forms.ModelForm):
-	"""Form for uploading photos to installation checks."""
-	
-	class Meta:
-		model = InstallationCheckPhoto
-		fields = ['photo', 'caption']
-		widgets = {
-				'photo':   forms.FileInput(
-						attrs={
-								'class':  'form-control',
-								'accept': 'image/*'
-								}
-						),
-				'caption': forms.TextInput(
-						attrs={
-								'class':       'form-control',
-								'placeholder': 'Photo description'
-								}
-						),
+# Inline formset for photos
+PhotoFormSet = forms.inlineformset_factory(
+		InstalledItemCheck,
+		InstallationCheckPhoto,
+		fields=('photo', 'caption'),
+		extra=3,
+		can_delete=True,
+		widgets={
+				'photo': forms.FileInput(attrs={'class': 'form-control'}),
+				'caption': forms.TextInput(attrs={'class': 'form-control'}),
 				}
+		)
 
 
 class WorkPackageProgressUpdateForm(forms.ModelForm):
@@ -591,6 +551,13 @@ class DailyReportSearchForm(forms.Form):
 			)
 	
 	area = forms.CharField(
+			required=False,
+			widget=forms.Select(attrs={
+					'class': 'form-select form-select-sm',
+					'onchange': 'this.form.submit()'
+					})
+			)
+	company = forms.CharField(
 			required=False,
 			widget=forms.Select(attrs={
 					'class': 'form-select form-select-sm',

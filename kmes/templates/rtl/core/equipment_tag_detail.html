@@ -1,0 +1,1404 @@
+{% extends 'rtl/base.html' %}
+{% load static %}
+
+{% block title %}{{ tag.tag_number }} - جزئیات برچسب تجهیزات{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tag-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .tag-id {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .info-card {
+        border-radius: 0.5rem;
+        transition: transform 0.15s;
+    }
+    .info-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .hierarchy-tree {
+        padding-left: 0;
+    }
+    .hierarchy-tree li {
+        list-style: none;
+        position: relative;
+        padding: 0.5rem 0 0.5rem 2rem;
+    }
+    .hierarchy-tree li::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .hierarchy-tree li:last-child::before {
+        height: 50%;
+    }
+    .hierarchy-tree li::after {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 50%;
+        width: 1.5rem;
+        height: 2px;
+        background: #dee2e6;
+    }
+    .hierarchy-tree .tag-node {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        display: inline-block;
+    }
+    .hierarchy-tree .tag-node.current {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.65rem;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #0d6efd;
+    }
+    .timeline-item.success::before { background: #198754; box-shadow: 0 0 0 2px #198754; }
+    .timeline-item.warning::before { background: #ffc107; box-shadow: 0 0 0 2px #ffc107; }
+    .timeline-item.danger::before { background: #dc3545; box-shadow: 0 0 0 2px #dc3545; }
+
+    .quick-action {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+    .quick-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .document-item, .punch-item, .test-item {
+        transition: background 0.15s;
+    }
+    .document-item:hover, .punch-item:hover, .test-item:hover {
+        background: #f8f9fa;
+    }
+
+    .badge-large {
+        font-size: 0.9rem;
+        padding: 0.5em 1em;
+    }
+
+    .nav-pills .nav-link {
+        color: #6c757d;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+    .nav-pills .nav-link.active {
+        background: #0d6efd;
+        color: white;
+    }
+    .nav-pills .nav-link .badge {
+        font-size: 0.7rem;
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+
+    .image-preview {
+        max-height: 200px;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .image-preview:hover {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:project-detail' tag.project.pk %}">{{ tag.project.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:equipment-tag-list' %}?project={{ tag.project.pk }}">برچسب‌های تجهیزات</a></li>
+            <li class="breadcrumb-item active">{{ tag.tag_number }}</li>
+        </ol>
+    </nav>
+
+    <!-- Tag Header -->
+    <div class="tag-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="tag-id me-3">{{ tag.tag_number }}</div>
+                    <span class="badge badge-large
+                        {% if tag.status == 'INST' %}bg-success
+                        {% elif tag.status == 'DLVD' %}bg-info
+                        {% elif tag.status == 'COMM' %}bg-primary
+                        {% elif tag.status == 'HNDO' %}bg-success
+                        {% elif tag.status == 'DEF' %}bg-danger
+                        {% elif tag.status == 'ALGN' %}bg-warning text-dark
+                        {% else %}bg-secondary
+                        {% endif %}">
+                        {{ tag.get_status_display }}
+                    </span>
+                    {% if tag.criticality == 'HIGH' %}
+                    <span class="badge bg-danger ms-2">اهمیت بالا</span>
+                    {% endif %}
+                </div>
+
+                <h5 class="mb-2">{{ tag.description }}</h5>
+
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-tag"></i> {{ tag.get_equipment_type_display }}
+                    </span>
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-gear"></i> {{ tag.get_discipline_display }}
+                    </span>
+                    {% if tag.area %}
+                    <span class="badge bg-light text-dark">
+                            <i class="bi bi-map"></i> {{ tag.area.code }} - {{ tag.area.name }}
+                        </span>
+                    {% endif %}
+                    {% if tag.system %}
+                    <span class="badge bg-light text-dark">
+                            <i class="bi bi-diagram-3"></i> {{ tag.system.code }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if tag.manufacturer %}
+                <p class="mb-0 opacity-75">
+                    <i class="bi bi-building"></i>
+                    {{ tag.manufacturer }}
+                    {% if tag.model_number %} | مدل: {{ tag.model_number }}{% endif %}
+                    {% if tag.serial_number %} | شماره سریال: {{ tag.serial_number }}{% endif %}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                    <a href="#" class="btn btn-light">
+                        <i class="bi bi-pencil"></i> ویرایش
+                    </a>
+                    <a href="#" class="btn btn-light">
+                        <i class="bi bi-trash"></i> حذف
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
+                            بیشتر  <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'core:equipment_tag_create' %}?parent_tag={{ tag.pk }}">
+                                    <i class="bi bi-plus-circle"></i> افزودن برچسب فرزند
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'construction:installed_item_check_create' %}?tag={{ tag.pk }}">
+                                    <i class="bi bi-check-circle"></i> بررسی نصب
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{% url 'documents:tag_document_create' %}?tag={{ tag.pk }}">
+                                    <i class="bi bi-paperclip"></i> پیوند سند
+                                </a>
+                            </li>
+                            {% if tag.parent_tag %}
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
+                                <a class="dropdown-item" href="{% url 'core:equipment-tag-detail' tag.parent_tag.pk %}">
+                                    <i class="bi bi-arrow-up"></i> رفتن به برچسب والد
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card info-card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-diagram-3 fs-3 text-primary"></i>
+                    <div class="fs-4 fw-bold text-primary">{{ total_children }}</div>
+                    <small class="text-muted">برچسب‌های فرزند</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card info-card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-file-earmark-text fs-3 text-success"></i>
+                    <div class="fs-4 fw-bold text-success">{{ total_documents }}</div>
+                    <small class="text-muted">اسناد</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="{% url 'construction:installed_item_check_create' %}?tag={{ tag.pk }}" class="quick-action bg-success bg-opacity-10 text-success text-decoration-none">
+            <i class="bi bi-check-circle me-2"></i> بررسی نصب
+        </a>
+        <a href="{% url 'documents:tag_document_create' %}?tag={{ tag.pk }}" class="quick-action bg-info bg-opacity-10 text-info text-decoration-none">
+            <i class="bi bi-paperclip me-2"></i> پیوند سند
+        </a>
+        <a href="{% url 'core:equipment_tag_create' %}?parent_tag={{ tag.pk }}" class="quick-action bg-primary bg-opacity-10 text-primary text-decoration-none">
+            <i class="bi bi-plus-circle me-2"></i> افزودن برچسب فرزند
+        </a>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <ul class="nav nav-pills" id="tagTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
+                        <i class="bi bi-info-circle"></i> نمای کلی
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#hierarchy">
+                        <i class="bi bi-diagram-3"></i> سلسله‌مراتب
+                        {% if total_children > 0 %}<span class="badge bg-primary ms-1">{{ total_children }}</span>{% endif %}
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#documents">
+                        <i class="bi bi-file-earmark-text"></i> اسناد
+                        {% if total_documents > 0 %}<span class="badge bg-primary ms-1">{{ total_documents }}</span>{% endif %}
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#installation">
+                        <i class="bi bi-tools"></i> نصب
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#locations">
+                        <i class="bi bi-geo-alt"></i> موقعیت‌ها
+                        {% if total_locations > 0 %}<span class="badge bg-primary ms-1">{{ total_locations }}</span>{% endif %}
+                    </button>
+                </li>
+
+
+
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content">
+
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <!-- Details -->
+                            <h5 class="mb-3">جزئیات برچسب</h5>
+                            <table class="table table-bordered">
+                                <tbody>
+                                <tr>
+                                    <th class="bg-light" width="200">شماره برچسب</th>
+                                    <td><strong>{{ tag.tag_number }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">توضیحات</th>
+                                    <td>{{ tag.description }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">نوع تجهیز</th>
+                                    <td>{{ tag.get_equipment_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">رشته</th>
+                                    <td>{{ tag.get_discipline_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">وضعیت</th>
+                                    <td>
+                                            <span class="badge
+                                                {% if tag.status == 'INST' %}bg-success
+                                                {% elif tag.status == 'DLVD' %}bg-info
+                                                {% elif tag.status == 'COMM' %}bg-primary
+                                                {% elif tag.status == 'DEF' %}bg-danger
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                {{ tag.get_status_display }}
+                                            </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">اهمیت</th>
+                                    <td>
+                                            <span class="badge
+                                                {% if tag.criticality == 'HIGH' %}bg-danger
+                                                {% elif tag.criticality == 'MED' %}bg-warning text-dark
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                {{ tag.get_criticality_display }}
+                                            </span>
+                                    </td>
+                                </tr>
+                                {% if tag.manufacturer %}
+                                <tr>
+                                    <th class="bg-light">سازنده</th>
+                                    <td>{{ tag.manufacturer }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.model_number %}
+                                <tr>
+                                    <th class="bg-light">شماره مدل</th>
+                                    <td>{{ tag.model_number }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.serial_number %}
+                                <tr>
+                                    <th class="bg-light">شماره سریال</th>
+                                    <td>{{ tag.serial_number }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.weight_kg %}
+                                <tr>
+                                    <th class="bg-light">وزن</th>
+                                    <td>{{ tag.weight_kg }} کیلوگرم</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.dimensions %}
+                                <tr>
+                                    <th class="bg-light">ابعاد (طول×عرض×ارتفاع)</th>
+                                    <td>{{ tag.dimensions }} میلی‌متر</td>
+                                </tr>
+                                {% endif %}
+                                {% if tag.installation_date %}
+                                <tr>
+                                    <th class="bg-light">تاریخ نصب</th>
+                                    <td>{{ tag.installation_date|date:"F d, Y" }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <th class="bg-light">ایجاد شده</th>
+                                    <td>{{ tag.created_at|date:"F d, Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">آخرین به‌روزرسانی</th>
+                                    <td>{{ tag.updated_at|date:"F d, Y H:i" }} ({{ tag.updated_at|timesince }} پیش)</td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+                            {% if tag.notes %}
+                            <div class="mt-3">
+                                <h6>یادداشت‌ها</h6>
+                                <p class="text-muted">{{ tag.notes|linebreaks }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-lg-4">
+                            <!-- Location Info -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-geo-alt"></i> موقعیت</h6>
+                                    <p class="mb-1"><strong>پروژه:</strong> {{ tag.project.name }}</p>
+                                    {% if tag.area %}
+                                    <p class="mb-1"><strong>ناحیه:</strong> {{ tag.area.code }} - {{ tag.area.name }}</p>
+                                    {% endif %}
+                                    {% if tag.system %}
+                                    <p class="mb-0"><strong>سیستم:</strong> {{ tag.system.code }} - {{ tag.system.name }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Parent Tag -->
+                            {% if tag.parent_tag %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-arrow-up-circle"></i> برچسب والد</h6>
+                                    <a href="{% url 'core:equipment-tag-detail' tag.parent_tag.pk %}" class="text-decoration-none">
+                                        <strong>{{ tag.parent_tag.tag_number }}</strong>
+                                    </a>
+                                    <p class="mb-0 small text-muted">{{ tag.parent_tag.description|truncatechars:60 }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Recent Activity -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-activity"></i> فعالیت‌های اخیر</h6>
+                                    {% if recent_activities %}
+                                    <div class="timeline mt-3">
+                                        {% for activity in recent_activities %}
+                                        <div class="timeline-item
+                                                {% if 'Pass' in activity.description or 'CLSD' in activity.description %}success
+                                                {% elif 'Fail' in activity.description or 'OPEN' in activity.description %}danger
+                                                {% else %}warning{% endif %}">
+                                            <small class="text-muted">{{ activity.date|date:"M d, Y" }}</small>
+                                            <div>{{ activity.description }}</div>
+                                            <small class="text-muted">{{ activity.user }}</small>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <p class="text-muted small mb-0">فعالیتی وجود ندارد</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hierarchy Tab -->
+                <div class="tab-pane fade" id="hierarchy">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">سلسله‌مراتب مونتاژ</h5>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> افزودن برچسب فرزند
+                        </a>
+                    </div>
+
+                    <!-- Ancestors -->
+                    {% if ancestors %}
+                    <div class="mb-4">
+                        <h6>برچسب‌های والد</h6>
+                        <ol class="breadcrumb">
+                            {% for ancestor in ancestors %}
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'core:equipment-tag-detail' ancestor.pk %}">{{ ancestor.tag_number }}</a>
+                            </li>
+                            {% endfor %}
+                            <li class="breadcrumb-item active">{{ tag.tag_number }}</li>
+                        </ol>
+                    </div>
+                    {% endif %}
+
+                    <!-- Current Tag and Children -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <strong>{{ tag.tag_number }}</strong> (جاری)
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1">{{ tag.description }}</p>
+                                    <small class="text-muted">{{ tag.get_equipment_type_display }} | {{ tag.get_status_display }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Children -->
+                    {% if child_tags %}
+                    <h6>برچسب‌های فرزند ({{ total_children }})</h6>
+                    <div class="row g-3">
+                        {% for child in child_tags %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card info-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <a href="{% url 'core:equipment-tag-detail' child.pk %}" class="text-decoration-none">
+                                                    {{ child.tag_number }}
+                                                </a>
+                                            </h6>
+                                            <p class="small text-muted mb-2">{{ child.description|truncatechars:60 }}</p>
+                                            <span class="badge bg-light text-dark">{{ child.get_equipment_type_display }}</span>
+                                            <span class="badge
+                                                {% if child.status == 'INST' %}bg-success
+                                                {% elif child.status == 'DLVD' %}bg-info
+                                                {% elif child.status == 'DEF' %}bg-danger
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                {{ child.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-outline-secondary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% if child.child_tags.count > 0 %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-diagram-3"></i> {{ child.child_tags.count }} زیرمجموعه
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-diagram-3" style="font-size: 3rem;"></i>
+                        <p class="mt-2">برچسب فرزندی وجود ندارد. این یک جزء سطح برگ است.</p>
+                        <a href="{% url 'core:equipment_tag_create' %}?parent_tag={{ tag.pk }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> افزودن برچسب فرزند
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Locations Tab -->
+                <div class="tab-pane fade" id="locations" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">موقعیت‌های تجهیز</h5>
+                        <a href="{% url 'core:equipment_location_create' tag_id=tag.pk %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> ثبت موقعیت جدید
+                        </a>
+                    </div>
+
+                    <!-- Current Location Highlight -->
+                    {% if current_location %}
+                    <div class="card border-success mb-4">
+                        <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="bi bi-geo-alt-fill text-success"></i> موقعیت فعلی
+                                {% if current_location.is_verified %}
+                                <span class="badge bg-success ms-2"><i class="bi bi-check-circle"></i> تایید شده</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark ms-2"><i class="bi bi-clock"></i> تایید نشده</span>
+                                {% endif %}
+                            </h6>
+                            <div>
+                                <a href="{% url 'core:equipment_location_detail' current_location.pk %}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-eye"></i> مشاهده جزئیات
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <!-- Map -->
+                                    <div id="currentLocationMap" style="height: 300px; border-radius: 0.5rem;"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th class="text-muted">نوع:</th>
+                                            <td>{{ current_location.get_location_type_display }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">عرض جغرافیایی:</th>
+                                            <td><code>{{ current_location.latitude }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">طول جغرافیایی:</th>
+                                            <td><code>{{ current_location.longitude }}</code></td>
+                                        </tr>
+                                        {% if current_location.elevation %}
+                                        <tr>
+                                            <th class="text-muted">ارتفاع:</th>
+                                            <td>{{ current_location.elevation }} متر</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if current_location.accuracy %}
+                                        <tr>
+                                            <th class="text-muted">دقت:</th>
+                                            <td>{{ current_location.accuracy }} متر</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if current_location.area %}
+                                        <tr>
+                                            <th class="text-muted">ناحیه:</th>
+                                            <td>{{ current_location.area.code }} - {{ current_location.area.name }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr>
+                                            <th class="text-muted">تاریخ ورود:</th>
+                                            <td>{{ current_location.arrival_date|date:"M d, Y H:i" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">ثبت شده توسط:</th>
+                                            <td>{{ current_location.recorded_by.get_full_name|default:"System" }}</td>
+                                        </tr>
+                                    </table>
+
+                                    <!-- Quick Actions -->
+                                    <div class="d-grid gap-1">
+                                        <a href="{{ current_location.google_maps_url }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-google"></i> Google Maps
+                                        </a>
+                                        <a href="{{ current_location.openstreetmap_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-map"></i> OpenStreetMap
+                                        </a>
+                                        {% if not current_location.is_verified %}
+                                        <form method="post" action="{% url 'core:verify_location' current_location.pk %}" class="d-grid">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-check-circle"></i> تایید موقعیت
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Current Location Photos -->
+                            {% with primary_image=current_location.images.filter.first %}
+                            {% if current_location.images.exists %}
+                            <div class="mt-3">
+                                <h6>عکس‌های موقعیت ({{ current_location.images.count }})</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for image in current_location.images.all %}
+                                    <div class="position-relative">
+                                        <img src="{{ image.image.url }}"
+                                             class="img-thumbnail"
+                                             style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;"
+                                             alt="{{ image.title }}"
+                                             data-bs-toggle="modal"
+                                             data-bs-target="#locationImageModal{{ image.pk }}">
+                                        {% if image.is_primary %}
+                                        <span class="position-absolute top-0 start-0 badge bg-warning text-dark" style="font-size: 0.6rem;">
+                                اصلی
+                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Image Modal -->
+                                    <div class="modal fade" id="locationImageModal{{ image.pk }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ image.title|default:"عکس موقعیت" }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <img src="{{ image.image.url }}" class="img-fluid" alt="{{ image.title }}">
+                                                    {% if image.description %}
+                                                    <p class="mt-2">{{ image.description }}</p>
+                                                    {% endif %}
+                                                    <small class="text-muted">
+                                                        {{ image.get_image_type_display }} |
+                                                        {{ image.taken_date|date:"M d, Y"|default:"بدون تاریخ" }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Location History -->
+                    <h6 class="mb-3">
+                        <i class="bi bi-clock-history"></i> تاریخچه موقعیت‌ها
+                        <span class="badge bg-secondary">{{ location_history.count }}</span>
+                    </h6>
+
+                    {% if location_history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>تاریخ</th>
+                                <th>نوع</th>
+                                <th>مختصات</th>
+                                <th>ناحیه</th>
+                                <th>دقت</th>
+                                <th>عکس‌ها</th>
+                                <th>تایید شده</th>
+                                <th>عملیات</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for location in location_history %}
+                            <tr>
+                                <td>
+                                    <div>{{ location.arrival_date|date:"M d, Y" }}</div>
+                                    <small class="text-muted">{{ location.arrival_date|date:"H:i" }}</small>
+                                    {% if location.departure_date %}
+                                    <br><small class="text-muted">تا {{ location.departure_date|date:"M d, Y" }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">{{ location.get_location_type_display }}</span>
+                                </td>
+                                <td>
+                                    <small>
+                                        <a href="{{ location.google_maps_url }}" target="_blank" class="text-decoration-none">
+                                            {{ location.latitude }}, {{ location.longitude }}
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </a>
+                                    </small>
+                                    {% if location.elevation %}
+                                    <br><small class="text-muted">ارتفاع: {{ location.elevation }}m</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ location.area.code|default:"-" }}</td>
+                                <td>
+                                    {% if location.accuracy %}
+                                    {% if location.accuracy <= 10 %}
+                                    <span class="badge bg-success">{{ location.accuracy }}m</span>
+                                    {% elif location.accuracy <= 30 %}
+                                    <span class="badge bg-warning text-dark">{{ location.accuracy }}m</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ location.accuracy }}m</span>
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% with img_count=location.images.count %}
+                                    {% if img_count > 0 %}
+                                    <span class="badge bg-info">
+                                    <i class="bi bi-camera"></i> {{ img_count }}
+                                </span>
+                                    {% else %}
+                                    <span class="text-muted">0</span>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% if location.is_verified %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i></span>
+                                    {% else %}
+                                    <span class="badge bg-secondary"><i class="bi bi-dash-circle"></i></span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'core:equipment_location_detail' location.pk %}" class="btn btn-outline-primary" title="مشاهده">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ location.google_maps_url }}" target="_blank" class="btn btn-outline-danger" title="Google Maps">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-geo-alt" style="font-size: 3rem;"></i>
+                        <p class="mt-2">تاریخچه موقعیتی در دسترس نیست.</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- All Locations Map -->
+                    {% if locations.count > 1 %}
+                    <div class="mt-4">
+                        <h6 class="mb-3">
+                            <i class="bi bi-map"></i> نقشه همه موقعیت‌ها
+                        </h6>
+                        <div id="allLocationsMap" style="height: 400px; border-radius: 0.5rem;"></div>
+                    </div>
+                    {% endif %}
+
+                    {% if not current_location and not location_history %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-geo-alt" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3">موقعیتی ثبت نشده است</h4>
+                        <p class="text-muted">اولین موقعیت این تجهیز را ثبت کنید تا بتوانید آن را ردیابی کنید.</p>
+                        <a href="{% url 'core:equipment_location_create' tag_id=tag.pk %}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> ثبت موقعیت
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Documents Tab -->
+                <div class="tab-pane fade" id="documents">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">اسناد پیوند شده</h5>
+                        <a href="{% url 'documents:tag_document_create' %}?tag={{ tag.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-paperclip"></i> پیوند سند
+                        </a>
+                    </div>
+
+                    {% if documents %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>شماره سند</th>
+                                <th>عنوان</th>
+                                <th>نوع</th>
+                                <th>بازبینی</th>
+                                <th>وضعیت</th>
+                                <th>رابطه</th>
+                                <th>عملیات</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for td in documents %}
+                            <tr class="document-item">
+                                <td><strong>{{ td.document.document_number }}</strong></td>
+                                <td>{{ td.document.title|truncatechars:60 }}</td>
+                                <td><span class="badge bg-light text-dark">{{ td.document.get_doc_type_display }}</span></td>
+                                <td>{{ td.document.revision }}</td>
+                                <td>
+                                        <span class="badge
+                                            {% if td.document.status == 'APPR' %}bg-success
+                                            {% elif td.document.status == 'IFC' %}bg-primary
+                                            {% elif td.document.status == 'SUPD' %}bg-warning text-dark
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ td.document.get_status_display }}
+                                        </span>
+                                </td>
+                                <td>{{ td.relation_type }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'documents:document_preview' td.document.pk %}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if td.document.file_upload %}
+                                        <a href="{% url 'documents:document_download' td.document.pk %}" class="btn btn-outline-success" download>
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        {% endif %}
+                                        <a href="#" class="btn btn-outline-danger">
+                                            <i class="bi bi-link"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-file-earmark-text" style="font-size: 3rem;"></i>
+                        <p class="mt-2">سندی به این برچسب پیوند نشده است.</p>
+                        <a href="{% url 'documents:tag_document_create' %}?tag={{ tag.pk }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-paperclip"></i> پیوند اولین سند
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Installation Tab -->
+                <div class="tab-pane fade" id="installation">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">بررسی‌های نصب</h5>
+                        <a href="{% url 'construction:installed_item_check_create' %}?tag={{ tag.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> بررسی جدید
+                        </a>
+                    </div>
+
+                    {% if installation_checks %}
+                    {% for check in installation_checks %}
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>تاریخ بررسی:</strong> {{ check.checked_date|date:"F d, Y" }}
+                                <span class="badge ms-2
+                                    {% if check.status == 'PASS' %}bg-success
+                                    {% elif check.status == 'FAIL' %}bg-danger
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ check.get_status_display }}
+                                </span>
+                            </div>
+                            <small class="text-muted">توسط: {{ check.checked_by.get_full_name|default:"N/A" }}</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>فونداسیون</td>
+                                            <td>
+                                                {% if check.foundation_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> تایید</span>
+                                                {% elif check.foundation_ok is None %}
+                                                <span class="text-muted">نامربوط</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> عدم تایید</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>گروت‌ریزی</td>
+                                            <td>
+                                                {% if check.grouting_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> تایید</span>
+                                                {% elif check.grouting_ok is None %}
+                                                <span class="text-muted">نامربوط</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> عدم تایید</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>پیچ و مهره</td>
+                                            <td>
+                                                {% if check.bolting_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> تایید</span>
+                                                {% elif check.bolting_ok is None %}
+                                                <span class="text-muted">نامربوط</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> عدم تایید</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>هم‌محوری</td>
+                                            <td>
+                                                {% if check.alignment_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> تایید</span>
+                                                {% elif check.alignment_ok is None %}
+                                                <span class="text-muted">نامربوط</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> عدم تایید</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>الکتریکال</td>
+                                            <td>
+                                                {% if check.electrical_ok %}
+                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> تایید</span>
+                                                {% elif check.electrical_ok is None %}
+                                                <span class="text-muted">نامربوط</span>
+                                                {% else %}
+                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> عدم تایید</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {% if check.comments %}
+                            <div class="mt-2">
+                                <strong>توضیحات:</strong>
+                                <p class="mb-0 text-muted">{{ check.comments }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Photos -->
+                            {% if check.photos.all %}
+                            <div class="mt-3">
+                                <strong>عکس‌ها:</strong>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    {% for photo in check.photos.all %}
+                                    <img src="{{ photo.photo.url }}"
+                                         class="image-preview"
+                                         alt="{{ photo.caption }}"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#photoModal{{ photo.pk }}">
+
+                                    <!-- Photo Modal -->
+                                    <div class="modal fade" id="photoModal{{ photo.pk }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ photo.caption|default:"عکس نصب" }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body text-center">
+                                                    <img src="{{ photo.photo.url }}" class="img-fluid" alt="{{ photo.caption }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-tools" style="font-size: 3rem;"></i>
+                        <p class="mt-2">هنوز بررسی نصبی انجام نشده است.</p>
+                        <a href="{% url 'construction:installed_item_check_create' %}?tag={{ tag.pk }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> انجام اولین بررسی
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+
+                <!-- Punch Items Tab -->
+                <div class="tab-pane fade" id="punch">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">آیتم‌های پانچ</h5>
+                        <a href="#" class="btn btn-danger btn-sm">
+                            <i class="bi bi-flag"></i> ایجاد آیتم پانچ
+                        </a>
+                    </div>
+
+                    {% if punch_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>شماره پانچ</th>
+                                <th>توضیحات</th>
+                                <th>دسته</th>
+                                <th>وضعیت</th>
+                                <th>ایجاد شده توسط</th>
+                                <th>تاریخ</th>
+                                <th>عملیات</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for punch in punch_items %}
+                            <tr class="punch-item">
+                                <td><strong>{{ punch.punch_number }}</strong></td>
+                                <td>{{ punch.description|truncatechars:60 }}</td>
+                                <td>
+                                        <span class="badge
+                                            {% if punch.category == 'A' %}bg-danger
+                                            {% elif punch.category == 'B' %}bg-warning text-dark
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ punch.get_category_display }}
+                                        </span>
+                                </td>
+                                <td>
+                                        <span class="badge
+                                            {% if punch.status == 'OPEN' %}bg-danger
+                                            {% elif punch.status == 'IPRO' %}bg-info
+                                            {% elif punch.status == 'RESL' %}bg-warning text-dark
+                                            {% elif punch.status == 'CLSD' %}bg-success
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ punch.get_status_display }}
+                                        </span>
+                                </td>
+                                <td>{{ punch.raised_by.get_full_name|default:"System" }}</td>
+                                <td><small>{{ punch.raised_date|date:"M d, Y" }}</small></td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if punch.status == 'OPEN' %}
+                                        <a href="#" class="btn btn-outline-success">
+                                            <i class="bi bi-check-circle"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-flag" style="font-size: 3rem;"></i>
+                        <p class="mt-2">آیتم پانچی برای این برچسب ثبت نشده است.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Procurement Tab -->
+                <div class="tab-pane fade" id="procurement">
+                    <h5 class="mb-3">سفارشات خرید</h5>
+
+                    {% if purchase_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>شماره سفارش</th>
+                                <th>تامین‌کننده</th>
+                                <th>ردیف</th>
+                                <th>تعداد</th>
+                                <th>وضعیت</th>
+                                <th>تاریخ تحویل</th>
+                                <th>عملیات</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for poi in purchase_orders %}
+                            <tr>
+                                <td>
+                                    <a href="#">
+                                        {{ poi.purchase_order.po_number }}
+                                    </a>
+                                </td>
+                                <td>{{ poi.purchase_order.supplier.name }}</td>
+                                <td>{{ poi.line_item_number }}</td>
+                                <td>{{ poi.quantity_ordered }} {{ poi.unit }}</td>
+                                <td>
+                                        <span class="badge
+                                            {% if poi.is_received %}bg-success
+                                            {% else %}bg-warning text-dark
+                                            {% endif %}">
+                                            {% if poi.is_received %}دریافت شده{% else %}در انتظار{% endif %}
+                                        </span>
+                                </td>
+                                <td>
+                                    {% if poi.actual_delivery_date %}
+                                    {{ poi.actual_delivery_date|date:"M d, Y" }}
+                                    {% else %}
+                                    <small class="text-muted">مورد انتظار: {{ poi.required_on_site_date|date:"M d, Y"|default:"نامشخص" }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-cart" style="font-size: 3rem;"></i>
+                        <p class="mt-2">سفارش خریدی به این برچسب متصل نیست.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Tags -->
+    {% if related_tags %}
+    <div class="mt-4">
+        <h5 class="mb-3">برچسب‌های مرتبط</h5>
+        <div class="row g-3">
+            {% for related in related_tags %}
+            <div class="col-lg-3 col-md-4 col-6">
+                <a href="#" class="text-decoration-none">
+                    <div class="card info-card h-100">
+                        <div class="card-body text-center">
+                            <h6 class="mb-1">{{ related.tag_number }}</h6>
+                            <small class="text-muted">{{ related.description|truncatechars:40 }}</small>
+                            <br>
+                            <span class="badge
+                                {% if related.status == 'INST' %}bg-success
+                                {% elif related.status == 'DLVD' %}bg-info
+                                {% else %}bg-secondary
+                                {% endif %} mt-1">
+                                {{ related.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Preserve active tab on page reload
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('#tagTabs button[data-bs-toggle="pill"]');
+        const activeTab = localStorage.getItem('activeTagTab');
+
+        if (activeTab) {
+            const tab = document.querySelector(`#tagTabs button[data-bs-target="${activeTab}"]`);
+            if (tab) {
+                const bsTab = new bootstrap.Tab(tab);
+                bsTab.show();
+            }
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                localStorage.setItem('activeTagTab', e.target.getAttribute('data-bs-target'));
+            });
+        });
+    });
+    // Initialize maps when location tab is shown
+    document.addEventListener('DOMContentLoaded', function() {
+        const locationTab = document.querySelector('button[data-bs-target="#locations"]');
+
+        if (locationTab) {
+            locationTab.addEventListener('shown.bs.tab', function(e) {
+                initializeLocationMaps();
+            });
+
+            // If location tab is active on page load
+            if (locationTab.classList.contains('active')) {
+                initializeLocationMaps();
+            }
+        }
+    });
+
+    function initializeLocationMaps() {
+        // Initialize current location map
+        {% if current_location %}
+        if (!window.currentMap) {
+            window.currentMap = L.map('currentLocationMap').setView(
+                [{{ current_location.latitude }}, {{ current_location.longitude }}],
+            16
+        );
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(window.currentMap);
+
+            // Add marker for current location
+            const currentMarker = L.marker([{{ current_location.latitude }}, {{ current_location.longitude }}])
+        .addTo(window.currentMap)
+                .bindPopup(`
+                    <strong>موقعیت فعلی</strong><br>
+                    نوع: {{ current_location.get_location_type_display }}<br>
+                    عرض: {{ current_location.latitude }}<br>
+                    طول: {{ current_location.longitude }}<br>
+                    {% if current_location.accuracy %}دقت: {{ current_location.accuracy }}m{% endif %}
+                `)
+                .openPopup();
+
+            // Add accuracy circle if available
+            {% if current_location.accuracy %}
+            L.circle([{{ current_location.latitude }}, {{ current_location.longitude }}], {
+                radius: {{ current_location.accuracy }},
+                color: '#198754',
+                    fillColor: '#198754',
+                    fillOpacity: 0.1,
+                    weight: 1
+            }).addTo(window.currentMap);
+            {% endif %}
+        }
+        {% endif %}
+
+        // Initialize all locations map
+        {% if locations.count > 1 %}
+        if (!window.allMap) {
+            // Calculate bounds from all locations
+            const bounds = [];
+            {% for location in locations.all %}
+            {% if location.latitude and location.longitude %}
+            bounds.push([{{ location.latitude }}, {{ location.longitude }}]);
+            {% endif %}
+            {% endfor %}
+
+            if (bounds.length > 0) {
+                window.allMap = L.map('allLocationsMap');
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(window.allMap);
+
+                // Add markers for each location
+                const markers = [];
+                {% for location in locations.all %}
+                {% if location.latitude and location.longitude %}
+                const marker{{ forloop.counter }} = L.marker([{{ location.latitude }}, {{ location.longitude }}])
+            .addTo(window.allMap)
+                    .bindPopup(`
+                            <strong>{{ location.get_location_type_display }}</strong><br>
+                            تاریخ: {{ location.arrival_date|date:"M d, Y" }}<br>
+                            عرض: {{ location.latitude }}<br>
+                            طول: {{ location.longitude }}<br>
+                            {% if location.is_current %}<span class="badge bg-success">فعلی</span>{% endif %}
+                            {% if location.is_verified %}<span class="badge bg-success">تایید شده</span>{% endif %}
+                        `);
+
+                markers.push(marker{{ forloop.counter }});
+
+                // Different color for current location
+                {% if location.is_current %}
+                marker{{ forloop.counter }}.setIcon(L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                }));
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+
+                // Fit map to show all markers
+                const group = L.featureGroup(markers);
+                window.allMap.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+        {% endif %}
+
+        // Fix map size issues
+        setTimeout(function() {
+            if (window.currentMap) window.currentMap.invalidateSize();
+            if (window.allMap) window.allMap.invalidateSize();
+        }, 100);
+    }
+</script>
+{% endblock %}

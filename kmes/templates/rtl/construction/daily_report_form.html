@@ -1,0 +1,550 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .required-field::after {
+        content: ' *';
+        color: #dc3545;
+    }
+
+    .weather-btn {
+        transition: all 0.2s;
+    }
+    .weather-btn.active {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .tag-progress-item {
+        border-left: 3px solid #dee2e6;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.5rem;
+        transition: border-color 0.15s;
+    }
+    .tag-progress-item:hover {
+        border-left-color: #0d6efd;
+        background: #f8f9fa;
+    }
+    .tag-progress-item.completed {
+        border-left-color: #198754;
+        background: #f0fff4;
+    }
+
+    .previous-report-card {
+        border-left: 4px solid #0d6efd;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .previous-report-card:hover {
+        background: #f0f7ff;
+    }
+
+    .manpower-counter {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .quick-template-btn {
+        font-size: 0.75rem;
+        padding: 0.15rem 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">Work Packages</a></li>
+            {% if work_package %}
+            <li class="breadcrumb-item">
+                <a href="#">
+                    {{ work_package.code }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ page_title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">{{ page_title }}</h1>
+            <p class="text-muted mb-0">
+                {% if work_package %}
+                Work Package: <strong>{{ work_package.code }}</strong> - {{ work_package.name }}
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            {% if work_package %}
+            <a href="#" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Work Package
+            </a>
+            {% else %}
+            <a href="#" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Reports
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if today_report and is_create %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        A report for today already exists.
+        <a href="#" class="alert-link">
+            Click here to edit it
+        </a>.
+    </div>
+    {% endif %}
+
+    <form method="post" novalidate id="dailyReportForm">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i>
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Main Form -->
+            <div class="col-lg-8">
+
+                <!-- Report Header -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-calendar-check me-2"></i>Report Header
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Work Package -->
+                        <div class="col-md-6">
+                            <label for="{{ form.work_package.id_for_label }}" class="form-label required-field">
+                                Work Package
+                            </label>
+                            {{ form.work_package }}
+                            {% if form.work_package.errors %}
+                            <div class="invalid-feedback d-block">{{ form.work_package.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Report Date -->
+                        <div class="col-md-3">
+                            <label for="{{ form.report_date.id_for_label }}" class="form-label required-field">
+                                Report Date
+                            </label>
+                            {{ form.report_date }}
+                            {% if form.report_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.report_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Quick Date Buttons -->
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" onclick="setDate('today')">Today</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="setDate('yesterday')">Yesterday</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weather Conditions -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-cloud-sun me-2"></i>Weather Conditions
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Weather -->
+                        <div class="col-md-8">
+                            <label class="form-label">Weather</label>
+                            <div class="d-flex flex-wrap gap-1" id="weatherButtons">
+                                {% for weather in weather_options %}
+                                <button type="button"
+                                        class="btn btn-outline-secondary btn-sm weather-btn"
+                                        data-weather="{{ weather }}"
+                                        onclick="selectWeather('{{ weather }}', this)">
+                                    <i class="bi bi-{% if 'Sunny' in weather %}sun{% elif 'Cloudy' in weather %}cloud{% elif 'Rain' in weather %}cloud-rain{% elif 'Thunderstorm' in weather %}cloud-lightning{% elif 'Snow' in weather %}snow{% elif 'Windy' in weather %}wind{% elif 'Foggy' in weather %}cloud-fog{% elif 'Dust' in weather %}cloud-haze{% else %}cloud{% endif %} me-1"></i>
+                                    {{ weather }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                            {{ form.weather_conditions }}
+                            {% if form.weather_conditions.errors %}
+                            <div class="invalid-feedback d-block">{{ form.weather_conditions.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Temperature -->
+                        <div class="col-md-4">
+                            <label for="{{ form.temperature_celsius.id_for_label }}" class="form-label">
+                                Temperature (°C)
+                            </label>
+                            <div class="input-group">
+                                {{ form.temperature_celsius }}
+                                <span class="input-group-text">°C</span>
+                            </div>
+                            {% if form.temperature_celsius.errors %}
+                            <div class="invalid-feedback d-block">{{ form.temperature_celsius.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Performed -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-tools me-2"></i>Work Performed
+                    </div>
+
+                    <!-- Quick Templates -->
+                    <div class="mb-2">
+                        <small class="text-muted">Quick Templates:</small>
+                        <button type="button" class="btn btn-outline-secondary btn-sm quick-template-btn"
+                                onclick="appendTemplate('installation')">
+                            Installation
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm quick-template-btn"
+                                onclick="appendTemplate('inspection')">
+                            Inspection
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm quick-template-btn"
+                                onclick="appendTemplate('testing')">
+                            Testing
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm quick-template-btn"
+                                onclick="appendTemplate('general')">
+                            General
+                        </button>
+                    </div>
+
+                    <!-- Work Description -->
+                    <div class="mb-3">
+                        <label for="{{ form.work_performed_description.id_for_label }}" class="form-label required-field">
+                            Work Performed Description
+                        </label>
+                        {{ form.work_performed_description }}
+                        {% if form.work_performed_description.errors %}
+                        <div class="invalid-feedback d-block">{{ form.work_performed_description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Issues Encountered -->
+                    <div class="mb-3">
+                        <label for="{{ form.issues_encountered.id_for_label }}" class="form-label">
+                            Issues Encountered
+                        </label>
+                        {{ form.issues_encountered }}
+                        {% if form.issues_encountered.errors %}
+                        <div class="invalid-feedback d-block">{{ form.issues_encountered.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Manpower -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-people me-2"></i>Manpower
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Manpower Count -->
+                        <div class="col-md-6">
+                            <label for="{{ form.manpower_count.id_for_label }}" class="form-label required-field">
+                                Number of Workers
+                            </label>
+                            <div class="manpower-counter">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="adjustManpower(-1)">-</button>
+                                {{ form.manpower_count }}
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="adjustManpower(1)">+</button>
+                            </div>
+                            {% if form.manpower_count.errors %}
+                            <div class="invalid-feedback d-block">{{ form.manpower_count.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Hours Worked -->
+                        <div class="col-md-6">
+                            <label for="{{ form.hours_worked.id_for_label }}" class="form-label">
+                                Total Hours Worked
+                            </label>
+                            {{ form.hours_worked }}
+                            <div class="form-text">Total man-hours for all workers</div>
+                            {% if form.hours_worked.errors %}
+                            <div class="invalid-feedback d-block">{{ form.hours_worked.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if work_package %}
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        {% else %}
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <button type="submit" name="save_add_another" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle"></i> Save & Add Another
+                        </button>
+                        <button type="submit" class="btn btn-primary ms-2">
+                            <i class="bi bi-check-circle"></i>
+                            {% if is_create %}Submit Report{% else %}Save Changes{% endif %}
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="col-lg-4">
+
+                <!-- Work Package Info -->
+                {% if work_package %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Work Package Info</h6>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tr><th class="text-muted">Code:</th><td>{{ work_package.code }}</td></tr>
+                            <tr><th class="text-muted">Name:</th><td>{{ work_package.name|truncatechars:40 }}</td></tr>
+                            <tr><th class="text-muted">Status:</th><td><span class="badge bg-warning text-dark">{{ work_package.get_status_display }}</span></td></tr>
+                            <tr><th class="text-muted">Progress:</th><td>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar" style="width: {{ work_package.percent_complete }}%"></div>
+                                </div>
+                                <small>{{ work_package.percent_complete }}%</small>
+                            </td></tr>
+                            <tr><th class="text-muted">Items:</th><td>{{ work_package.items.count }} tags</td></tr>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Equipment Tags Progress -->
+                {% if work_package_items %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-tag me-2"></i>Equipment Tags
+                            <span class="badge bg-primary">{{ work_package_items.count }}</span>
+                        </h6>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                        {% for item in work_package_items %}
+                        <div class="tag-progress-item {% if item.is_complete %}completed{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong class="small">{{ item.equipment_tag.tag_number }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ item.equipment_tag.description|truncatechars:30 }}</small>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           {% if item.is_complete %}checked{% endif %}
+                                           id="tag_{{ item.pk }}"
+                                           onchange="toggleTagComplete({{ item.pk }}, this.checked)">
+                                    <label class="form-check-label small" for="tag_{{ item.pk }}">
+                                        Done
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Previous Reports -->
+                {% if previous_reports %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Previous Reports</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for report in previous_reports %}
+                        <div class="previous-report-card p-2 border-bottom"
+                             onclick="copyFromPrevious({{ report.pk }})">
+                            <div class="d-flex justify-content-between">
+                                <strong class="small">{{ report.report_date|date:"M d, Y" }}</strong>
+                                <small class="text-muted">{{ report.manpower_count }} workers</small>
+                            </div>
+                            <small class="text-muted">{{ report.work_performed_description|truncatechars:60 }}</small>
+                            <br>
+                            <span class="badge bg-light text-dark small">{{ report.weather_conditions }}</span>
+                            {% if report.issues_encountered %}
+                            <i class="bi bi-exclamation-triangle text-warning small" title="Issues reported"></i>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Tips Card -->
+                <div class="card">
+                    <div class="card-header bg-info bg-opacity-10">
+                        <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+                    </div>
+                    <div class="card-body small">
+                        <ul class="mb-0">
+                            <li class="mb-2">Be specific about work performed</li>
+                            <li class="mb-2">Include equipment tag numbers in description</li>
+                            <li class="mb-2">Report any safety incidents immediately</li>
+                            <li class="mb-2">Track weather for delay documentation</li>
+                            <li>Mark completed equipment tags as done</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set date helper
+    function setDate(option) {
+        const dateInput = document.getElementById('{{ form.report_date.id_for_label }}');
+        const today = new Date();
+
+        if (option === 'today') {
+            dateInput.value = today.toISOString().split('T')[0];
+        } else if (option === 'yesterday') {
+            today.setDate(today.getDate() - 1);
+            dateInput.value = today.toISOString().split('T')[0];
+        }
+    }
+
+    // Weather selection
+    function selectWeather(weather, button) {
+        const weatherInput = document.getElementById('{{ form.weather_conditions.id_for_label }}');
+        weatherInput.value = weather;
+
+        // Update button styles
+        document.querySelectorAll('.weather-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        button.classList.add('active');
+    }
+
+    // Initialize weather button if value exists
+    document.addEventListener('DOMContentLoaded', function() {
+        const weatherInput = document.getElementById('{{ form.weather_conditions.id_for_label }}');
+        if (weatherInput.value) {
+            const activeBtn = document.querySelector(`[data-weather="${weatherInput.value}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+        }
+    });
+
+    // Manpower counter
+    function adjustManpower(change) {
+        const input = document.getElementById('{{ form.manpower_count.id_for_label }}');
+        let value = parseInt(input.value) || 0;
+        value = Math.max(0, value + change);
+        input.value = value;
+    }
+
+    // Quick templates
+    function appendTemplate(type) {
+        const textarea = document.getElementById('{{ form.work_performed_description.id_for_label }}');
+        const templates = {
+            'installation': 'Installation of [equipment tag] completed.\n- Foundation checked: OK\n- Alignment verified: OK\n- Bolting completed: OK\n- Electrical connections: [status]',
+            'inspection': 'Inspection performed on [equipment/area].\n- Visual inspection: [result]\n- Measurements taken: [details]\n- Non-conformities found: [list if any]',
+            'testing': 'Testing of [system/equipment] performed.\n- Test procedure: [code]\n- Test results: [pass/fail]\n- Observations: [details]',
+            'general': 'Work performed today:\n1. [task description]\n2. [task description]\n3. [task description]\n\nMaterials used:\n- [material]\n- [material]\n\nNext steps:\n- [planned work]'
+        };
+
+        const template = templates[type] || '';
+        if (textarea.value && template) {
+            textarea.value += '\n\n' + template;
+        } else {
+            textarea.value = template;
+        }
+        textarea.focus();
+    }
+
+    // Copy from previous report
+    function copyFromPrevious(reportId) {
+        if (confirm('Copy work description from this previous report?')) {
+            // You can implement AJAX call to get previous report content
+            // For now, just show a message
+            alert('Previous report content would be loaded here.');
+        }
+    }
+
+    // Toggle tag complete
+    function toggleTagComplete(itemId, isComplete) {
+        // You can implement AJAX call to update item status
+        const item = document.querySelector(`.tag-progress-item:has(#tag_${itemId})`);
+        if (item) {
+            if (isComplete) {
+                item.classList.add('completed');
+            } else {
+                item.classList.remove('completed');
+            }
+        }
+    }
+
+    // Confirm before leaving with unsaved changes
+    let formChanged = false;
+    document.querySelectorAll('#dailyReportForm input, #dailyReportForm select, #dailyReportForm textarea').forEach(el => {
+        el.addEventListener('change', () => { formChanged = true; });
+        el.addEventListener('input', () => { formChanged = true; });
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+
+    document.getElementById('dailyReportForm').addEventListener('submit', function() {
+        formChanged = false;
+    });
+</script>
+{% endblock %}

@@ -109,7 +109,7 @@ class DailyProgressReport(models.Model):
 	reported_by = models.ForeignKey(
 			User, on_delete=models.SET_NULL, null=True, related_name='daily_reports'
 			)
-	
+	company = models.ForeignKey('resources.Company', on_delete=models.SET_NULL, null=True, blank=True, related_name='daily_reports')
 	work_performed_description = models.TextField()
 	issues_encountered = models.TextField(blank=True)
 	weather_conditions = models.CharField(max_length=200, blank=True)

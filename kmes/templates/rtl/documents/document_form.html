@@ -1,0 +1,551 @@
+{% extends 'rtl/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .file-upload-zone {
+        border: 2px dashed #dee2e6;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        background: white;
+    }
+    .file-upload-zone:hover, .file-upload-zone.dragover {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+    }
+    .file-upload-zone.has-file {
+        border-color: #198754;
+        background: #f0fff4;
+    }
+
+    .file-upload-icon {
+        font-size: 3rem;
+        color: #adb5bd;
+        margin-bottom: 1rem;
+    }
+    .file-upload-zone:hover .file-upload-icon {
+        color: #0d6efd;
+    }
+
+    .file-info {
+        display: none;
+        margin-top: 1rem;
+    }
+
+    .file-info.show {
+        display: block!important;
+    }
+
+    .preview-image {
+        max-height: 200px;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .required-field::after {
+        content: ' *';
+        color: #dc3545;
+    }
+
+    .form-hint {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .recent-doc-item {
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .recent-doc-item:hover {
+        background: #f0f7ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" dir="rtl">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'documents:document_list' %}">اسناد</a></li>
+            {% if not is_create and document %}
+            <li class="breadcrumb-item">
+                <a href="#">
+                    {{ document.document_number }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active">
+                {{ page_title }}
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">{{ page_title }}</h1>
+            <p class="text-muted mb-0">
+                {% if is_create %}
+                بارگذاری سند جدید در سیستم
+                {% else %}
+                به‌روزرسانی اطلاعات سند
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'documents:document_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> بازگشت به لیست
+            </a>
+            {% if not is_create %}
+            <a href="{% url 'documents:document_list' %}?revision={{ document.revision }}" class="btn btn-outline-primary ms-2">
+                <i class="bi bi-plus-circle"></i> نسخه جدید
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <form method="post" enctype="multipart/form-data" novalidate id="documentForm">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-info-circle me-2"></i>اطلاعات پایه
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Project -->
+                        <div class="col-md-6">
+                            <label for="{{ form.project.id_for_label }}" class="form-label required-field">
+                                پروژه
+                            </label>
+                            {{ form.project }}
+                            {% if form.project.errors %}
+                            <div class="invalid-feedback d-block">{{ form.project.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Document Type -->
+                        <div class="col-md-3">
+                            <label for="{{ form.doc_type.id_for_label }}" class="form-label required-field">
+                                نوع سند
+                            </label>
+                            {{ form.doc_type }}
+                            {% if form.doc_type.errors %}
+                            <div class="invalid-feedback d-block">{{ form.doc_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Discipline -->
+                        <div class="col-md-3">
+                            <label for="{{ form.discipline.id_for_label }}" class="form-label required-field">
+                                رشته
+                            </label>
+                            {{ form.discipline }}
+                            {% if form.discipline.errors %}
+                            <div class="invalid-feedback d-block">{{ form.discipline.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Document Number -->
+                        <div class="col-md-6">
+                            <label for="{{ form.document_number.id_for_label }}" class="form-label">
+                                شماره سند
+                            </label>
+                            {{ form.document_number }}
+                            <div class="form-hint" id="docNumberHint">
+                                    <span id="autoGenStatus" style="color: #198754; display: none;">
+                                        <i class="bi bi-magic"></i> تولید خودکار
+                                    </span>
+                            </div>
+                            {% if form.document_number.errors %}
+                            <div class="invalid-feedback d-block">{{ form.document_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Title -->
+                        <div class="col-md-6">
+                            <label for="{{ form.title.id_for_label }}" class="form-label required-field">
+                                عنوان
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Upload Section -->
+                <div class="form-section">
+                    <div class="form-section-title " style="margin-top: 1rem;">
+                        <i class="bi bi-cloud-upload me-2"></i>بارگذاری فایل
+                    </div>
+
+                    <div class="file-upload-zone" id="fileUploadZone"
+                         onclick="document.getElementById('{{ form.file_upload.id_for_label }}').click()">
+                        <input type="file"
+                               name="{{ form.file_upload.name }}"
+                               id="{{ form.file_upload.id_for_label }}"
+                               class="d-none"
+                               onchange="handleFileSelect(this)">
+
+                        <div id="uploadPrompt" style="margin-top: 1rem;">
+                            <div class="btn btn btn-outline-info btn-sm row g-1">
+                                <i class="bi bi-cloud-arrow-up"></i> برای بارگذاری کلیک کنید
+
+                            </div>
+                            <div class="card info-card bg-primary bg-opacity-10 border-primary p-5" style="margin-top: 1rem;">فایل را اینجا بکشید و رها کنید
+                                <small class="text-muted">
+                                    فرمت‌های پشتیبانی شده: PDF، DWG، DXF، DOC، DOCX، XLS، XLSX، ZIP، تصاویر
+                                </small>
+                            </div>
+                            <small class="text-muted">
+                                فرمت‌های پشتیبانی شده: PDF، DWG، DXF، DOC، DOCX، XLS، XLSX، ZIP، تصاویر
+                            </small>
+                        </div>
+
+                        <div class="file-info" id="fileInfo" style="display: none">
+                            <i class="bi bi-file-earmark-check text-success" style="font-size: 3rem;"></i>
+                            <h5 class="text-success mt-2" id="fileName">فایل انتخاب شده</h5>
+                            <p class="text-muted" id="fileSize"></p>
+                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                    onclick="event.stopPropagation(); clearFile()">
+                                <i class="bi bi-x-circle"></i> حذف
+                            </button>
+                        </div>
+
+                        <img id="imagePreview" class="preview-image" style="display:none;">
+                    </div>
+
+                    {% if form.file_upload.errors %}
+                    <div class="invalid-feedback d-block mt-2">{{ form.file_upload.errors.0 }}</div>
+                    {% endif %}
+
+                    <!-- Alternative: File Path -->
+                    <div class="mt-3">
+                        <label for="{{ form.file_path.id_for_label }}" class="form-label">
+                            یا مسیر فایل را وارد کنید
+                        </label>
+                        {{ form.file_path }}
+                        <div class="form-hint">
+                            جایگزین بارگذاری. یک مسیر شبکه یا URL خارجی وارد کنید.
+                        </div>
+                        {% if form.file_path.errors %}
+                        <div class="invalid-feedback d-block">{{ form.file_path.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Status and Revision Section -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-check-circle me-2"></i>وضعیت و نسخه
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Revision -->
+                        <div class="col-md-4">
+                            <label for="{{ form.revision.id_for_label }}" class="form-label required-field">
+                                نسخه
+                            </label>
+                            {{ form.revision }}
+                            {% if form.revision.errors %}
+                            <div class="invalid-feedback d-block">{{ form.revision.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-4">
+                            <label for="{{ form.status.id_for_label }}" class="form-label required-field">
+                                وضعیت
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">{{ form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Issue Date -->
+                        <div class="col-md-4">
+                            <label for="{{ form.issue_date.id_for_label }}" class="form-label">
+                                تاریخ انتشار
+                            </label>
+                            {{ form.issue_date }}
+                            <div class="form-hint">برای اسناد تأیید شده/IFC الزامی است</div>
+                            {% if form.issue_date.errors %}
+                            <div class="invalid-feedback d-block">{{ form.issue_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-sticky me-2"></i>یادداشت‌ها
+                    </div>
+
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> لغو
+                        </a>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary ms-2">
+                            <i class="bi bi-check-circle"></i>
+                            {% if is_create %}بارگذاری سند{% else %}ذخیره تغییرات{% endif %}
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+
+            <!-- Help Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-info bg-opacity-10">
+                    <h6 class="mb-0"><i class="bi bi-question-circle me-2"></i>راهنما</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-1"></i>
+                            <strong>شماره سند:</strong> در صورت خالی بودن به‌طور خودکار تولید می‌شود
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-1"></i>
+                            <strong>نسخه:</strong> از حروف (A، B، C) یا اعداد (۰، ۱، ۲) استفاده کنید
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-1"></i>
+                            <strong>وضعیت IFC:</strong> «صادر شده برای ساخت» - آماده برای استفاده در سایت
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle text-success me-1"></i>
+                            <strong>مسیر فایل:</strong> جایگزین بارگذاری - از مسیرهای شبکه استفاده کنید
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recent Documents -->
+            {% if recent_documents %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>بارگذاری شده‌های اخیر</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for doc in recent_documents %}
+                        <div class="list-group-item recent-doc-item small">
+                            <strong>{{ doc.document_number }}</strong>
+                            <br>
+                            <span class="text-muted">{{ doc.title|truncatechars:50 }}</span>
+                            <br>
+                            <span class="badge bg-light text-dark">{{ doc.get_status_display }}</span>
+                            <small class="text-muted">{{ doc.created_at|date:"M d, Y" }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Upload Tips -->
+            <div class="card">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>نکات</h6>
+                </div>
+                <div class="card-body small">
+                    <ul class="mb-0">
+                        <li class="mb-2">برای جستجوی آسان از عناوین توصیفی استفاده کنید</li>
+                        <li class="mb-2">اسناد را برای قابلیت ردیابی به برچسب‌های تجهیزات متصل کنید</li>
+                        <li class="mb-2">هنگامی که برای استفاده در ساخت آماده است، به‌عنوان «IFC» علامت‌گذاری کنید</li>
+                        <li class="mb-2">به جای بازنویسی فایل‌ها، نسخه‌های جدید ایجاد کنید</li>
+                        <li>در صورت داشتن ارجاعات خارجی، فایل‌های CAD را به‌صورت ZIP بارگذاری کنید</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // File upload handling
+    const fileUploadZone = document.getElementById('fileUploadZone');
+    const fileInput = document.getElementById('{{ form.file_upload.id_for_label }}');
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const fileInfo = document.getElementById('fileInfo');
+    const imagePreview = document.getElementById('imagePreview');
+
+    // Drag and drop
+    fileUploadZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    fileUploadZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+
+    fileUploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect(fileInput);
+        }
+    });
+
+    function handleFileSelect(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        // Update UI
+        uploadPrompt.style.display = 'none';
+        fileInfo.classList.add('show');
+        fileInfo.style.display = 'block';
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        fileUploadZone.classList.add('has-file');
+
+        // Show image preview if applicable
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.style.display = 'none';
+        }
+    }
+
+    function clearFile() {
+        fileInput.value = '';
+        uploadPrompt.style.display = '';
+        fileInfo.classList.remove('show');
+        imagePreview.style.display = 'none';
+        fileInfo.style.display = 'none';
+        fileUploadZone.classList.remove('has-file');
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Auto-generate document number hint
+    const projectSelect = document.getElementById('{{ form.project.id_for_label }}');
+    const docTypeSelect = document.getElementById('{{ form.doc_type.id_for_label }}');
+    const docNumberInput = document.getElementById('{{ form.document_number.id_for_label }}');
+
+    function updateDocNumberHint() {
+        if (!docNumberInput.value) {
+            const projectOption = projectSelect.options[projectSelect.selectedIndex];
+            const docTypeOption = docTypeSelect.options[docTypeSelect.selectedIndex];
+            if (projectOption && projectOption.text && docTypeOption && docTypeOption.text) {
+                const hint = `تولید خودکار خواهد شد: ${projectOption.text.substring(0,5)}-${docTypeOption.text.substring(0,4)}-...`;
+                docNumberInput.placeholder = hint;
+            }
+        }
+    }
+
+    projectSelect.addEventListener('change', updateDocNumberHint);
+    docTypeSelect.addEventListener('change', updateDocNumberHint);
+    updateDocNumberHint();
+
+    // Confirm before leaving with unsaved changes
+    let formChanged = false;
+    const formElements = document.querySelectorAll('#documentForm input, #documentForm select, #documentForm textarea');
+    formElements.forEach(el => {
+        el.addEventListener('change', () => { formChanged = true; });
+        el.addEventListener('input', () => { formChanged = true; });
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+
+    // Remove warning when submitting form
+    document.getElementById('documentForm').addEventListener('submit', function() {
+        formChanged = false;
+    });
+    function updateStatusIndicator() {
+        const autoGenStatus = document.getElementById('autoGenStatus');
+        const manualStatus = document.getElementById('manualStatus');
+
+        if (docNumberInput.dataset.userModified) {
+            autoGenStatus.style.display = 'none';
+            manualStatus.style.display = 'inline';
+        } else if (docNumberInput.value.trim()) {
+            autoGenStatus.style.display = 'inline';
+            manualStatus.style.display = 'none';
+        } else {
+            autoGenStatus.style.display = 'none';
+            manualStatus.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

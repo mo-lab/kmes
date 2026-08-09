@@ -1,0 +1,434 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .required-field::after {
+    content: ' *';
+    color: #dc3545;
+  }
+
+  .employee-avatar-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #6c757d;
+    margin: 0 auto;
+  }
+
+  .company-badge {
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .company-badge:hover {
+    background: #d1e7ff;
+  }
+
+  .trade-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="#">Employees</a></li>
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">{{ page_title }}</h1>
+      <p class="text-muted mb-0">
+        {% if is_create %}
+        Register a new employee in the system
+        {% else %}
+        Update employee information
+        {% endif %}
+      </p>
+    </div>
+    <div>
+      <a href="#" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to List
+      </a>
+    </div>
+  </div>
+
+  <form method="post" novalidate id="employeeForm">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle"></i>
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+      <!-- Main Form -->
+      <div class="col-lg-8">
+
+        <!-- Personal Information -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-person me-2"></i>Personal Information
+          </div>
+
+          <div class="row g-3">
+            <!-- Employee ID -->
+            <div class="col-md-4">
+              <label for="{{ form.employee_id.id_for_label }}" class="form-label">
+                Employee ID
+              </label>
+              {{ form.employee_id }}
+              <div class="form-text">Auto-generated if left blank</div>
+              {% if form.employee_id.errors %}
+              <div class="invalid-feedback d-block">{{ form.employee_id.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- First Name -->
+            <div class="col-md-4">
+              <label for="{{ form.first_name.id_for_label }}" class="form-label required-field">
+                First Name
+              </label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}
+              <div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Last Name -->
+            <div class="col-md-4">
+              <label for="{{ form.last_name.id_for_label }}" class="form-label required-field">
+                Last Name
+              </label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}
+              <div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- User Account -->
+            <div class="col-md-6">
+              <label for="{{ form.user.id_for_label }}" class="form-label">
+                Link to User Account
+              </label>
+              {{ form.user }}
+              <div class="form-text">Link to an existing system user account</div>
+              {% if form.user.errors %}
+              <div class="invalid-feedback d-block">{{ form.user.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label for="{{ form.email.id_for_label }}" class="form-label">
+                Email
+              </label>
+              {{ form.email }}
+              {% if form.email.errors %}
+              <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Phone -->
+            <div class="col-md-6">
+              <label for="{{ form.phone.id_for_label }}" class="form-label">
+                Phone
+              </label>
+              {{ form.phone }}
+              {% if form.phone.errors %}
+              <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Employment Details -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-briefcase me-2"></i>Employment Details
+          </div>
+
+          <div class="row g-3">
+            <!-- Company -->
+            <div class="col-md-6">
+              <label for="{{ form.company.id_for_label }}" class="form-label required-field">
+                Company / Contractor
+              </label>
+              {{ form.company }}
+              <div class="mt-1">
+                <small class="text-muted">Quick select:</small>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                  {% for company in companies|slice:":8" %}
+                  <span class="badge bg-light text-dark company-badge"
+                        onclick="document.getElementById('{{ form.company.id_for_label }}').value='{{ company }}'">
+                                        {{ company }}
+                                    </span>
+                  {% endfor %}
+                </div>
+              </div>
+              {% if form.company.errors %}
+              <div class="invalid-feedback d-block">{{ form.company.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Trade -->
+            <div class="col-md-6">
+              <label for="{{ form.trade.id_for_label }}" class="form-label required-field">
+                Trade / Role
+              </label>
+              {{ form.trade }}
+              {% if form.trade.errors %}
+              <div class="invalid-feedback d-block">{{ form.trade.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Hire Date -->
+            <div class="col-md-4">
+              <label for="{{ form.hire_date.id_for_label }}" class="form-label">
+                Hire Date
+              </label>
+              {{ form.hire_date }}
+              {% if form.hire_date.errors %}
+              <div class="invalid-feedback d-block">{{ form.hire_date.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Termination Date -->
+            <div class="col-md-4">
+              <label for="{{ form.termination_date.id_for_label }}" class="form-label">
+                Termination Date
+              </label>
+              {{ form.termination_date }}
+              {% if form.termination_date.errors %}
+              <div class="invalid-feedback d-block">{{ form.termination_date.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Active Status -->
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check mb-3">
+                {{ form.is_active }}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                  <strong>Active Employee</strong>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-sticky me-2"></i>Notes
+          </div>
+          {{ form.notes }}
+          {% if form.notes.errors %}
+          <div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="col-lg-4">
+
+        <!-- Employee Preview -->
+        <div class="card mb-3">
+          <div class="card-body text-center">
+            <div class="employee-avatar-preview mb-2" id="avatarPreview">
+              <span id="avatarInitials">?</span>
+            </div>
+            <h5 id="previewName" class="mb-1">New Employee</h5>
+            <p id="previewCompany" class="text-muted small mb-0">Company</p>
+            <p id="previewTrade" class="text-muted small mb-0">Trade</p>
+          </div>
+        </div>
+
+        <!-- Trade Stats -->
+        {% if trade_stats %}
+        <div class="card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-people me-2"></i>Workforce by Trade</h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+              {% for stat in trade_stats %}
+              <div class="list-group-item d-flex justify-content-between align-items-center small">
+                <span>{{ stat.get_trade_display }}</span>
+                <span class="badge bg-primary rounded-pill">{{ stat.count }}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Employees -->
+        {% if recent_employees %}
+        <div class="card mb-3">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recently Added</h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+              {% for emp in recent_employees %}
+              <div class="list-group-item small">
+                <strong>{{ emp.full_name }}</strong>
+                <br>
+                <span class="text-muted">{{ emp.company }} | {{ emp.get_trade_display }}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Tips Card -->
+        <div class="card">
+          <div class="card-header bg-info bg-opacity-10">
+            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+          </div>
+          <div class="card-body small">
+            <ul class="mb-0">
+              <li class="mb-2">Link to user account for system access</li>
+              <li class="mb-2">Employee ID is auto-generated if left blank</li>
+              <li class="mb-2">Add certifications after creating employee</li>
+              <li>Use termination date for employees who have left</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <div>
+        <a href="#" class="btn btn-outline-secondary">
+          <i class="bi bi-x-circle"></i> Cancel
+        </a>
+      </div>
+      <div>
+        <button type="submit" name="save_add_another" class="btn btn-outline-primary">
+          <i class="bi bi-plus-circle"></i> Save & Add Another
+        </button>
+        <button type="submit" class="btn btn-primary ms-2">
+          <i class="bi bi-check-circle"></i>
+          {% if is_create %}Create Employee{% else %}Save Changes{% endif %}
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Live preview update
+  const firstNameInput = document.getElementById('{{ form.first_name.id_for_label }}');
+  const lastNameInput = document.getElementById('{{ form.last_name.id_for_label }}');
+  const companyInput = document.getElementById('{{ form.company.id_for_label }}');
+  const tradeSelect = document.getElementById('{{ form.trade.id_for_label }}');
+
+  function updatePreview() {
+    const firstName = firstNameInput?.value || '';
+    const lastName = lastNameInput?.value || '';
+    const company = companyInput?.value || '';
+    const tradeText = tradeSelect?.options[tradeSelect.selectedIndex]?.text || '';
+
+    // Update name preview
+    const previewName = document.getElementById('previewName');
+    if (previewName) {
+      previewName.textContent = `${firstName} ${lastName}`.trim() || 'New Employee';
+    }
+
+    // Update avatar initials
+    const avatarInitials = document.getElementById('avatarInitials');
+    if (avatarInitials) {
+      const initial1 = firstName.charAt(0) || '';
+      const initial2 = lastName.charAt(0) || '';
+      avatarInitials.textContent = (initial1 + initial2).toUpperCase() || '?';
+    }
+
+    // Update company preview
+    const previewCompany = document.getElementById('previewCompany');
+    if (previewCompany) {
+      previewCompany.textContent = company || 'Company';
+    }
+
+    // Update trade preview
+    const previewTrade = document.getElementById('previewTrade');
+    if (previewTrade) {
+      previewTrade.textContent = tradeText || 'Trade';
+    }
+  }
+
+  // Add event listeners
+  [firstNameInput, lastNameInput, companyInput, tradeSelect].forEach(el => {
+    if (el) {
+      el.addEventListener('input', updatePreview);
+      el.addEventListener('change', updatePreview);
+    }
+  });
+
+  // Initial preview update
+  updatePreview();
+
+  // Confirm before leaving with unsaved changes
+  let formChanged = false;
+  document.querySelectorAll('#employeeForm input, #employeeForm select, #employeeForm textarea').forEach(el => {
+    el.addEventListener('change', () => { formChanged = true; });
+    el.addEventListener('input', () => { formChanged = true; });
+  });
+
+  window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  });
+
+  document.getElementById('employeeForm').addEventListener('submit', function() {
+    formChanged = false;
+  });
+</script>
+{% endblock %}

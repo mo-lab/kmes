@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Daily Timesheets{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-switch .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+        cursor: pointer;
+    }
+    .form-switch .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    .employee-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Daily Timesheets</h2>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Date Filter -->
+    <form method="get" class="row g-3 mb-3 align-items-end">
+        <div class="col-auto">
+            <label for="dateFilter" class="form-label">Date</label>
+            <input type="date" name="date" id="dateFilter" class="form-control"
+                   value="{{ selected_date }}" onchange="this.form.submit()">
+        </div>
+        <div class="col-auto d-flex align-items-end">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setYesterday()">
+                Yesterday
+            </button>
+        </div>
+        <div class="col-auto d-flex align-items-end">
+            <a href="{% url 'construction:manage_daily_timesheets' %}" class="btn btn-sm btn-outline-secondary">Clear Date</a>
+        </div>
+    </form>
+
+    <!-- Main form with employee toggles -->
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="report_date" value="{{ selected_date }}">
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>Employees</strong>
+                    <span class="badge bg-primary ms-1">{{ employees.count }}</span>
+                </span>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAll()">
+                        <i class="bi bi-check-all"></i> All On
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">
+                        <i class="bi bi-x-circle"></i> All Off
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="employee-list">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                        {% for emp in employees %}
+                        <tr>
+                            <td>{{ emp.full_name }}</td>
+                            <td>{{ emp.employee_id }}</td>
+                            <td>{{ emp.company }}</td>
+                            <td>{{ emp.get_trade_display }}</td>
+                            <td class="text-end">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input working-switch" type="checkbox"
+                                           name="working_employees" value="{{ emp.pk }}"
+                                           id="switch-{{ emp.pk }}"
+                                           {% if emp.pk in working_ids %}checked{% endif %}>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">No employees found.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Update Timesheets
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function selectAll() {
+        document.querySelectorAll('.working-switch').forEach(el => el.checked = true);
+    }
+    function deselectAll() {
+        document.querySelectorAll('.working-switch').forEach(el => el.checked = false);
+    }
+    function setYesterday() {
+        const today = new Date();
+        today.setDate(today.getDate() - 1);
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('dateFilter').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('dateFilter').form.submit();
+    }
+</script>
+{% endblock %}

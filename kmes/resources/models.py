@@ -125,6 +125,17 @@ class Timesheet(models.Model):
 		return f"{self.employee.full_name} - {self.date} - {self.hours_worked}h"
 
 
+class Company(models.Model):
+	title = models.CharField(max_length=100, null=True, blank=True)
+	
+	def __str__(self):
+		return self.title
+	
+	class Meta:
+		ordering = ['title']
+		verbose_name = 'Company'
+		verbose_name_plural = 'Companies'
+	
 class ToolPlant(models.Model):
 	"""Tools, equipment, and plant machinery available on site."""
 	

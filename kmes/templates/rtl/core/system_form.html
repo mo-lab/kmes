@@ -1,0 +1,633 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .required-field::after {
+    content: ' *';
+    color: #dc3545;
+  }
+
+  .tag-selection-panel {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .tag-list {
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  .tag-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tag-item:last-child {
+    border-bottom: none;
+  }
+  .tag-item:hover {
+    background: #f0f7ff;
+  }
+  .tag-item.selected {
+    background: #d1e7ff;
+  }
+  .tag-item.already-linked {
+    background: #d4edda;
+    border-left: 3px solid #198754;
+  }
+
+  .type-group-title {
+    background: #e9ecef;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .type-group-title:hover {
+    background: #dee2e6;
+  }
+
+  .selected-tags-preview {
+    min-height: 50px;
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .selected-tag-badge {
+    display: inline-flex;
+    align-items: center;
+    background: #d1e7ff;
+    border: 1px solid #0d6efd;
+    border-radius: 1rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+    gap: 0.4rem;
+  }
+
+  .selected-tag-badge .remove-tag {
+    cursor: pointer;
+    color: #dc3545;
+    font-weight: bold;
+  }
+
+  .linked-tag-badge {
+    display: inline-flex;
+    align-items: center;
+    background: #d4edda;
+    border: 1px solid #198754;
+    border-radius: 1rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .search-box {
+    position: relative;
+  }
+
+  .bulk-add-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .code-preview {
+    font-family: monospace;
+    font-size: 1.2rem;
+    background: #e9ecef;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    display: inline-block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'core:system_list' %}">Systems</a></li>
+      {% if project %}
+      <li class="breadcrumb-item">
+        <a href="{% url 'core:project_detail' project.pk %}">{{ project.name }}</a>
+      </li>
+      {% endif %}
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">{{ page_title }}</h1>
+      <p class="text-muted mb-0">
+        {% if is_create %}
+        Create a new functional system and optionally link equipment tags
+        {% else %}
+        Update system details and manage linked equipment tags
+        {% endif %}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'core:system_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to List
+      </a>
+    </div>
+  </div>
+
+  <form method="post" novalidate id="systemForm">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle"></i>
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+      <!-- Main Form -->
+      <div class="col-lg-7">
+
+        <!-- Basic Information -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-info-circle me-2"></i>System Information
+          </div>
+
+          <div class="row g-3">
+            <!-- Project -->
+            <div class="col-md-6">
+              <label for="{{ form.project.id_for_label }}" class="form-label required-field">
+                Project
+              </label>
+              {{ form.project }}
+              {% if form.project.errors %}
+              <div class="invalid-feedback d-block">{{ form.project.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- System Code -->
+            <div class="col-md-6">
+              <label for="{{ form.code.id_for_label }}" class="form-label required-field">
+                System Code
+              </label>
+              {{ form.code }}
+              <div class="form-text">
+                Auto-generated:
+                <span class="code-preview" id="codePreview">{{ form.code.value|default:'SYS-XXX' }}</span>
+              </div>
+              {% if form.code.errors %}
+              <div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- System Name -->
+            <div class="col-md-12">
+              <label for="{{ form.name.id_for_label }}" class="form-label required-field">
+                System Name
+              </label>
+              {{ form.name }}
+              {% if form.name.errors %}
+              <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+              <label for="{{ form.description.id_for_label }}" class="form-label">
+                Description
+              </label>
+              {{ form.description }}
+              <div class="form-text">
+                Describe the function and scope of this system
+              </div>
+              {% if form.description.errors %}
+              <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-sticky me-2"></i>Notes
+          </div>
+          <textarea name="notes" class="form-control" rows="3"
+                    placeholder="Additional notes about this system...">{{ form.notes.value|default:'' }}</textarea>
+        </div>
+
+      </div>
+
+      <!-- Right Column - Equipment Tags -->
+      <div class="col-lg-5">
+
+        <!-- Link Equipment Tags -->
+        <div class="form-section">
+          <div class="form-section-title">
+            <i class="bi bi-tag me-2"></i>Equipment Tags
+          </div>
+
+          <!-- Search Tags -->
+          <div class="search-box mb-3">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text"
+                     id="tagSearchInput"
+                     class="form-control"
+                     placeholder="Search tags by number or description..."
+                     autocomplete="off">
+              <button type="submit"
+                      name="add_search_results"
+                      value="1"
+                      class="btn btn-outline-primary"
+                      title="Add all search results">
+                <i class="bi bi-plus-lg"></i> Add All
+              </button>
+            </div>
+            <input type="hidden" name="tag_search" id="tagSearchHidden">
+          </div>
+
+          <!-- Bulk Add by Type -->
+          <div class="bulk-add-buttons mb-3">
+            <select name="bulk_add_type" class="form-select form-select-sm" style="width: auto; display: inline;">
+              <option value="">Select type to add all...</option>
+              {% for value, label in equipment_types %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit"
+                    name="add_all_type_tags"
+                    value="1"
+                    class="btn btn-outline-info btn-sm"
+                    onclick="return confirm('Add all tags of this type to the system?')">
+              <i class="bi bi-plus-lg"></i> Add All
+            </button>
+          </div>
+
+          <!-- Selected Tags Preview -->
+          <label class="form-label small fw-semibold">Selected Tags</label>
+          <div class="selected-tags-preview" id="selectedTagsPreview">
+            <small class="text-muted">No tags selected. Use the list below or search to add tags.</small>
+          </div>
+
+          {% if not is_create and linked_tags %}
+          <label class="form-label small fw-semibold mt-3">Currently Linked Tags</label>
+          <div class="d-flex flex-wrap gap-1 mb-2" id="linkedTagsContainer">
+            {% for tag in linked_tags %}
+            <span class="linked-tag-badge">
+                            {{ tag.tag_number }}
+                            <span class="remove-tag" onclick="markTagForRemoval(this, {{ tag.pk }})">&times;</span>
+                        </span>
+            {% endfor %}
+          </div>
+          <input type="hidden" name="remove_tags" id="removeTagsInput">
+          {% endif %}
+
+          <!-- Available Tags List -->
+          {% if available_tags %}
+          <div class="tag-selection-panel mt-3">
+            <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
+              <small class="fw-semibold">
+                Available Tags ({{ available_tags.count }})
+              </small>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAllTags">
+                <label class="form-check-label small" for="selectAllTags">Select All</label>
+              </div>
+            </div>
+            <div class="tag-list" id="tagList">
+              {% for type_display, tags in tags_by_type.items %}
+              <div class="type-group">
+                <div class="type-group-title" onclick="toggleTypeGroup(this)">
+                                    <span>
+                                        <i class="bi bi-chevron-right me-1"></i>
+                                        {{ type_display }}
+                                    </span>
+                  <span class="badge bg-secondary small">{{ tags|length }}</span>
+                </div>
+                <div class="type-group-content" style="display: block;">
+                  {% for tag in tags %}
+                  <div class="tag-item {% if tag.system and tag.system == form.instance %}already-linked{% endif %}"
+                       data-tag-id="{{ tag.pk }}"
+                       data-tag-number="{{ tag.tag_number }}"
+                       data-tag-description="{{ tag.description|truncatechars:50 }}"
+                       data-linked="{% if tag.system and tag.system == form.instance %}true{% else %}false{% endif %}"
+                       onclick="toggleTagSelection(this, {{ tag.pk }}, '{{ tag.tag_number|escapejs }}')">
+                    <input type="checkbox"
+                           name="equipment_tags"
+                           value="{{ tag.pk }}"
+                           class="form-check-input me-2 tag-checkbox"
+                           id="tag_{{ tag.pk }}"
+                           {% if tag.system and tag.system == form.instance %}checked{% endif %}
+                           onclick="event.stopPropagation()">
+                    <div class="flex-grow-1">
+                      <strong class="small">{{ tag.tag_number }}</strong>
+                      <span class="text-muted small">- {{ tag.description|truncatechars:40 }}</span>
+                      <br>
+                      <span class="badge bg-light text-dark small">{{ tag.get_status_display }}</span>
+                      {% if tag.area %}
+                      <span class="text-muted small ms-1">{{ tag.area.code }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <div class="alert alert-info small mt-3">
+            <i class="bi bi-info-circle"></i>
+            Select a project to see available equipment tags.
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card">
+          <div class="card-header bg-success bg-opacity-10">
+            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+          </div>
+          <div class="card-body small">
+            <ul class="mb-0">
+              <li class="mb-2">Systems group related equipment by function</li>
+              <li class="mb-2">Examples: Lubrication System, Cooling System, Power Distribution</li>
+              <li class="mb-2">Use clear, descriptive names for easy identification</li>
+              <li class="mb-2">Link equipment tags to enable commissioning tracking</li>
+              <li>Systems can span multiple areas within a project</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <div>
+        <a href="{% url 'core:system_list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-circle"></i> Cancel
+        </a>
+      </div>
+      <div>
+        <button type="submit" name="save_add_another" class="btn btn-outline-primary">
+          <i class="bi bi-plus-circle"></i> Save & Add Another
+        </button>
+        <button type="submit" class="btn btn-primary ms-2">
+          <i class="bi bi-check-circle"></i>
+          {% if is_create %}Create System{% else %}Save Changes{% endif %}
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Tag selection management
+  const selectedTags = new Set();
+  const tagsToRemove = new Set();
+
+  // Initialize selected tags from checkboxes
+  document.querySelectorAll('.tag-checkbox:checked').forEach(cb => {
+    selectedTags.add(cb.value);
+  });
+
+  function toggleTagSelection(element, tagId, tagNumber) {
+    const checkbox = document.getElementById(`tag_${tagId}`);
+    checkbox.checked = !checkbox.checked;
+
+    if (checkbox.checked) {
+      selectedTags.add(tagId);
+      tagsToRemove.delete(tagId);
+      element.classList.add('selected');
+    } else {
+      selectedTags.delete(tagId);
+      element.classList.remove('selected');
+    }
+
+    updateSelectedTagsPreview();
+    updateRemoveTagsInput();
+  }
+
+  function markTagForRemoval(element, tagId) {
+    tagsToRemove.add(tagId);
+    selectedTags.delete(tagId);
+
+    const badge = element.closest('.linked-tag-badge');
+    if (badge) {
+      badge.style.opacity = '0.5';
+      badge.style.textDecoration = 'line-through';
+    }
+
+    const checkbox = document.getElementById(`tag_${tagId}`);
+    if (checkbox) {
+      checkbox.checked = false;
+    }
+
+    updateRemoveTagsInput();
+    updateSelectedTagsPreview();
+  }
+
+  function updateSelectedTagsPreview() {
+    const preview = document.getElementById('selectedTagsPreview');
+
+    if (selectedTags.size === 0) {
+      preview.innerHTML = '<small class="text-muted">No tags selected. Use the list below or search to add tags.</small>';
+    } else {
+      preview.innerHTML = '';
+      selectedTags.forEach(tagId => {
+        const item = document.querySelector(`[data-tag-id="${tagId}"]`);
+        const tagNumber = item ? item.dataset.tagNumber : `Tag #${tagId}`;
+
+        const badge = document.createElement('span');
+        badge.className = 'selected-tag-badge';
+        badge.innerHTML = `
+                    ${tagNumber}
+                    <span class="remove-tag" onclick="deselectTag('${tagId}')">&times;</span>
+                `;
+        preview.appendChild(badge);
+      });
+    }
+  }
+
+  function deselectTag(tagId) {
+    const checkbox = document.getElementById(`tag_${tagId}`);
+    if (checkbox) {
+      checkbox.checked = false;
+      selectedTags.delete(tagId);
+    }
+
+    const item = document.querySelector(`[data-tag-id="${tagId}"]`);
+    if (item) {
+      item.classList.remove('selected');
+    }
+
+    updateSelectedTagsPreview();
+  }
+
+  function updateRemoveTagsInput() {
+    document.getElementById('removeTagsInput').value = Array.from(tagsToRemove).join(',');
+  }
+
+  // Select all / Deselect all
+  document.getElementById('selectAllTags')?.addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.tag-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = this.checked;
+      if (this.checked) {
+        selectedTags.add(cb.value);
+        tagsToRemove.delete(cb.value);
+      } else {
+        selectedTags.delete(cb.value);
+      }
+    });
+
+    document.querySelectorAll('.tag-item').forEach(item => {
+      if (this.checked) {
+        item.classList.add('selected');
+      } else {
+        item.classList.remove('selected');
+      }
+    });
+
+    updateSelectedTagsPreview();
+    updateRemoveTagsInput();
+  });
+
+  // Toggle type groups
+  function toggleTypeGroup(titleElement) {
+    const content = titleElement.nextElementSibling;
+    const icon = titleElement.querySelector('i');
+
+    if (content.style.display === 'none') {
+      content.style.display = 'block';
+      icon.classList.remove('bi-chevron-right');
+      icon.classList.add('bi-chevron-down');
+    } else {
+      content.style.display = 'none';
+      icon.classList.remove('bi-chevron-down');
+      icon.classList.add('bi-chevron-right');
+    }
+  }
+
+  // Search tags
+  const searchInput = document.getElementById('tagSearchInput');
+  const searchHidden = document.getElementById('tagSearchHidden');
+  let searchTimeout;
+
+  searchInput?.addEventListener('input', function() {
+    const query = this.value.trim();
+    searchHidden.value = query;
+
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(() => {
+      const items = document.querySelectorAll('.tag-item');
+      const groups = document.querySelectorAll('.type-group');
+
+      if (query.length < 2) {
+        // Show all
+        items.forEach(item => item.style.display = 'flex');
+        groups.forEach(group => group.style.display = 'block');
+        document.querySelectorAll('.type-group-content').forEach(c => c.style.display = 'block');
+        return;
+      }
+
+      let foundCount = 0;
+
+      items.forEach(item => {
+        const tagNumber = item.dataset.tagNumber?.toLowerCase() || '';
+        const description = item.dataset.tagDescription?.toLowerCase() || '';
+
+        if (tagNumber.includes(query.toLowerCase()) || description.includes(query.toLowerCase())) {
+          item.style.display = 'flex';
+          foundCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      // Show/hide groups based on visible items
+      groups.forEach(group => {
+        const visibleItems = group.querySelectorAll('.tag-item[style*="display: flex"], .tag-item:not([style])');
+        if (visibleItems.length > 0 || query.length < 2) {
+          group.style.display = 'block';
+          group.querySelector('.type-group-content').style.display = 'block';
+        } else {
+          group.style.display = 'none';
+        }
+      });
+    }, 300);
+  });
+
+  // Code preview update
+  const codeInput = document.getElementById('{{ form.code.id_for_label }}');
+  const codePreview = document.getElementById('codePreview');
+
+  codeInput?.addEventListener('input', function() {
+    if (codePreview) {
+      codePreview.textContent = this.value || 'SYS-XXX';
+    }
+  });
+
+  // Initial preview update
+  updateSelectedTagsPreview();
+  updateRemoveTagsInput();
+
+  // Confirm before leaving with unsaved changes
+  let formChanged = false;
+  document.querySelectorAll('#systemForm input, #systemForm select, #systemForm textarea').forEach(el => {
+    el.addEventListener('change', () => { formChanged = true; });
+    el.addEventListener('input', () => { formChanged = true; });
+  });
+
+  window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+    }
+  });
+
+  document.getElementById('systemForm').addEventListener('submit', function() {
+    formChanged = false;
+  });
+</script>
+{% endblock %}

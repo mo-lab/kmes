@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .selected-item {
+    background: #d1e7ff;
+    border: 2px solid #0d6efd;
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+
+  .linked-item {
+    border-left: 3px solid #198754;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 0.25rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+      {% if equipment_tag %}
+      <li class="breadcrumb-item"><a href="#">Equipment Tags</a></li>
+      <li class="breadcrumb-item"><a href="#">{{ equipment_tag.tag_number }}</a></li>
+      {% elif document %}
+      <li class="breadcrumb-item"><a href="#">Documents</a></li>
+      <li class="breadcrumb-item"><a href="#">{{ document.document_number }}</a></li>
+      {% endif %}
+      <li class="breadcrumb-item active">{{ page_title }}</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i>{{ page_title }}</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row g-3">
+              <!-- Equipment Tag -->
+              <div class="col-md-6">
+                <label for="{{ form.equipment_tag.id_for_label }}" class="form-label required-field">
+                  Equipment Tag
+                </label>
+                {{ form.equipment_tag }}
+                {% if form.equipment_tag.errors %}
+                <div class="invalid-feedback d-block">{{ form.equipment_tag.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Document -->
+              <div class="col-md-6">
+                <label for="{{ form.document.id_for_label }}" class="form-label required-field">
+                  Document
+                </label>
+                {{ form.document }}
+                {% if form.document.errors %}
+                <div class="invalid-feedback d-block">{{ form.document.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Relation Type -->
+              <div class="col-md-6">
+                <label for="{{ form.relation_type.id_for_label }}" class="form-label">
+                  Relation Type
+                </label>
+                {{ form.relation_type }}
+                <div class="form-text">
+                  How does this document relate to the equipment tag?
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <a href="#" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-link-45deg"></i> Link Document
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <!-- Currently Linked Items -->
+      {% if equipment_tag and linked_documents %}
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-file-earmark-text me-2"></i>
+            Already Linked Documents
+            <span class="badge bg-primary">{{ linked_documents.count }}</span>
+          </h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            {% for td in linked_documents %}
+            <div class="list-group-item linked-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong>{{ td.document.document_number }}</strong>
+                  <br>
+                  <small class="text-muted">{{ td.document.title|truncatechars:50 }}</small>
+                  <br>
+                  <span class="badge bg-light text-dark">{{ td.relation_type }}</span>
+                </div>
+                <a href="{% url 'documents:tag-document-delete' td.pk %}"
+                   class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-x-lg"></i>
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if document and linked_tags %}
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-tag me-2"></i>
+            Already Linked Tags
+            <span class="badge bg-primary">{{ linked_tags.count }}</span>
+          </h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            {% for td in linked_tags %}
+            <div class="list-group-item linked-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong>{{ td.equipment_tag.tag_number }}</strong>
+                  <br>
+                  <small class="text-muted">{{ td.equipment_tag.description|truncatechars:50 }}</small>
+                  <br>
+                  <span class="badge bg-light text-dark">{{ td.relation_type }}</span>
+                </div>
+                <a href="{% url 'documents:tag-document-delete' td.pk %}"
+                   class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-x-lg"></i>
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Tips Card -->
+      <div class="card">
+        <div class="card-header bg-info bg-opacity-10">
+          <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+        </div>
+        <div class="card-body small">
+          <ul class="mb-0">
+            <li class="mb-2">Link datasheets to equipment for quick reference</li>
+            <li class="mb-2">Attach installation drawings to track as-built conditions</li>
+            <li class="mb-2">Use "specifies" for specification documents</li>
+            <li class="mb-2">Use "defines" for documents that define the equipment</li>
+            <li>Bulk link multiple documents using the bulk link option</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

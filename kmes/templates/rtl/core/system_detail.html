@@ -1,0 +1,723 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ system.code }} - System Details{% endblock %}
+
+{% block extra_css %}
+<style>
+  .system-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .system-code {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .stat-card {
+    border-radius: 0.5rem;
+    transition: transform 0.15s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .nav-pills .nav-link {
+    color: #6c757d;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+  .nav-pills .nav-link.active {
+    background: #0d6efd;
+    color: white;
+  }
+  .nav-pills .nav-link .badge {
+    font-size: 0.7rem;
+  }
+
+  .status-timeline {
+    position: relative;
+    padding-left: 2rem;
+  }
+  .status-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+  }
+  .timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.65rem;
+    top: 0.25rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+  .timeline-item.completed::before {
+    background: #198754;
+    box-shadow: 0 0 0 2px #198754;
+  }
+  .timeline-item.in_progress::before {
+    background: #ffc107;
+    box-shadow: 0 0 0 2px #ffc107;
+  }
+  .timeline-item.pending::before {
+    background: #dee2e6;
+    box-shadow: 0 0 0 2px #dee2e6;
+  }
+
+  .equipment-row {
+    transition: background 0.15s;
+  }
+  .equipment-row:hover {
+    background: #f8f9fa !important;
+  }
+
+  .progress-thick {
+    height: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #adb5bd;
+  }
+  .empty-state i {
+    font-size: 3rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'core:system_list' %}">Systems</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'core:project-detail' system.project.pk %}">{{ system.project.name }}</a></li>
+      <li class="breadcrumb-item active">{{ system.code }}</li>
+    </ol>
+  </nav>
+
+  <!-- System Header -->
+  <div class="system-header">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-2">
+          <div class="system-code me-3">{{ system.code }}</div>
+          {% if commissioning %}
+          <span class="badge fs-6
+                            {% if commissioning.status == 'HNDO' %}bg-success
+                            {% elif commissioning.status == 'HOT' %}bg-warning text-dark
+                            {% elif commissioning.status == 'COLD' %}bg-info
+                            {% else %}bg-secondary
+                            {% endif %}">
+                            {{ commissioning.get_status_display }}
+                        </span>
+          {% else %}
+          <span class="badge bg-secondary fs-6">No Commissioning</span>
+          {% endif %}
+        </div>
+        <h5 class="mb-2">{{ system.name }}</h5>
+        <p class="mb-0 opacity-75">
+          <span class="badge bg-light text-dark">{{ system.project.code }} - {{ system.project.name }}</span>
+        </p>
+      </div>
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <a href="#" class="btn btn-light">
+          <i class="bi bi-pencil"></i> Edit
+        </a>
+        <a href="#" class="btn btn-outline-light">
+          <i class="bi bi-trash"></i> Delete
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="card stat-card bg-primary bg-opacity-10 border-primary">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-tag fs-3 text-primary"></i>
+          <div class="fs-4 fw-bold text-primary">{{ total_equipment }}</div>
+          <small class="text-muted">Equipment Tags</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-success bg-opacity-10 border-success">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-check-circle fs-3 text-success"></i>
+          <div class="fs-4 fw-bold text-success">{{ installed_equipment }}</div>
+          <small class="text-muted">Installed</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-info bg-opacity-10 border-info">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-graph-up fs-3 text-info"></i>
+          <div class="fs-4 fw-bold text-info">{{ commissioned_equipment }}</div>
+          <small class="text-muted">Commissioned</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-danger bg-opacity-10 border-danger">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
+          <div class="fs-4 fw-bold text-danger">{{ defective_equipment }}</div>
+          <small class="text-muted">Defective</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-warning bg-opacity-10 border-warning">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-flag fs-3 text-warning"></i>
+          <div class="fs-4 fw-bold text-warning">{{ open_punch_items }}</div>
+          <small class="text-muted">Open Punch Items</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card stat-card bg-secondary bg-opacity-10 border-secondary">
+        <div class="card-body text-center py-3">
+          <i class="bi bi-clipboard-check fs-3 text-secondary"></i>
+          <div class="fs-4 fw-bold text-secondary">{{ total_test_procedures|default:0 }}</div>
+          <small class="text-muted">Test Procedures</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Tabs -->
+  <div class="card">
+    <div class="card-header bg-white py-3">
+      <ul class="nav nav-pills" id="systemTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
+            <i class="bi bi-info-circle"></i> Overview
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#equipment">
+            <i class="bi bi-tag"></i> Equipment
+            <span class="badge bg-primary ms-1">{{ total_equipment }}</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#commissioning-tab">
+            <i class="bi bi-graph-up"></i> Commissioning
+            {% if commissioning %}<span class="badge bg-primary ms-1">{{ total_test_procedures }}</span>{% endif %}
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#punch-items">
+            <i class="bi bi-flag"></i> Punch Items
+            <span class="badge bg-{% if open_punch_items > 0 %}danger{% else %}primary{% endif %} ms-1">{{ total_punch_items }}</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#work-packages">
+            <i class="bi bi-clipboard-check"></i> Work Packages
+            <span class="badge bg-primary ms-1">{{ total_work_packages }}</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card-body">
+      <div class="tab-content">
+
+        <!-- Overview Tab -->
+        <div class="tab-pane fade show active" id="overview">
+          <div class="row">
+            <div class="col-lg-8">
+              {% if system.description %}
+              <h5 class="mb-3">Description</h5>
+              <p class="text-muted">{{ system.description|linebreaks }}</p>
+              {% endif %}
+
+              <!-- System Status Timeline -->
+              <h5 class="mb-3">Status Timeline</h5>
+              <div class="status-timeline">
+                {% for item in status_timeline %}
+                <div class="timeline-item {{ item.status }}">
+                  <h6>{{ item.stage }}</h6>
+                  <small class="text-muted">{{ item.description }}</small>
+                  {% if item.status == 'completed' %}
+                  <span class="badge bg-success ms-2">Completed</span>
+                  {% elif item.status == 'in_progress' %}
+                  <span class="badge bg-warning text-dark ms-2">In Progress</span>
+                  {% else %}
+                  <span class="badge bg-secondary ms-2">Pending</span>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+
+              <!-- Equipment Distribution -->
+              <h5 class="mt-4 mb-3">Equipment by Type</h5>
+              {% if equipment_by_type %}
+              <div class="row g-2">
+                {% for type_stat in equipment_by_type %}
+                <div class="col-md-4 col-sm-6">
+                  <div class="border rounded p-2">
+                    <div class="d-flex justify-content-between">
+                      <small>{{ type_stat.get_equipment_type_display }}</small>
+                      <strong>{{ type_stat.count }}</strong>
+                    </div>
+                    <div class="progress progress-thin mt-1">
+                      <div class="progress-bar bg-primary"
+                           style="width: {% widthratio type_stat.count total_equipment 100 %}%">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="col-lg-4">
+              <!-- Equipment by Area -->
+              {% if equipment_by_area %}
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h6 class="mb-0">Equipment by Area</h6>
+                </div>
+                <div class="card-body p-0">
+                  <div class="list-group list-group-flush">
+                    {% for area_stat in equipment_by_area %}
+                    <div class="list-group-item small d-flex justify-content-between">
+                      <span>{{ area_stat.area__code|default:"No Area" }}</span>
+                      <span class="badge bg-primary">{{ area_stat.count }}</span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Recent Activities -->
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Recent Activity</h6>
+                </div>
+                <div class="card-body p-0">
+                  {% if activities %}
+                  <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                    {% for activity in activities %}
+                    <div class="list-group-item small">
+                      <i class="bi bi-{{ activity.icon }} me-2 text-{% if activity.type == 'test' %}info{% elif activity.type == 'punch' %}warning{% else %}primary{% endif %}"></i>
+                      {{ activity.description }}
+                      <br>
+                      <small class="text-muted">{{ activity.date|date:"M d, Y H:i" }}</small>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% else %}
+                  <p class="text-muted text-center py-3">No recent activity.</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Equipment Tab -->
+        <div class="tab-pane fade" id="equipment">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Equipment Tags</h5>
+            <a href=""
+               class="btn btn-primary btn-sm">
+              <i class="bi bi-plus-lg"></i> Add Tag
+            </a>
+          </div>
+
+          {% if equipment_tags %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+              <tr>
+                <th>Tag Number</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Area</th>
+                <th>Documents</th>
+                <th>Punch Items</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for tag in equipment_tags %}
+              <tr class="equipment-row"
+                  onclick="window.location='{% url 'core:equipment-tag-detail' tag.pk %}'"
+                  style="cursor: pointer;">
+                <td>
+                  <strong class="text-primary">{{ tag.tag_number }}</strong>
+                  {% if tag.criticality == 'HIGH' %}
+                  <span class="badge bg-danger ms-1">!</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div>{{ tag.description|truncatechars:60 }}</div>
+                  {% if tag.manufacturer %}
+                  <small class="text-muted">{{ tag.manufacturer }}</small>
+                  {% endif %}
+                </td>
+                <td><span class="badge bg-light text-dark small">{{ tag.get_equipment_type_display }}</span></td>
+                <td>
+                                        <span class="badge small
+                                            {% if tag.status == 'INST' %}bg-success
+                                            {% elif tag.status == 'DLVD' %}bg-info
+                                            {% elif tag.status == 'COMM' %}bg-primary
+                                            {% elif tag.status == 'DEF' %}bg-danger
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ tag.get_status_display }}
+                                        </span>
+                </td>
+                <td><small>{{ tag.area.code|default:"-" }}</small></td>
+                <td>
+                  {% if tag.document_count > 0 %}
+                  <span class="badge bg-info">{{ tag.document_count }}</span>
+                  {% else %}
+                  <span class="text-muted">0</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if tag.open_punch_count > 0 %}
+                  <span class="badge bg-danger">{{ tag.open_punch_count }} open</span>
+                  {% else %}
+                  <span class="text-muted">0</span>
+                  {% endif %}
+                </td>
+                <td onclick="event.stopPropagation()">
+                  <div class="btn-group btn-group-sm">
+                    <a href="{% url 'core:equipment-tag-detail' tag.pk %}"
+                       class="btn btn-outline-primary" title="View">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="#"
+                       class="btn btn-outline-secondary" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-tag"></i>
+            <h5>No Equipment Tags</h5>
+            <p>No equipment tags are linked to this system yet.</p>
+            <a href="{% url 'core:equipmenttag-create' %}?system={{ system.pk }}&project={{ system.project.pk }}"
+               class="btn btn-primary">
+              <i class="bi bi-plus-lg"></i> Add First Tag
+            </a>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Commissioning Tab -->
+        <div class="tab-pane fade" id="commissioning-tab">
+          {% if commissioning %}
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="mb-0">Commissioning Status</h5>
+              <small class="text-muted">
+                {{ commissioning.get_status_display }} |
+                {{ commissioning_progress }}% complete
+              </small>
+            </div>
+            <span class="badge fs-6
+                            {% if commissioning.status == 'HNDO' %}bg-success
+                            {% elif commissioning.status == 'HOT' %}bg-warning text-dark
+                            {% else %}bg-info
+                            {% endif %}">
+                            {{ commissioning.get_status_display }}
+                        </span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="mb-4">
+            <div class="progress progress-thick">
+              <div class="progress-bar bg-success" style="width: {{ commissioning_progress }}%">
+                {{ commissioning_progress }}%
+              </div>
+            </div>
+          </div>
+
+          <!-- Commissioning Details -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <div class="border rounded p-3 text-center">
+                <div class="fs-4 fw-bold">{{ total_test_procedures }}</div>
+                <small class="text-muted">Test Procedures</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded p-3 text-center">
+                <div class="fs-4 fw-bold text-success">{{ test_stats.passed_tests|default:0 }}</div>
+                <small class="text-muted">Passed</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded p-3 text-center">
+                <div class="fs-4 fw-bold text-danger">{{ test_stats.failed_tests|default:0 }}</div>
+                <small class="text-muted">Failed</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test Procedures -->
+          {% if test_procedures %}
+          <h6 class="mb-3">Test Procedures</h6>
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead class="table-light">
+              <tr>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Records</th>
+                <th>Latest Result</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for tp in test_procedures %}
+              <tr>
+                <td><strong>{{ tp.code }}</strong></td>
+                <td>{{ tp.description|truncatechars:60 }}</td>
+                <td><span class="badge bg-light text-dark small">{{ tp.get_test_type_display }}</span></td>
+                <td><span class="badge bg-info">{{ tp.record_count }}</span></td>
+                <td>
+                  {% with latest=tp.test_records.all|dictsortreversed:"start_datetime"|first %}
+                  {% if latest %}
+                  <span class="badge
+                                                    {% if latest.result == 'PASS' %}bg-success
+                                                    {% elif latest.result == 'FAIL' %}bg-danger
+                                                    {% elif latest.result == 'COND' %}bg-warning text-dark
+                                                    {% else %}bg-info
+                                                    {% endif %}">
+                                                    {{ latest.get_result_display }}
+                                                </span>
+                  {% else %}
+                  <span class="badge bg-secondary">Not Tested</span>
+                  {% endif %}
+                  {% endwith %}
+                </td>
+                <td>
+                  <a href="#"
+                     class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-play-circle"></i> Record Test
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endif %}
+
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-graph-up"></i>
+            <h5>No Commissioning Setup</h5>
+            <p>Commissioning has not been set up for this system yet.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Punch Items Tab -->
+        <div class="tab-pane fade" id="punch-items">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Punch Items</h5>
+            <span class="text-muted small">
+                            {{ open_punch_items }} open | {{ critical_punch_items }} critical
+                        </span>
+          </div>
+
+          {% if punch_items %}
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead class="table-light">
+              <tr>
+                <th>Punch #</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Equipment</th>
+                <th>Raised</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for punch in punch_items %}
+              <tr class="{% if punch.status in 'OPEN,IPRO' %}table-warning{% endif %}">
+                <td><strong>{{ punch.punch_number }}</strong></td>
+                <td>{{ punch.description|truncatechars:60 }}</td>
+                <td>
+                                        <span class="badge
+                                            {% if punch.category == 'A' %}bg-danger
+                                            {% elif punch.category == 'B' %}bg-warning text-dark
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ punch.get_category_display }}
+                                        </span>
+                </td>
+                <td>
+                                        <span class="badge
+                                            {% if punch.status == 'CLSD' %}bg-success
+                                            {% elif punch.status == 'OPEN' %}bg-danger
+                                            {% elif punch.status == 'IPRO' %}bg-info
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ punch.get_status_display }}
+                                        </span>
+                </td>
+                <td>
+                  {% if punch.equipment_tag %}
+                  <a href="{% url 'core:equipment_tag_detail' punch.equipment_tag.pk %}">
+                    {{ punch.equipment_tag.tag_number }}
+                  </a>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td><small>{{ punch.raised_date|date:"M d, Y" }}</small></td>
+                <td>
+                  <a href="#"
+                     class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-flag"></i>
+            <h5>No Punch Items</h5>
+            <p>No punch items have been raised for this system.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Work Packages Tab -->
+        <div class="tab-pane fade" id="work-packages">
+          <h5 class="mb-3">Work Packages</h5>
+
+          {% if work_packages %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Items</th>
+                <th>Dates</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for wp in work_packages %}
+              <tr onclick="window.location='{% url 'construction:work_package_detail' wp.pk %}'" style="cursor: pointer;">
+                <td><strong>{{ wp.code }}</strong></td>
+                <td>{{ wp.name|truncatechars:60 }}</td>
+                <td>{{ wp.area.code|default:"-" }}</td>
+                <td>
+                                        <span class="badge
+                                            {% if wp.status == 'COMP' %}bg-success
+                                            {% elif wp.status == 'IPRO' %}bg-warning text-dark
+                                            {% elif wp.status == 'HOLD' %}bg-danger
+                                            {% else %}bg-secondary
+                                            {% endif %}">
+                                            {{ wp.get_status_display }}
+                                        </span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="progress flex-grow-1 progress-thin me-1">
+                      <div class="progress-bar bg-success" style="width: {{ wp.percent_complete }}%"></div>
+                    </div>
+                    <small>{{ wp.percent_complete }}%</small>
+                  </div>
+                </td>
+                <td><span class="badge bg-info">{{ wp.item_count }}</span></td>
+                <td>
+                  <small>{{ wp.planned_start|date:"M d" }} - {{ wp.planned_finish|date:"M d, Y" }}</small>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-clipboard-check"></i>
+            <h5>No Work Packages</h5>
+            <p>No work packages are associated with this system.</p>
+          </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Preserve active tab on page reload
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('#systemTabs button[data-bs-toggle="pill"]');
+    const activeTab = localStorage.getItem('activeSystemTab');
+
+    if (activeTab) {
+      const tab = document.querySelector(`#systemTabs button[data-bs-target="${activeTab}"]`);
+      if (tab) {
+        const bsTab = new bootstrap.Tab(tab);
+        bsTab.show();
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('shown.bs.tab', function(e) {
+        localStorage.setItem('activeSystemTab', e.target.getAttribute('data-bs-target'));
+      });
+    });
+  });
+</script>
+{% endblock %}

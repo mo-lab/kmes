@@ -1,0 +1,740 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ document.document_number }} - جزئیات سند{% endblock %}
+
+{% block extra_css %}
+<style>
+    .document-header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .document-number {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .revision-badge {
+        font-size: 1rem;
+        padding: 0.5em 1.2em;
+    }
+
+    .file-preview-card {
+        border: 2px dashed #dee2e6;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    .file-preview-card:hover {
+        border-color: #0d6efd;
+        background: #f8f9fa;
+    }
+
+    .file-icon {
+        font-size: 4rem;
+    }
+    .file-icon.pdf { color: #dc3545; }
+    .file-icon.cad { color: #0d6efd; }
+    .file-icon.word { color: #0d6efd; }
+    .file-icon.excel { color: #198754; }
+    .file-icon.archive { color: #6c757d; }
+    .file-icon.image { color: #fd7e14; }
+    .file-icon.generic { color: #adb5bd; }
+
+    .info-card {
+        border-radius: 0.5rem;
+        transition: transform 0.15s;
+    }
+    .info-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .revision-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    .revision-timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .revision-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    .revision-item::before {
+        content: '';
+        position: absolute;
+        left: -1.65rem;
+        top: 0.5rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #0d6efd;
+    }
+    .revision-item.current::before {
+        background: #198754;
+        box-shadow: 0 0 0 2px #198754;
+        width: 16px;
+        height: 16px;
+        left: -1.75rem;
+        top: 0.4rem;
+    }
+    .revision-item.superseded::before {
+        background: #6c757d;
+        box-shadow: 0 0 0 2px #6c757d;
+    }
+
+    .tag-link-card {
+        border-left: 4px solid #0d6efd;
+        transition: transform 0.15s;
+    }
+    .tag-link-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .share-item {
+        border-left: 3px solid #0d6efd;
+        transition: background 0.15s;
+    }
+    .share-item:hover {
+        background: #f8f9fa;
+    }
+
+    .activity-item {
+        padding: 0.75rem;
+        border-left: 3px solid transparent;
+        transition: background 0.15s;
+    }
+    .activity-item:hover {
+        background: #f8f9fa;
+        border-left-color: #0d6efd;
+    }
+
+    .permission-badge {
+        font-size: 0.7rem;
+    }
+
+    .nav-pills .nav-link {
+        color: #6c757d;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+    .nav-pills .nav-link.active {
+        background: #0d6efd;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="#">اسناد</a></li>
+            {% if document.project %}
+            <li class="breadcrumb-item"><a href="#">{{ document.project.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ document.document_number }}</li>
+        </ol>
+    </nav>
+
+    <!-- Document Header -->
+    <div class="document-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="document-number me-3">{{ document.document_number }}</div>
+                    <span class="badge revision-badge
+                        {% if document.status == 'APPR' %}bg-success
+                        {% elif document.status == 'IFC' %}bg-primary
+                        {% elif document.status == 'DRAFT' %}bg-secondary
+                        {% elif document.status == 'REVW' %}bg-info
+                        {% elif document.status == 'SUPD' %}bg-warning text-dark
+                        {% elif document.status == 'ASBL' %}bg-info
+                        {% endif %}">
+                        {{ document.get_status_display }}
+                    </span>
+                    {% if not is_latest_revision %}
+                    <span class="badge bg-warning text-dark ms-2">
+                        <i class="bi bi-exclamation-triangle"></i> آخرین نسخه نیست
+                    </span>
+                    {% endif %}
+                </div>
+
+                <h5 class="mb-2">{{ document.title }}</h5>
+
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-file-earmark"></i> {{ document.get_doc_type_display }}
+                    </span>
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-gear"></i> {{ document.get_discipline_display }}
+                    </span>
+                    <span class="badge bg-light text-dark">
+                        بازبینی {{ document.revision }}
+                    </span>
+                    {% if document.project %}
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-folder"></i> {{ document.project.name }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <p class="mb-0 opacity-75 small">
+                    <i class="bi bi-person"></i> ارسال شده توسط:
+                    {{ document.submitted_by.get_full_name|default:document.submitted_by.username|default:"نامشخص" }}
+                    {% if document.approved_by %}
+                    | <i class="bi bi-check-circle"></i> تایید شده توسط:
+                    {{ document.approved_by.get_full_name|default:document.approved_by.username }}
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                    {% if document.file_upload %}
+                    <a href="{% url 'documents:document_download' document.pk %}" class="btn btn-light" download>
+                        <i class="bi bi-download"></i> دانلود
+                    </a>
+                    {% endif %}
+
+                    {% if can_share %}
+                    <button type="button" class="btn btn-info text-white" data-bs-toggle="modal" data-bs-target="#shareModal">
+                        <i class="bi bi-share"></i> اشتراک‌گذاری
+                    </button>
+                    {% endif %}
+
+                    <a href="#" class="btn btn-outline-light">
+                        <i class="bi bi-pencil"></i> ویرایش
+                    </a>
+                    <a href="#" class="btn btn-outline-light">
+                        <i class="bi bi-plus-circle"></i> بازبینی جدید
+                    </a>
+
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-link"></i> پیوند به برچسب
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-trash text-danger"></i> حذف
+                                </a>
+                            </li>
+                            {% if previous_revision %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-arrow-left"></i> بازبینی قبلی
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if next_revision %}
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-arrow-right"></i> بازبینی بعدی
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card info-card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-link-45deg fs-3 text-primary"></i>
+                    <div class="fs-4 fw-bold text-primary">{{ total_linked_tags }}</div>
+                    <small class="text-muted">برچسب‌های پیوند شده</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card info-card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-clock-history fs-3 text-info"></i>
+                    <div class="fs-4 fw-bold text-info">{{ total_revisions }}</div>
+                    <small class="text-muted">بازبینی‌ها</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card info-card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-share fs-3 text-success"></i>
+                    <div class="fs-4 fw-bold text-success">{{ total_shares_count }}</div>
+                    <small class="text-muted">اشتراک‌گذاری‌ها</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card info-card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-file-earmark fs-3 text-warning"></i>
+                    <div class="fs-4 fw-bold text-warning">{{ file_size_display|default:"-" }}</div>
+                    <small class="text-muted">حجم فایل</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared With Me Notice -->
+    {% if is_shared_with_me %}
+    <div class="alert alert-info d-flex align-items-center mb-4">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <div>
+            این سند با شما به اشتراک گذاشته شده است.
+            {% if my_share.can_edit %}
+            <strong>شما مجوز ویرایش دارید.</strong>
+            {% else %}
+            شما فقط دسترسی مشاهده دارید.
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+
+            <!-- File Preview -->
+            {% if document.file_upload %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark me-2"></i>پیش‌نمایش فایل</h5>
+                </div>
+                <div class="card-body">
+                    <div class="file-preview-card">
+                        {% if file_type_class == 'pdf' %}
+                        <i class="bi bi-file-pdf file-icon pdf"></i>
+                        <h5 class="mt-3">سند PDF</h5>
+                        <p class="text-muted">برای مشاهده یا دانلود فایل PDF کلیک کنید</p>
+                        <a href="{{ document.file_upload.url }}" class="btn btn-danger" target="_blank">
+                            <i class="bi bi-eye"></i> مشاهده PDF
+                        </a>
+                        <a href="{% url 'documents:document_download' document.pk %}" class="btn btn-outline-danger ms-2">
+                            <i class="bi bi-download"></i> دانلود
+                        </a>
+
+                        {% elif file_type_class == 'image' %}
+                        <img src="{{ document.file_upload.url }}"
+                             class="img-fluid rounded"
+                             style="max-height: 400px;"
+                             alt="{{ document.title }}">
+                        <p class="text-muted mt-3">پیش‌نمایش تصویر</p>
+                        <a href="{{ document.file_upload.url }}" class="btn btn-primary" target="_blank">
+                            <i class="bi bi-zoom-in"></i> مشاهده در اندازه کامل
+                        </a>
+
+                        {% elif file_type_class == 'excel' %}
+                        <i class="bi bi-file-excel file-icon excel"></i>
+                        <h5 class="mt-3">صفحه گسترده Excel</h5>
+                        <p class="text-muted">برای مشاهده صفحه گسترده دانلود کنید</p>
+                        <a href="{% url 'documents:document_download' document.pk %}" class="btn btn-success">
+                            <i class="bi bi-download"></i> دانلود Excel
+                        </a>
+
+                        {% elif file_type_class == 'word' %}
+                        <i class="bi bi-file-word file-icon word"></i>
+                        <h5 class="mt-3">سند Word</h5>
+                        <p class="text-muted">برای مشاهده سند دانلود کنید</p>
+                        <a href="{% url 'documents:document_download' document.pk %}" class="btn btn-primary">
+                            <i class="bi bi-download"></i> دانلود سند
+                        </a>
+
+                        {% elif file_type_class == 'cad' %}
+                        <i class="bi bi-file-earmark file-icon cad"></i>
+                        <h5 class="mt-3">نقشه CAD</h5>
+                        <p class="text-muted">برای مشاهده در نرم‌افزار CAD دانلود کنید</p>
+                        <a href="{% url 'documents:document_download' document.pk %}" class="btn btn-primary">
+                            <i class="bi bi-download"></i> دانلود فایل CAD
+                        </a>
+
+                        {% elif file_type_class == 'archive' %}
+                        <i class="bi bi-file-zip file-icon archive"></i>
+                        <h5 class="mt-3">فایل فشرده</h5>
+                        <p class="text-muted">برای مشاهده محتوا دانلود و استخراج کنید</p>
+                        <a href="{% url 'documents:document_download' document.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-download"></i> دانلود فایل فشرده
+                        </a>
+
+                        {% else %}
+                        <i class="bi bi-file-earmark file-icon generic"></i>
+                        <h5 class="mt-3">فایل موجود</h5>
+                        <p class="text-muted">{{ file_extension|upper }} فرمت فایل</p>
+                        <a href="{% url 'documents:document_download' document.pk %}" class="btn btn-primary">
+                            <i class="bi bi-download"></i> دانلود فایل
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- File Details -->
+                    <div class="mt-3">
+                        <table class="table table-sm">
+                            <tr>
+                                <th class="text-muted" width="150">نام فایل:</th>
+                                <td>{{ document.file_upload.name }}</td>
+                            </tr>
+                            {% if file_size %}
+                            <tr>
+                                <th class="text-muted">حجم فایل:</th>
+                                <td>{{ file_size_display }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th class="text-muted">بارگذاری شده:</th>
+                                <td>{{ document.created_at|date:"F d, Y H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% elif document.file_path %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i>فایل خارجی</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        این سند به یک مکان فایل خارجی ارجاع می‌دهد.
+                    </div>
+                    <p><strong>مسیر فایل:</strong> <code>{{ document.file_path }}</code></p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Revision History -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>تاریخچه بازبینی</h5>
+                    <a href="#" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg"></i> بازبینی جدید
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if revisions %}
+                    <div class="revision-timeline">
+                        {% for revision in revisions %}
+                        <div class="revision-item
+                            {% if revision.pk == document.pk %}current
+                            {% elif revision.status == 'SUPD' %}superseded
+                            {% endif %}">
+
+                            <div class="card {% if revision.pk == document.pk %}border-success{% endif %}">
+                                <div class="card-header {% if revision.pk == document.pk %}bg-success bg-opacity-10{% endif %} d-flex justify-content-between align-items-center">
+                                    <strong>بازبینی {{ revision.revision }} {% if revision.pk == document.pk %}(فعلی){% endif %}</strong>
+                                    <span class="badge {% if revision.status == 'SUPD' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                        {{ revision.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1">{{ revision.title }}</p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-person"></i>
+                                        {{ revision.submitted_by.get_full_name|default:"سیستم" }}
+                                        | <i class="bi bi-calendar"></i>
+                                        {{ revision.created_at|date:"F d, Y H:i" }}
+                                    </small>
+
+                                    {% if revision.file_upload %}
+                                    <div class="mt-2">
+                                        <a href="{% url 'documents:document_download' revision.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-download"></i> دانلود
+                                        </a>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if revision.pk != document.pk %}
+                                    <div class="mt-2">
+                                        <a href="{% url 'documents:document_detail' revision.pk %}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-eye"></i> مشاهده این بازبینی
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">تاریخچه بازبینی موجود نیست.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+
+            <!-- Document Details -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>جزئیات سند</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr><th class="text-muted">شماره:</th><td><strong>{{ document.document_number }}</strong></td></tr>
+                        <tr><th class="text-muted">عنوان:</th><td>{{ document.title }}</td></tr>
+                        <tr><th class="text-muted">نوع:</th><td>{{ document.get_doc_type_display }}</td></tr>
+                        <tr><th class="text-muted">رشته:</th><td>{{ document.get_discipline_display }}</td></tr>
+                        <tr><th class="text-muted">بازبینی:</th><td><span class="badge bg-info">{{ document.revision }}</span></td></tr>
+                        <tr><th class="text-muted">وضعیت:</th><td><span class="badge {% if document.status == 'APPR' %}bg-success{% elif document.status == 'IFC' %}bg-primary{% elif document.status == 'SUPD' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ document.get_status_display }}</span></td></tr>
+                        {% if document.project %}<tr><th class="text-muted">پروژه:</th><td><a href="#">{{ document.project.name }}</a></td></tr>{% endif %}
+                        <tr><th class="text-muted">تاریخ صدور:</th><td>{{ document.issue_date|date:"F d, Y"|default:"-" }}</td></tr>
+                        <tr><th class="text-muted">ارسال شده:</th><td>{{ document.submitted_by.get_full_name|default:"سیستم" }}<br><small class="text-muted">{{ document.created_at|date:"M d, Y" }}</small></td></tr>
+                        {% if document.approved_by %}<tr><th class="text-muted">تایید شده:</th><td>{{ document.approved_by.get_full_name }}</td></tr>{% endif %}
+                    </table>
+                </div>
+            </div>
+
+            <!-- Linked Equipment Tags -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-link-45deg me-2"></i>برچسب‌های پیوند شده</h6>
+                    <a href="#" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if linked_tags %}
+                    <div class="list-group list-group-flush">
+                        {% for td in linked_tags %}
+                        <div class="list-group-item tag-link-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>
+                                        <a href="#" class="text-decoration-none">
+                                            {{ td.equipment_tag.tag_number }}
+                                        </a>
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ td.equipment_tag.description|truncatechars:40 }}</small>
+                                    <br>
+                                    <span class="badge bg-light text-dark">{{ td.relation_type }}</span>
+                                </div>
+                                <a href="#" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-unlink"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <p class="mb-2">برچسبی پیوند نشده است.</p>
+                        <a href="#" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-link"></i> پیوند به برچسب
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Shares -->
+            <div class="card mb-3" id="sharesSection">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-share me-2"></i>اشتراک‌گذاری شده با</h6>
+                    <span class="badge bg-primary">{{ total_shares }}</span>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Share Stats -->
+                    <div class="d-flex border-bottom">
+                        <div class="flex-fill text-center py-2 border-end">
+                            <small class="text-success">{{ viewed_shares }} مشاهده شده</small>
+                        </div>
+                        <div class="flex-fill text-center py-2">
+                            <small class="text-warning">{{ unviewed_shares }} در انتظار</small>
+                        </div>
+                    </div>
+
+                    {% if shares %}
+                    <div class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
+                        {% for share in shares %}
+                        <div class="list-group-item share-item px-3 py-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <small><strong>{{ share.shared_with.get_full_name|default:share.shared_with.username }}</strong></small>
+                                    <div>
+                                        <span class="badge permission-badge {% if share.can_edit %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                            {% if share.can_edit %}ویرایش{% else %}مشاهده{% endif %}
+                                        </span>
+                                        {% if share.is_accessed %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i></span>
+                                        {% else %}
+                                        <span class="badge bg-secondary"><i class="bi bi-clock"></i></span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ share.shared_date|timesince }} پیش اشتراک‌گذاری شد</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <p class="mb-0">هنوز با کسی به اشتراک گذاشته نشده است.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-activity me-2"></i>فعالیت</h6>
+                </div>
+                <div class="card-body p-0">
+                    {% if activities %}
+                    <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                        {% for activity in activities %}
+                        <div class="activity-item px-3 py-2">
+                            <div class="d-flex">
+                                <div class="me-2">
+                                    {% if activity.type == 'share' %}<i class="bi bi-share text-info"></i>
+                                    {% elif activity.type == 'link' %}<i class="bi bi-link-45deg text-success"></i>
+                                    {% else %}<i class="bi bi-file-earmark-text text-primary"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <small>{{ activity.description }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ activity.date }} | {{ activity.user }}</small>
+                                </div>
+                                <div class="ms-2">
+                                    {% if activity.type == 'share' %}
+                                    <span class="badge {% if activity.accessed %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if activity.accessed %}مشاهده شده{% else %}در انتظار{% endif %}
+                                        </span>
+                                    {% endif %}
+                                    {% if activity.status %}
+                                    <span class="badge bg-light text-dark">{{ activity.status }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">فعالیتی ثبت نشده است.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Related Documents -->
+            {% if related_documents %}
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-files me-2"></i>اسناد مرتبط</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for related in related_documents %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ related.document_number }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ related.title|truncatechars:40 }}</small>
+                                </div>
+                                <small class="text-muted">بازبینی {{ related.revision }}</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+{% if can_share %}
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-share me-2"></i>اشتراک‌گذاری سند</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'documents:document_share' document.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">انتخاب کاربران</label>
+                        {{ share_form.users }}
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ share_form.can_edit }}
+                            <label class="form-check-label">اجازه ویرایش</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">پیام (اختیاری)</label>
+                        {{ share_form.message }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-share"></i> اشتراک‌گذاری</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Copy file path to clipboard
+    function copyFilePath() {
+        const path = "{{ document.file_path|escapejs }}";
+        if (path) {
+            navigator.clipboard.writeText(path).then(function() {
+                alert('مسیر فایل در کلیپ‌بورد کپی شد!');
+            });
+        }
+    }
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

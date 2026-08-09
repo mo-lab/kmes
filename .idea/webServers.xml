@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="bdbe446c-93c4-4b75-a1d2-c41cf860151d" name="kmes" url="http://localhost">
+        <fileTransfer mountedRoot="C:\Users\moein\OneDrive\projects\django\local_git" accessType="MOUNT" port="0" />
+      </webServer>
+    </option>
+  </component>
+</project>

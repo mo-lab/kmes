@@ -1,0 +1,704 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Share Document - {{ document.document_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .share-header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .user-search-card {
+        border: 2px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.2s;
+    }
+    .user-search-card:focus-within {
+        border-color: #0d6efd;
+    }
+
+    .user-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+    }
+
+    .user-list-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: background 0.15s;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .user-list-item:last-child {
+        border-bottom: none;
+    }
+    .user-list-item:hover {
+        background: #f0f7ff;
+    }
+    .user-list-item.selected {
+        background: #d1e7ff;
+        border-left: 3px solid #0d6efd;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-right: 0.75rem;
+        flex-shrink: 0;
+    }
+    .user-avatar.small {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .selected-users {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        min-height: 2rem;
+    }
+
+    .selected-user-badge {
+        display: inline-flex;
+        align-items: center;
+        background: #d1e7ff;
+        border: 1px solid #0d6efd;
+        border-radius: 2rem;
+        padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+        font-size: 0.85rem;
+        gap: 0.5rem;
+    }
+    .selected-user-badge .remove-btn {
+        cursor: pointer;
+        color: #dc3545;
+        font-size: 1.1rem;
+        line-height: 1;
+        padding: 0 0.25rem;
+    }
+    .selected-user-badge .remove-btn:hover {
+        color: #a71d2a;
+    }
+
+    .existing-share-card {
+        border-left: 4px solid #0d6efd;
+        transition: transform 0.15s;
+    }
+    .existing-share-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .permission-badge {
+        font-size: 0.7rem;
+        padding: 0.2em 0.6em;
+    }
+
+    .share-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+        flex: 1;
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+    .stat-box .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+    .stat-box .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+
+    .share-link-box {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+    }
+
+    .share-link-input {
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #6c757d;
+    }
+    .empty-state i {
+        font-size: 3rem;
+    }
+
+    .search-spinner {
+        display: none;
+    }
+    .search-spinner.show {
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'documents:document_list' %}">Documents</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'documents:document_detail' document.pk %}">
+                    {{ document.document_number }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Share</li>
+        </ol>
+    </nav>
+
+    <!-- Share Header -->
+    <div class="share-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h4 class="mb-2">
+                    <i class="bi bi-share me-2"></i>Share Document
+                </h4>
+                <p class="mb-1 opacity-75">
+                    <strong>{{ document.document_number }}</strong> - {{ document.title }}
+                </p>
+                <small class="opacity-75">
+                    <i class="bi bi-folder"></i> {{ document.project.name|default:"No Project" }} |
+                    <i class="bi bi-file-earmark"></i> {{ document.get_doc_type_display }} |
+                    Rev {{ document.revision }}
+                </small>
+            </div>
+            <a href="{% url 'documents:document_detail' document.pk %}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Document
+            </a>
+        </div>
+    </div>
+
+    <!-- Share Statistics -->
+    <div class="share-stats">
+        <div class="stat-box">
+            <div class="stat-value">{{ existing_shares.count }}</div>
+            <div class="stat-label">Total Shares</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value text-success">
+                {{ existing_shares.filter.is_accessed|length|default:"0" }}
+            </div>
+            <div class="stat-label">Viewed</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value text-warning">
+                {{ existing_shares.filter.is_accessed|length|default:"0" }}
+            </div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value text-info">
+                {{ existing_shares.filter.can_edit|length|default:"0" }}
+            </div>
+            <div class="stat-label">Can Edit</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Share Form -->
+        <div class="col-lg-7">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-plus me-2"></i>Share with Users
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="shareForm" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <!-- User Search -->
+                        <div class="user-search-card">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-search me-1"></i>Search Users
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text"
+                                       id="userSearchInput"
+                                       class="form-control"
+                                       placeholder="Type name or email to search..."
+                                       autocomplete="off">
+                                <span class="input-group-text search-spinner" id="searchSpinner">
+                                    <span class="spinner-border spinner-border-sm"></span>
+                                </span>
+                            </div>
+
+                            <!-- Search Results -->
+                            <div class="user-list mt-2" id="userSearchResults" style="display: none;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+
+                            <!-- Selected Users -->
+                            <div class="selected-users mt-2" id="selectedUsers">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Hidden field for selected user IDs -->
+                        <input type="hidden" name="users" id="selectedUserIds">
+
+                        <!-- Permissions -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Permissions</label>
+                            <div class="form-check form-switch">
+                                {{ form.can_edit }}
+                                <label class="form-check-label" for="{{ form.can_edit.id_for_label }}">
+                                    <strong>Allow editing</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        Recipients can edit the document details if enabled
+                                    </small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Message -->
+                        <div class="mb-3">
+                            <label for="{{ form.message.id_for_label }}" class="form-label fw-semibold">
+                                Message <span class="text-muted">(Optional)</span>
+                            </label>
+                            {{ form.message }}
+                            <div class="form-text">
+                                Add a personal message to notify recipients why you're sharing this document.
+                            </div>
+                        </div>
+
+                        <!-- Quick Share Link -->
+                        <div class="share-link-box mb-3">
+                            <label class="form-label fw-semibold small">
+                                <i class="bi bi-link-45deg"></i> Direct Share Link
+                            </label>
+                            <div class="input-group">
+                                <input type="text"
+                                       class="form-control form-control-sm share-link-input"
+                                       value="{{ request.build_absolute_uri }}"
+                                       id="shareLink"
+                                       readonly>
+                                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyShareLink()">
+                                    <i class="bi bi-clipboard"></i> Copy
+                                </button>
+                            </div>
+                            <small class="text-muted">Anyone with this link can view the document if they have access.</small>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'documents:document_detail' document.pk %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="shareButton" disabled>
+                                <i class="bi bi-share"></i> Share Document
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Shares -->
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>Currently Shared With
+                    </h5>
+                    <span class="badge bg-primary rounded-pill">{{ existing_shares.count }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if existing_shares %}
+                    <div class="list-group list-group-flush">
+                        {% for share in existing_shares %}
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-start">
+                                <!-- User Avatar -->
+                                <div class="user-avatar small me-3">
+                                    {{ share.shared_with.first_name|first|upper }}{{ share.shared_with.last_name|first|upper }}
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>{{ share.shared_with.get_full_name|default:share.shared_with.username }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ share.shared_with.email }}</small>
+                                        </div>
+
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'documents:document_share_update' share.pk %}"
+                                               class="btn btn-outline-secondary btn-sm"
+                                               title="Edit Permissions"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'documents:document_share_resend' share.pk %}"
+                                               class="btn btn-outline-info btn-sm"
+                                               title="Resend Notification"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </a>
+                                            <a href="{% url 'documents:document_share_delete' share.pk %}"
+                                               class="btn btn-outline-danger btn-sm"
+                                               title="Remove Access"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-x-lg"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Permissions & Status -->
+                                    <div class="mt-2 d-flex flex-wrap gap-1">
+                                        <span class="badge permission-badge 
+                                            {% if share.can_edit %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                            {% if share.can_edit %}
+                                                <i class="bi bi-pencil"></i> Can Edit
+                                            {% else %}
+                                                <i class="bi bi-eye"></i> View Only
+                                            {% endif %}
+                                        </span>
+
+                                        {% if share.is_accessed %}
+                                        <span class="badge bg-success permission-badge">
+                                                <i class="bi bi-check-circle"></i> Viewed
+                                            </span>
+                                        <small class="text-muted ms-1">
+                                            {{ share.accessed_date|timesince }} ago
+                                        </small>
+                                        {% else %}
+                                        <span class="badge bg-secondary permission-badge">
+                                                <i class="bi bi-clock"></i> Not Viewed
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Share Message -->
+                                    {% if share.message %}
+                                    <div class="mt-2 p-2 bg-light rounded small">
+                                        <i class="bi bi-chat-left-text text-muted"></i>
+                                        "{{ share.message }}"
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Share Info -->
+                                    <small class="text-muted d-block mt-2">
+                                        Shared by {{ share.shared_by.get_full_name|default:"System" }}
+                                        {{ share.shared_date|timesince }} ago
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-share"></i>
+                        <h6 class="mt-2">Not Shared Yet</h6>
+                        <p class="small text-muted">
+                            Use the form to share this document with team members.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if existing_shares %}
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i>
+                            Users with view access can download the document.
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Tips -->
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Sharing Tips</h6>
+                </div>
+                <div class="card-body small">
+                    <ul class="mb-0">
+                        <li class="mb-2">
+                            <strong>View Only:</strong> Recipients can view and download the document.
+                        </li>
+                        <li class="mb-2">
+                            <strong>Can Edit:</strong> Recipients can update document details and upload new revisions.
+                        </li>
+                        <li class="mb-2">
+                            <strong>Revoke Access:</strong> You can remove sharing at any time.
+                        </li>
+                        <li>
+                            <strong>Notifications:</strong> Recipients will see the document in their "Shared With Me" section.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Share Confirmation Modal -->
+<div class="modal fade" id="removeShareModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">Remove Access</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove access for this user?</p>
+                <p class="small text-muted">They will no longer be able to view or edit this document.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" class="btn btn-sm btn-danger" id="confirmRemoveBtn">Remove Access</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Selected users storage
+    const selectedUsers = new Map();
+    let searchTimeout;
+
+    // DOM elements
+    const searchInput = document.getElementById('userSearchInput');
+    const searchResults = document.getElementById('userSearchResults');
+    const selectedUsersContainer = document.getElementById('selectedUsers');
+    const selectedUserIdsInput = document.getElementById('selectedUserIds');
+    const shareButton = document.getElementById('shareButton');
+    const searchSpinner = document.getElementById('searchSpinner');
+
+    // Search users as you type
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        clearTimeout(searchTimeout);
+
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        // Show spinner
+        searchSpinner.classList.add('show');
+
+        searchTimeout = setTimeout(() => {
+            fetch(`{% url 'documents:ajax_search_users' %}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    displaySearchResults(data.results);
+                    searchSpinner.classList.remove('show');
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    searchSpinner.classList.remove('show');
+                });
+        }, 300);
+    });
+
+    // Display search results
+    function displaySearchResults(users) {
+        searchResults.innerHTML = '';
+
+        if (users.length === 0) {
+            searchResults.innerHTML = `
+                <div class="text-center py-3 text-muted small">
+                    <i class="bi bi-person-x"></i> No users found
+                </div>
+            `;
+        } else {
+            users.forEach(user => {
+                if (!selectedUsers.has(user.id)) {
+                    const item = document.createElement('div');
+                    item.className = 'user-list-item';
+                    item.onclick = () => selectUser(user);
+
+                    const initials = getInitials(user.full_name || user.username);
+
+                    item.innerHTML = `
+                        <div class="user-avatar small">${initials}</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold small">${user.full_name || user.username}</div>
+                            <div class="text-muted small">${user.email}</div>
+                        </div>
+                        <i class="bi bi-plus-circle text-primary"></i>
+                    `;
+
+                    searchResults.appendChild(item);
+                }
+            });
+        }
+
+        searchResults.style.display = 'block';
+    }
+
+    // Select a user
+    function selectUser(user) {
+        if (selectedUsers.has(user.id)) return;
+
+        selectedUsers.set(user.id, user);
+        updateSelectedUsers();
+        searchInput.value = '';
+        searchResults.style.display = 'none';
+        searchInput.focus();
+    }
+
+    // Remove a user
+    function removeUser(userId) {
+        selectedUsers.delete(userId);
+        updateSelectedUsers();
+    }
+
+    // Update selected users display
+    function updateSelectedUsers() {
+        selectedUsersContainer.innerHTML = '';
+
+        if (selectedUsers.size === 0) {
+            selectedUsersContainer.innerHTML = `
+                <small class="text-muted">No users selected. Search and select users above.</small>
+            `;
+        } else {
+            selectedUsers.forEach((user, id) => {
+                const badge = document.createElement('span');
+                badge.className = 'selected-user-badge';
+
+                const initials = getInitials(user.full_name || user.username);
+
+                badge.innerHTML = `
+                    <div class="user-avatar small">${initials}</div>
+                    <span>${user.full_name || user.username}</span>
+                    <span class="remove-btn" onclick="removeUser(${id})" title="Remove">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </span>
+                `;
+
+                selectedUsersContainer.appendChild(badge);
+            });
+        }
+
+        // Update hidden input
+        selectedUserIdsInput.value = Array.from(selectedUsers.keys()).join(',');
+
+        // Enable/disable share button
+        shareButton.disabled = selectedUsers.size === 0;
+    }
+
+    // Get initials from name
+    function getInitials(name) {
+        if (!name) return '?';
+        const parts = name.split(' ');
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    // Copy share link
+    function copyShareLink() {
+        const linkInput = document.getElementById('shareLink');
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999);
+
+        navigator.clipboard.writeText(linkInput.value).then(() => {
+            // Show brief feedback
+            const btn = event.target;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-outline-secondary');
+
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-secondary');
+            }, 2000);
+        });
+    }
+
+    // Handle remove share modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const removeModal = document.getElementById('removeShareModal');
+        if (removeModal) {
+            removeModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const deleteUrl = button.getAttribute('data-delete-url');
+                document.getElementById('confirmRemoveBtn').href = deleteUrl;
+            });
+        }
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+    // Close search results when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!searchResults.contains(event.target) && event.target !== searchInput) {
+            searchResults.style.display = 'none';
+        }
+    });
+
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            searchResults.style.display = 'none';
+            this.blur();
+        }
+    });
+
+    // Initial state
+    updateSelectedUsers();
+</script>
+{% endblock %}

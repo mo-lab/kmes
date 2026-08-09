@@ -1,0 +1,673 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Record Equipment Location{% endblock %}
+
+{% block extra_css %}
+<style>
+    .location-form-section {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .map-container {
+        height: 400px;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        border: 2px solid #dee2e6;
+    }
+
+    #map {
+        height: 100%;
+        width: 100%;
+    }
+
+    .gps-button {
+        transition: all 0.2s;
+    }
+    .gps-button:hover {
+        transform: scale(1.05);
+    }
+
+    .gps-status {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .coordinates-display {
+        font-size: 0.9rem;
+        background: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .coordinates-display .coord-value {
+        font-family: monospace;
+        font-size: 1.1rem;
+        color: #0d6efd;
+    }
+
+    .pulse-dot {
+        width: 12px;
+        height: 12px;
+        background: #dc3545;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    .accuracy-indicator {
+        font-size: 0.8rem;
+    }
+
+    .accuracy-good { color: #198754; }
+    .accuracy-medium { color: #ffc107; }
+    .accuracy-poor { color: #dc3545; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="#">Equipment Tags</a></li>
+            {% if equipment_tag %}
+            <li class="breadcrumb-item">
+                <a href="#">{{ equipment_tag.tag_number }}</a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active">Record Location</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Record Equipment Location</h1>
+            <p class="text-muted mb-0">
+                {% if equipment_tag %}
+                Tag: <strong>{{ equipment_tag.tag_number }}</strong> - {{ equipment_tag.description }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <form method="post" novalidate id="locationForm">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- GPS Location Section -->
+                <div class="location-form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-geo-alt me-2"></i>GPS Location
+                        </h5>
+                        <button type="button" class="btn btn-primary gps-button" id="getLocationBtn" onclick="getCurrentLocation()">
+                            <i class="bi bi-crosshair"></i> Get My Location
+                        </button>
+                    </div>
+
+                    <!-- GPS Status -->
+                    <div id="gpsStatus" class="gps-status d-none"></div>
+
+                    <!-- Map -->
+                    <div class="map-container mb-3" id="mapContainer">
+                        <div id="map"></div>
+                    </div>
+
+                    <!-- Coordinates Display -->
+                    <div class="coordinates-display mb-3">
+                        <div class="row text-center">
+                            <div class="col-md-5">
+                                <small class="text-muted">Latitude</small>
+                                <div class="coord-value" id="displayLat">--</div>
+                            </div>
+                            <div class="col-md-5">
+                                <small class="text-muted">Longitude</small>
+                                <div class="coord-value" id="displayLng">--</div>
+                            </div>
+                            <div class="col-md-2">
+                                <small class="text-muted">Accuracy</small>
+                                <div id="displayAccuracy">--</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden GPS Fields -->
+                    {{ form.equipment_tag }}
+                    <input type="hidden" name="latitude" id="id_latitude" value="{{ form.latitude.value|default:'' }}">
+                    <input type="hidden" name="longitude" id="id_longitude" value="{{ form.longitude.value|default:'' }}">
+                    <input type="hidden" name="accuracy" id="id_accuracy" value="{{ form.accuracy.value|default:'' }}">
+
+                    {% if form.latitude.errors %}
+                    <div class="invalid-feedback d-block">{{ form.latitude.errors.0 }}</div>
+                    {% endif %}
+                    {% if form.longitude.errors %}
+                    <div class="invalid-feedback d-block">{{ form.longitude.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Location Details -->
+                <div class="location-form-section">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle me-2"></i>Location Details
+                    </h5>
+
+                    <div class="row g-3">
+                        <!-- Location Type -->
+                        <div class="col-md-6">
+                            <label for="{{ form.location_type.id_for_label }}" class="form-label">Location Type</label>
+                            {{ form.location_type }}
+                            {% if form.location_type.errors %}
+                            <div class="invalid-feedback d-block">{{ form.location_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Area -->
+                        <div class="col-md-6">
+                            <label for="{{ form.area.id_for_label }}" class="form-label">Area</label>
+                            {{ form.area }}
+                            {% if form.area.errors %}
+                            <div class="invalid-feedback d-block">{{ form.area.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Elevation -->
+                        <div class="col-md-4">
+                            <label for="{{ form.elevation.id_for_label }}" class="form-label">Elevation (m)</label>
+                            {{ form.elevation }}
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-1" id="getElevationBtn" onclick="getElevation()">
+                                <i class="bi bi-arrow-up-circle"></i> Get Elevation
+                            </button>
+                        </div>
+
+                        <!-- Building -->
+                        <div class="col-md-4">
+                            <label for="{{ form.building.id_for_label }}" class="form-label">Building</label>
+                            {{ form.building }}
+                        </div>
+
+                        <!-- Floor -->
+                        <div class="col-md-4">
+                            <label for="{{ form.floor.id_for_label }}" class="form-label">Floor</label>
+                            {{ form.floor }}
+                        </div>
+
+                        <!-- Grid Reference -->
+                        <div class="col-md-6">
+                            <label for="{{ form.grid_reference.id_for_label }}" class="form-label">Grid Reference</label>
+                            {{ form.grid_reference }}
+                        </div>
+
+                        <!-- Room -->
+                        <div class="col-md-6">
+                            <label for="{{ form.room.id_for_label }}" class="form-label">Room</label>
+                            {{ form.room }}
+                        </div>
+
+                        <!-- Arrival Date -->
+                        <div class="col-md-6">
+                            <label for="{{ form.arrival_date.id_for_label }}" class="form-label">Arrival Date</label>
+                            {{ form.arrival_date }}
+                        </div>
+
+                        <!-- Is Current Location -->
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check mb-3">
+                                {{ form.is_current }}
+                                <label class="form-check-label" for="{{ form.is_current.id_for_label }}">
+                                    This is the current location
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="col-12">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Section -->
+                <div class="location-form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-house me-2"></i>Address
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="reverseGeocode()">
+                            <i class="bi bi-search"></i> Look Up Address
+                        </button>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.address }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                            {{ form.city }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.state.id_for_label }}" class="form-label">State/Province</label>
+                            {{ form.state }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                            {{ form.country }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.postal_code.id_for_label }}" class="form-label">Postal Code</label>
+                            {{ form.postal_code }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between">
+                    <a href="#" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Location
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <!-- Tips Card -->
+            <div class="card mb-3">
+                <div class="card-header bg-info bg-opacity-10">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>How to Get GPS Location</h6>
+                </div>
+                <div class="card-body small">
+                    <ol class="mb-0">
+                        <li class="mb-2">Click <strong>"Get My Location"</strong> button</li>
+                        <li class="mb-2">Allow location access when prompted by your browser</li>
+                        <li class="mb-2">Wait for GPS to acquire your position</li>
+                        <li class="mb-2">You can drag the marker on the map to adjust</li>
+                        <li>Fill in additional details and save</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Status Card -->
+            <div class="card">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h6 class="mb-0"><i class="bi bi-broadcast me-2"></i>GPS Status</h6>
+                </div>
+                <div class="card-body" id="gpsInfoCard">
+                    <p class="text-muted text-center mb-0">
+                        <i class="bi bi-crosshair"></i><br>
+                        Click "Get My Location" to start
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Load Leaflet for map display -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    let map;
+    let marker;
+    let currentPosition;
+    let watchId;
+
+    // Initialize map
+    function initMap(lat, lng) {
+        if (!map) {
+            map = L.map('map').setView([lat, lng], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add marker
+            marker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(map);
+
+            // Update coordinates when marker is dragged
+            marker.on('dragend', function(e) {
+                const position = marker.getLatLng();
+                updateCoordinates(position.lat, position.lng);
+            });
+
+            // Click on map to move marker
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                updateCoordinates(e.latlng.lat, e.latlng.lng);
+            });
+        } else {
+            map.setView([lat, lng], 15);
+            marker.setLatLng([lat, lng]);
+        }
+    }
+
+    // Update coordinate fields
+    function updateCoordinates(lat, lng) {
+        document.getElementById('id_latitude').value = lat.toFixed(6);
+        document.getElementById('id_longitude').value = lng.toFixed(6);
+        document.getElementById('displayLat').textContent = lat.toFixed(6);
+        document.getElementById('displayLng').textContent = lng.toFixed(6);
+    }
+
+    // Get current location
+    function getCurrentLocation() {
+        const statusEl = document.getElementById('gpsStatus');
+        const btn = document.getElementById('getLocationBtn');
+
+        // Check if geolocation is supported
+        if (!navigator.geolocation) {
+            showStatus('Geolocation is not supported by your browser', 'danger');
+            return;
+        }
+
+        // Update UI
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Acquiring GPS...';
+        showStatus('Acquiring GPS location... Please wait', 'info');
+
+        // Geolocation options
+        const options = {
+            enableHighAccuracy: true,  // Use GPS if available
+            timeout: 30000,            // 30 seconds timeout
+            maximumAge: 0              // Don't use cached position
+        };
+
+        // Get position
+        navigator.geolocation.getCurrentPosition(
+            // Success callback
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                const altitude = position.coords.altitude;
+
+                currentPosition = position;
+
+                // Update coordinates
+                updateCoordinates(lat, lng);
+                document.getElementById('id_accuracy').value = accuracy.toFixed(2);
+                document.getElementById('displayAccuracy').innerHTML =
+                    `<span class="accuracy-${getAccuracyClass(accuracy)}">${accuracy.toFixed(1)}m</span>`;
+
+                // Set elevation if available
+                if (altitude) {
+                    document.getElementById('{{ form.elevation.id_for_label }}').value = altitude.toFixed(2);
+                }
+
+                // Initialize/update map
+                initMap(lat, lng);
+
+                // Show success
+                showStatus(
+                    `<i class="bi bi-check-circle"></i> Location acquired! Accuracy: ${accuracy.toFixed(1)}m`,
+                    'success'
+                );
+
+                // Update GPS info card
+                updateGPSInfoCard(position);
+
+                // Reset button
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-crosshair"></i> Update Location';
+
+                // Start watching for better accuracy
+                startWatchingPosition();
+            },
+            // Error callback
+            function(error) {
+                let errorMsg = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg = 'Location access denied. Please enable GPS/location permissions in your device settings.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg = 'Location information is unavailable. Please check your GPS signal.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg = 'Location request timed out. Please try again in an open area.';
+                        break;
+                    default:
+                        errorMsg = 'An unknown error occurred while getting location.';
+                }
+
+                showStatus(errorMsg, 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-crosshair"></i> Try Again';
+            },
+            options
+        );
+    }
+
+    // Watch position for better accuracy
+    function startWatchingPosition() {
+        // Clear existing watch
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+        }
+
+        watchId = navigator.geolocation.watchPosition(
+            function(position) {
+                // Update if accuracy improves
+                if (currentPosition && position.coords.accuracy < currentPosition.coords.accuracy) {
+                    currentPosition = position;
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    updateCoordinates(lat, lng);
+                    document.getElementById('id_accuracy').value = position.coords.accuracy.toFixed(2);
+                    document.getElementById('displayAccuracy').innerHTML =
+                        `<span class="accuracy-${getAccuracyClass(position.coords.accuracy)}">${position.coords.accuracy.toFixed(1)}m (improved)</span>`;
+
+                    if (marker) {
+                        marker.setLatLng([lat, lng]);
+                    }
+
+                    updateGPSInfoCard(position);
+                }
+            },
+            null,
+            { enableHighAccuracy: true }
+        );
+
+        // Stop watching after 60 seconds
+        setTimeout(() => {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+        }, 60000);
+    }
+
+    // Get elevation from coordinates
+    function getElevation() {
+        const lat = document.getElementById('id_latitude').value;
+        const lng = document.getElementById('id_longitude').value;
+
+        if (!lat || !lng) {
+            alert('Please get GPS location first.');
+            return;
+        }
+
+        const btn = document.getElementById('getElevationBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        // Using Open-Elevation API (free, no key required)
+        fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.results && data.results[0]) {
+                    const elevation = data.results[0].elevation;
+                    document.getElementById('{{ form.elevation.id_for_label }}').value = elevation.toFixed(2);
+                }
+            })
+            .catch(error => {
+                console.error('Error getting elevation:', error);
+                alert('Could not get elevation. Please enter manually.');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-arrow-up-circle"></i> Get Elevation';
+            });
+    }
+
+    // Reverse geocode to get address
+    function reverseGeocode() {
+        const lat = document.getElementById('id_latitude').value;
+        const lng = document.getElementById('id_longitude').value;
+
+        if (!lat || !lng) {
+            alert('Please get GPS location first.');
+            return;
+        }
+
+        // Using Nominatim (OpenStreetMap) - free, rate limited
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.address) {
+                    const addr = data.address;
+                    document.getElementById('{{ form.address.id_for_label }}').value =
+                        [addr.road, addr.house_number].filter(Boolean).join(' ') || data.display_name;
+                    document.getElementById('{{ form.city.id_for_label }}').value =
+                        addr.city || addr.town || addr.village || '';
+                    document.getElementById('{{ form.state.id_for_label }}').value =
+                        addr.state || addr.region || '';
+                    document.getElementById('{{ form.country.id_for_label }}').value =
+                        addr.country || '';
+                    document.getElementById('{{ form.postal_code.id_for_label }}').value =
+                        addr.postcode || '';
+                }
+            })
+            .catch(error => {
+                console.error('Error reverse geocoding:', error);
+                alert('Could not look up address. Please enter manually.');
+            });
+    }
+
+    // Helper functions
+    function showStatus(message, type) {
+        const statusEl = document.getElementById('gpsStatus');
+        statusEl.className = `gps-status alert alert-${type}`;
+        statusEl.innerHTML = message;
+        statusEl.classList.remove('d-none');
+    }
+
+    function getAccuracyClass(accuracy) {
+        if (accuracy <= 10) return 'good';
+        if (accuracy <= 30) return 'medium';
+        return 'poor';
+    }
+
+    function updateGPSInfoCard(position) {
+        const card = document.getElementById('gpsInfoCard');
+        const coords = position.coords;
+
+        card.innerHTML = `
+            <div class="small">
+                <div class="mb-2">
+                    <strong><i class="bi bi-bullseye"></i> GPS Status:</strong>
+                    <span class="text-success"><span class="pulse-dot"></span> Active</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Accuracy:</strong>
+                    <span class="accuracy-${getAccuracyClass(coords.accuracy)}">${coords.accuracy.toFixed(1)}m</span>
+                </div>
+                ${coords.altitude ? `
+                <div class="mb-2">
+                    <strong>Altitude:</strong> ${coords.altitude.toFixed(1)}m
+                </div>` : ''}
+                ${coords.speed ? `
+                <div class="mb-2">
+                    <strong>Speed:</strong> ${(coords.speed * 3.6).toFixed(1)} km/h
+                </div>` : ''}
+                ${coords.heading ? `
+                <div class="mb-2">
+                    <strong>Heading:</strong> ${coords.heading.toFixed(0)}&deg;
+                </div>` : ''}
+                <div class="mb-2">
+                    <strong>Source:</strong>
+                    ${navigator.userAgent.includes('Mobile') ? '📱 Mobile Device' : '💻 Desktop'}
+                </div>
+                <div class="mb-0">
+                    <strong>Last Update:</strong> ${new Date(position.timestamp).toLocaleTimeString()}
+                </div>
+            </div>
+        `;
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if there are existing coordinates
+        const existingLat = document.getElementById('id_latitude').value;
+        const existingLng = document.getElementById('id_longitude').value;
+
+        if (existingLat && existingLng) {
+            const lat = parseFloat(existingLat);
+            const lng = parseFloat(existingLng);
+            updateCoordinates(lat, lng);
+            initMap(lat, lng);
+        } else {
+            // Default view (can be set to mine site coordinates)
+            initMap(-23.5505, -46.6333);  // Example: São Paulo
+        }
+
+        // Auto-detect if on mobile and suggest getting location
+        if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            setTimeout(() => {
+                if (!existingLat && !existingLng) {
+                    const shouldGetLocation = confirm(
+                        'You appear to be on a mobile device. Would you like to use your current GPS location?'
+                    );
+                    if (shouldGetLocation) {
+                        getCurrentLocation();
+                    }
+                }
+            }, 1000);
+        }
+    });
+
+    // Clean up watch on page unload
+    window.addEventListener('beforeunload', function() {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+        }
+    });
+</script>
+{% endblock %}

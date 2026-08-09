@@ -6,12 +6,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.db import transaction
 from django.utils import timezone
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, ListView, TemplateView, DetailView
 
-from .models import WorkPackage, WorkPackageItem, DailyProgressReport, DailyProcessReportEmployees
+from .models import WorkPackage, WorkPackageItem, DailyProgressReport, DailyProcessReportEmployees, InstalledItemCheck
 from core.models import Project, Area, System, EquipmentTag
+from resources.models import Company
 from .forms import WorkPackageForm, WorkPackageItemForm, WorkPackageSearchForm, DailyProgressReportForm, WorkPackageProgressUpdateForm, \
-	WorkPackageItemBulkForm, DailyProccessReportEmployeeForm, DailyProgressReportForm2
+	WorkPackageItemBulkForm, DailyProccessReportEmployeeForm, DailyProgressReportForm2, PhotoFormSet, InstalledItemCheckForm
 from django.db.models import Q, Count, Case, When, Value, CharField, Sum, Avg
 from django.utils import timezone
 from datetime import timedelta, datetime
@@ -332,8 +333,6 @@ class WorkPackageUpdateView(LoginRequiredMixin, generic.UpdateView):
 		return redirect(self.get_success_url())
 
 
-
-
 class WorkPackageListView( generic.ListView):
 	model = WorkPackage
 	template_name = 'construction/work_package_list.html'
@@ -491,7 +490,7 @@ class DailyProgressReportCreateView(LoginRequiredMixin, generic.CreateView):
 	success_message = "Daily progress report was created successfully."
 	
 	def get_success_url(self):
-		return HttpResponse('success')#reverse('construction:work_package_detail', kwargs={'pk': self.object.work_package.pk})
+		return reverse('construction:work_package_detail', kwargs={'pk': self.object.work_package.pk})
 	
 	def get_initial(self):
 		initial = super().get_initial()
@@ -660,36 +659,36 @@ class DailyProgressReportUpdateView(LoginRequiredMixin, generic.UpdateView):
 		return super().form_valid(form)
 
 
-class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
-	"""List all daily progress reports."""
-	model = DailyProgressReport
-	template_name = 'construction/daily_report_list.html'
-	context_object_name = 'reports'
-	paginate_by = 25
-	
-	def get_queryset(self):
-		queryset = DailyProgressReport.objects.select_related(
-				'work_package__project', 'work_package__area', 'reported_by'
-				)
-		
-		# Filters
-		work_package_id = self.request.GET.get('work_package')
-		if work_package_id:
-			queryset = queryset.filter(work_package_id=work_package_id)
-		
-		project_id = self.request.GET.get('project')
-		if project_id:
-			queryset = queryset.filter(work_package__project_id=project_id)
-		
-		date_from = self.request.GET.get('date_from')
-		if date_from:
-			queryset = queryset.filter(report_date__gte=date_from)
-		
-		date_to = self.request.GET.get('date_to')
-		if date_to:
-			queryset = queryset.filter(report_date__lte=date_to)
-		
-		return queryset.order_by('-report_date', '-created_at')
+# class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
+# 	"""List all daily progress reports."""
+# 	model = DailyProgressReport
+# 	template_name = 'construction/daily_report_list.html'
+# 	context_object_name = 'reports'
+# 	paginate_by = 25
+#
+# 	def get_queryset(self):
+# 		queryset = DailyProgressReport.objects.select_related(
+# 				'work_package__project', 'work_package__area', 'reported_by'
+# 				)
+#
+# 		# Filters
+# 		work_package_id = self.request.GET.get('work_package')
+# 		if work_package_id:
+# 			queryset = queryset.filter(work_package_id=work_package_id)
+#
+# 		project_id = self.request.GET.get('project')
+# 		if project_id:
+# 			queryset = queryset.filter(work_package__project_id=project_id)
+#
+# 		date_from = self.request.GET.get('date_from')
+# 		if date_from:
+# 			queryset = queryset.filter(report_date__gte=date_from)
+#
+# 		date_to = self.request.GET.get('date_to')
+# 		if date_to:
+# 			queryset = queryset.filter(report_date__lte=date_to)
+#
+# 		return queryset.order_by('-report_date', '-created_at')
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -698,6 +697,7 @@ class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 				).select_related('project')
 		context['projects'] = Project.objects.all()
 		return context
+
 
 class WorkPackageDetailView(LoginRequiredMixin, generic.DetailView):
 	model = WorkPackage
@@ -1298,9 +1298,6 @@ def ajax_search_available_tags(request, work_package_id):
 	return JsonResponse({'results': results})
 
 
-
-
-
 class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 	model = DailyProgressReport
 	template_name = 'construction/daily_report_list.html'
@@ -1312,7 +1309,8 @@ class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 				'work_package__project',
 				'work_package__area',
 				'reported_by',
-				'approved_by'
+				'approved_by',
+				'company'
 				).prefetch_related(
 				'work_package__items__equipment_tag'
 				)
@@ -1334,6 +1332,9 @@ class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 			if data.get('reported_by'):
 				queryset = queryset.filter(reported_by=data['reported_by'])
 			
+			if data.get('company'):
+				queryset = queryset.filter(company=data['company'])
+			
 			if data.get('date_from'):
 				queryset = queryset.filter(report_date__gte=data['date_from'])
 			
@@ -1352,7 +1353,6 @@ class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 				queryset = queryset.filter(
 						weather_conditions__icontains=data['weather']
 						)
-			
 			if data.get('search'):
 				search = data['search']
 				queryset = queryset.filter(
@@ -1408,7 +1408,7 @@ class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 				avg_manpower=Avg('manpower_count'),
 				avg_hours=Avg('hours_worked')
 				)
-		
+		context['companies']= Company.objects.all()
 		context['total_reports'] = stats['total_reports'] or 0
 		context['total_manpower'] = stats['total_manpower'] or 0
 		context['total_hours'] = round(stats['total_hours'] or 0, 1)
@@ -1499,6 +1499,8 @@ class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 		# 	else:
 		# 		day['bar_height'] = 3
 		return context
+
+
 class DailyProgressReportListView2(LoginRequiredMixin, generic.ListView):
 	model = DailyProgressReport
 	template_name = 'construction/daily_report_list2.html'
@@ -1597,6 +1599,8 @@ class DailyProgressReportListView2(LoginRequiredMixin, generic.ListView):
 		context['projects'] = Project.objects.all()
 		
 		return context
+
+
 def daily_report_approve_view(request, pk):
 	"""
 	Approve a daily progress report.
@@ -1760,7 +1764,7 @@ def redirect_to_referer(request, fallback_url):
 	return redirect(fallback_url)
 
 
-class DailyProgressReportCreateView2(LoginRequiredMixin, ListView):
+class DailyProcessReportEmployeeList(LoginRequiredMixin, ListView):
 	model = Employee
 	template_name = 'construction/employee_simple_list.html'
 	context_object_name = 'employees'
@@ -1813,8 +1817,7 @@ class DailyProgressReportCreateView2(LoginRequiredMixin, ListView):
 					)
 			for timesheet in timesheets_to_remove:
 				timesheet.delete()
-		all_timesheets=Timesheet.objects.filter(date=report_date)
-		print(all_timesheets)
+			
 			# Re‑render the page with the company filter preserved and toggles on
 			# We'll add the working_ids to context so the switches stay checked
 			# context = self.get_context_data()
@@ -1822,7 +1825,9 @@ class DailyProgressReportCreateView2(LoginRequiredMixin, ListView):
 			# Manually set the object_list (queryset) because post doesn't call get
 			# self.object_list = self.get_queryset()
 			# context['employees'] = self.object_list
-		return redirect('construction:daily_report_create2')
+		
+		return redirect('construction:daily_report_employees',)
+
 
 class DailyProgressReportCreateView3( generic.CreateView):
 	"""Create a daily progress report – only for the user's company employees."""
@@ -1976,3 +1981,180 @@ class DailyProgressReportCreateView3( generic.CreateView):
 			work_package.status = 'IPRO'
 			work_package.actual_start = work_package.actual_start or form.cleaned_data['report_date']
 			work_package.save()
+
+
+class ManageDailyTimesheetsView(LoginRequiredMixin, TemplateView):
+	template_name = 'construction/manage_daily_timesheets.html'
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		
+		# --- Date ---
+		date_str = self.request.GET.get('date', timezone.now().date().isoformat())
+		try:
+			report_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+		except ValueError:
+			report_date = timezone.now().date()
+		context['selected_date'] = report_date.isoformat()
+		
+		# --- Employees (all active; restrict to company if needed) ---
+		employees = Employee.objects.filter(is_active=True).order_by('last_name', 'first_name')
+		context['employees'] = employees
+		
+		# --- IDs of employees who already have a timesheet on that date ---
+		existing_employee_ids = set(
+				Timesheet.objects.filter(date=report_date)
+				.values_list('employee_id', flat=True)
+				)
+		context['working_ids'] = existing_employee_ids
+		
+		return context
+	
+	def post(self, request, *args, **kwargs):
+		date_str = request.POST.get('report_date', '').strip()
+		try:
+			report_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+		except ValueError:
+			messages.error(request, 'Invalid date.')
+			return redirect(request.path)
+		
+		# Submitted working employee IDs
+		new_working_ids = set(
+				int(pk) for pk in request.POST.getlist('working_employees')
+				)
+		
+		# All current timesheets for that date (any employee)
+		existing_timesheets = Timesheet.objects.filter(date=report_date)
+		existing_ids = set(existing_timesheets.values_list('employee_id', flat=True))
+		
+		# --- Create missing timesheets ---
+		to_create = new_working_ids - existing_ids
+		if to_create:
+			Timesheet.objects.bulk_create([
+					Timesheet(
+							employee_id=emp_id,
+							date=report_date,
+							hours_worked=0,      # default
+							overtime_hours=0,
+							) for emp_id in to_create
+					])
+		created_count = len(to_create)
+		
+		# --- Remove unchecked timesheets ---
+		to_delete = existing_ids - new_working_ids
+		deleted_count = 0
+		if to_delete:
+			deleted_count = existing_timesheets.filter(employee_id__in=to_delete).delete()[0]
+		
+		messages.success(
+				request,
+				f'Updated timesheets for {report_date}: '
+				f'{created_count} created, {deleted_count} removed.'
+				)
+		
+		# Redirect back with the same date
+		return redirect(f'{request.path}?date={report_date.isoformat()}')
+
+
+class DailyProgressReportDetailView(LoginRequiredMixin, DetailView):
+	model = DailyProgressReport
+	template_name = 'construction/daily_report_detail.html'
+	context_object_name = 'report'
+	
+	def get_queryset(self):
+		return super().get_queryset().select_related(
+				'work_package__project', 'work_package__area', 'reported_by'
+				).prefetch_related(
+				'employees__employee',
+				'employees__timesheet'
+				)
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		report = self.get_object()
+		
+		# All employees explicitly in this report
+		report_employees = report.employees.select_related('employee', 'timesheet')
+		context['employees_status'] = report_employees
+		context['working_count'] = report_employees.filter(is_working=True).count()
+		context['total_count'] = report_employees.count()
+		
+		# All active employees (regardless of report)
+		all_employees = Employee.objects.filter(is_active=True).order_by('last_name', 'first_name')
+		
+		# Get timesheets for the same date (any work package)
+		timesheets_on_date = Timesheet.objects.filter(date=report.report_date).select_related('employee')
+		
+		# Build a dictionary: employee_id -> timesheet (or None)
+		timesheet_map = {}
+		for ts in timesheets_on_date:
+			# If an employee has multiple timesheets on that date, we'll just take the first
+			if ts.employee_id not in timesheet_map:
+				timesheet_map[ts.employee_id] = ts
+		
+		# Get working status from this report for each employee
+		report_employee_map = {}
+		for entry in report_employees:
+			report_employee_map[entry.employee_id] = entry
+		
+		# Combine all data
+		combined = []
+		for emp in all_employees:
+			entry = report_employee_map.get(emp.pk)   # DailyProcessReportEmployees instance or None
+			timesheet = timesheet_map.get(emp.pk)     # Timesheet instance or None
+			combined.append({
+					'employee': emp,
+					'is_working': entry.is_working if entry else False,
+					'has_report_entry': entry is not None,
+					'timesheet': timesheet,
+					'timesheet_hours': timesheet.hours_worked if timesheet else None,
+					'timesheet_id': timesheet.pk if timesheet else None,
+					})
+		
+		context['all_employee_status'] = combined
+		return context
+
+
+class InstalledItemCheckCreateView(LoginRequiredMixin, CreateView):
+	model = InstalledItemCheck
+	form_class = InstalledItemCheckForm
+	template_name = 'construction/installed_item_check_form.html'
+	
+	def get_success_url(self):
+		return reverse('core:equipment-tag-detail', kwargs={'pk': self.object.equipment_tag.pk})
+	
+	def get_initial(self):
+		initial = super().get_initial()
+		initial['checked_date'] = timezone.now().date()
+		tag_id = self.request.GET.get('tag')
+		if tag_id:
+			initial['equipment_tag'] = get_object_or_404(EquipmentTag, pk=tag_id)
+		return initial
+	
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		tag_id = self.request.GET.get('tag')
+		if tag_id:
+			kwargs['tag_id'] = int(tag_id)
+		return kwargs
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		if self.request.POST:
+			context['photo_formset'] = PhotoFormSet(self.request.POST, self.request.FILES, instance=self.object)
+		else:
+			context['photo_formset'] = PhotoFormSet(instance=self.object)
+		return context
+	
+	def form_valid(self, form):
+		form.instance.checked_by = self.request.user
+		context = self.get_context_data()
+		photo_formset = context['photo_formset']
+		if photo_formset.is_valid():
+			self.object = form.save()
+			photo_formset.instance = self.object
+			photo_formset.save()
+			messages.success(self.request, 'Installation check recorded successfully.')
+			return super().form_valid(form)
+		else:
+			return self.render_to_response(self.get_context_data(form=form))

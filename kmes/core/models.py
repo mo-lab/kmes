@@ -4,7 +4,18 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 User = get_user_model()
 
-
+class ProfileSettings(models.Model):
+	class Language(models.TextChoices):
+		farsi = 'Farsi', 'فارسی'
+		english = 'Enlish' , 'english'
+	language = models.CharField(choices=Language.choices, default=Language.farsi, max_length=50)
+	
+	def __str__(self):
+		return self.language
+	class Meta:
+		verbose_name = 'Profile Settings'
+		verbose_name_plural = 'Profiles Settings'
+	
 class Project(models.Model):
 	"""Top-level project entity."""
 	
@@ -59,12 +70,10 @@ class Area(models.Model):
 
 class System(models.Model):
 	"""Functional system that spans areas (e.g., Lubrication System)."""
-	
 	project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='systems')
 	code = models.CharField(max_length=50)
 	name = models.CharField(max_length=255)
 	description = models.TextField(blank=True)
-	
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -392,6 +401,7 @@ class EquipmentTag(models.Model):
 		THICKENER = 'THCK', 'Thickener'
 		FILTER = 'FILT', 'Filter'
 		COMPRESSOR = 'COMP', 'Compressor'
+		CRANE = 'CR', 'Crane'
 		OTHER = 'OTHR', 'Other'
 	
 	class Discipline(models.TextChoices):

@@ -1,0 +1,350 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+  <div class="container-fluid">
+
+    <!-- Mobile Toggle Button -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="mainNavbar">
+
+      <!-- Main Navigation Links -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a style="max-height: 40px; width: 117px;" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+             href="{% url 'dashboard' %}">
+            <i class="bi bi-speedometer2 me-1" style="max-width: 90px;" ></i> داشبورد
+          </a>
+        </li>
+
+        <!-- Projects Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'project' in request.resolver_match.url_name or 'area' in request.resolver_match.url_name or 'system' in request.resolver_match.url_name or 'equipment' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-folder me-1"></i> پروژه‌ها
+          </a>
+          <ul class="dropdown-menu dropdown-menu-lg">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-folder"></i> مدیریت پروژه
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:project-list' %}">
+                <i class="bi bi-list-ul"></i> همه پروژه‌ها
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:project-create' %}">
+                <i class="bi bi-plus-circle"></i> پروژه جدید
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-geo-alt"></i> نواحی و سیستم‌ها
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:area_list' %}">
+                <i class="bi bi-map"></i> نواحی
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:system_list' %}">
+                <i class="bi bi-diagram-3"></i> سیستم‌ها
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Equipment Tags -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'equipment_tag' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-tag me-1"></i> تجهیزات
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-tag"></i> برچسب‌های تجهیزات
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:equipment-tag-list' %}">
+                <i class="bi bi-list-ul"></i> همه برچسب‌های تجهیزات
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:equipment_tag_create' %}">
+                <i class="bi bi-plus-circle"></i> برچسب تجهیزات جدید
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:equipment-tag-list' %}?view=card">
+                <i class="bi bi-grid-3x3-gap"></i> نمای کارتی
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Documents Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'document' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-file-earmark-text me-1"></i> اسناد
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-file-earmark-text"></i> مدیریت اسناد
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'documents:document_list' %}">
+                <i class="bi bi-list-ul"></i> همه اسناد
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'documents:document-create' %}">
+                <i class="bi bi-cloud-upload"></i> بارگذاری سند
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'documents:tag_document_bulk_link' %}">
+                <i class="bi bi-upload"></i> بارگذاری گروهی
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="{% url 'documents:shared_with_me' %}">
+                <i class="bi bi-share"></i> به اشتراک گذاشته شده با من
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Construction Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'work_package' in request.resolver_match.url_name or 'daily_report' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-tools me-1"></i> ساخت و ساز
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-clipboard-check"></i> بسته‌های کاری
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:work_package_list' %}">
+                <i class="bi bi-list-ul"></i> همه بسته‌های کاری
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:work_package_create' %}">
+                <i class="bi bi-plus-circle"></i> بسته کاری جدید
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-journal-text"></i> گزارش‌های روزانه
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:daily_report_list' %}">
+                <i class="bi bi-list-ul"></i> همه گزارش‌ها
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:daily_report_create' %}">
+                <i class="bi bi-plus-circle"></i> گزارش جدید
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:daily_report_employees' %}">
+                <i class="bi bi-plus-circle"></i> تایم‌شیت گزارش جدید
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:manage_daily_timesheets' %}">
+                <i class="bi bi-list-ul"></i> مدیریت تایم‌شیت روزانه
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Commissioning Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'commissioning' in request.resolver_match.url_name or 'punch' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-clipboard-check me-1"></i> راه‌اندازی
+          </a>
+
+        </li>
+
+        <!-- Resources Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'employee' in request.resolver_match.url_name or 'timesheet' in request.resolver_match.url_name or 'tool' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-people me-1"></i> منابع
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-people"></i> نیروی کار
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:employee_list' %}">
+                <i class="bi bi-list-ul"></i> همه کارکنان
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:employee_create' %}">
+                <i class="bi bi-person-plus"></i> افزودن کارمند
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-clock"></i> تایم‌شیت‌ها
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:timesheet_list' %}">
+                <i class="bi bi-list-ul"></i> همه تایم‌شیت‌ها
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:timesheet_create' %}">
+                <i class="bi bi-plus-circle"></i> افزودن تایم‌شیت
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'resources:timesheet_bulk_create' %}">
+                <i class="bi bi-plus-lg"></i> افزودن گروهی تایم‌شیت
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <!-- Right Side Navigation -->
+      <ul class="navbar-nav ms-auto">
+
+        <!-- Notifications -->
+        <li class="nav-item dropdown me-2">
+          <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-bell"></i>
+            {% if notifications_count > 0 %}
+            <span class="position-absolute top-25 start-75 translate-middle badge rounded-pill bg-danger"
+                  style="font-size: 0.6rem;">
+                            {{ notifications_count }}
+                            <span class="visually-hidden">اعلان‌های خوانده نشده</span>
+                        </span>
+            {% endif %}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" style="width: 320px;">
+            <li>
+              <h6 class="dropdown-header d-flex justify-content-between">
+                <span>اعلان‌ها</span>
+                <a href="#" class="small text-decoration-none">علامت‌گذاری همه به عنوان خوانده شده</a>
+              </h6>
+            </li>
+            {% if notifications %}
+            {% for notification in notifications|slice:":5" %}
+            <li>
+              <a class="dropdown-item small" href="{{ notification.url|default:'#' }}">
+                <div class="d-flex">
+                  <div class="me-2">
+                    <i class="bi bi-{{ notification.icon|default:'info-circle' }} text-{{ notification.color|default:'primary' }}"></i>
+                  </div>
+                  <div>
+                    <div>{{ notification.message }}</div>
+                    <small class="text-muted">{{ notification.created_at|timesince }} پیش</small>
+                  </div>
+                </div>
+              </a>
+            </li>
+            {% endfor %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item text-center small" href="#">
+                مشاهده همه اعلان‌ها
+              </a>
+            </li>
+            {% else %}
+            <li>
+              <div class="text-center py-3 text-muted small">
+                <i class="bi bi-bell-slash"></i> اعلان جدیدی نیست
+              </div>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+
+        <!-- User Menu -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-1"
+                 style="width: 30px; height: 30px; font-size: 0.8rem; font-weight: 600;">
+              {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+            </div>
+            <span class="d-none d-lg-inline">{{ request.user.get_full_name|default:request.user.username }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <h6 class="dropdown-header">
+                ورود به عنوان<br>
+                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                <br>
+                <small class="text-muted">{{ request.user.email }}</small>
+              </h6>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-person"></i> پروفایل من
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#">
+                <i class="bi bi-gear"></i> تنظیمات
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'documents:shared_with_me' %}">
+                <i class="bi bi-share"></i> به اشتراک گذاشته شده با من
+              </a>
+            </li>
+            {% if request.user.is_staff %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="{% url 'admin:index' %}">
+                <i class="bi bi-shield-lock"></i> پنل مدیریت
+              </a>
+            </li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item text-danger" href="#">
+                <i class="bi bi-box-arrow-right"></i> خروج
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+<!-- Spacer for fixed navbar -->
+<div style="height: 56px;"></div>

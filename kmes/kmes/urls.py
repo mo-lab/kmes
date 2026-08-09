@@ -11,7 +11,7 @@ from django.conf.urls.static import static
 # from ..commissioning import urls as commissioning_urls
 from core import views
 urlpatterns = [
-		path('admin/', admin.site.urls),
+		path('admin/', admin.site.urls,name='admin'),
 		
 		# # Clean string-based includes with namespaces
 		 path('core/', include('core.urls', namespace='core')),

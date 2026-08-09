@@ -1,6 +1,6 @@
 from datetime import timezone, timedelta
 
-from django.db.models import Q, Count, Case, When, Value, CharField,Sum
+from django.db.models import Q, Count, Case, When, Value, CharField, Sum
 from django.http import HttpResponse
 # views.py
 from django.urls import reverse_lazy, reverse
@@ -9,8 +9,8 @@ from django.views import generic
 from django.views.generic import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Project, Area, System, EquipmentTag
-from .forms import ProjectForm, AreaForm, SystemForm, EquipmentTagForm, EquipmentTagFilterForm,SystemSearchForm
-from construction.models import WorkPackage,DailyProgressReport,WorkPackageItem
+from .forms import ProjectForm, AreaForm, SystemForm, EquipmentTagForm, EquipmentTagFilterForm, SystemSearchForm
+from construction.models import WorkPackage, DailyProgressReport, WorkPackageItem
 from commissioning.models import PunchItem
 from documents.models import Document
 from resources.models import Timesheet
@@ -20,6 +20,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
 
 from .models import EquipmentTag, EquipmentLocation, EquipmentLocationImage
 from .forms import (
@@ -27,11 +28,133 @@ from .forms import (
 	EquipmentLocationImageForm,
 	EquipmentLocationSearchForm
 	)
+
+
+
+class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
+	model = EquipmentTag
+	form_class = EquipmentTagForm
+	template_name = 'rtl/core/equipment_tag_form.html'  # make sure this template exists
+	
+	def get_success_url(self):
+		return reverse('core:equipment_tag_detail', kwargs={'pk': self.object.pk})
+	
+	def get_initial(self):
+		initial = super().get_initial()
+		project_id = self.kwargs.get('project_id') or self.request.GET.get('project')
+		if project_id:
+			initial['project'] = get_object_or_404(Project, pk=project_id)
+		
+		parent_id = self.request.GET.get('parent_tag')
+		if parent_id:
+			parent = get_object_or_404(EquipmentTag, pk=parent_id)
+			initial['parent_tag'] = parent
+			if not project_id:
+				initial['project'] = parent.project
+		
+		initial['status'] = 'ENG'  # default status
+		return initial
+	
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		# Pass project_id to the form so dropdowns are filtered
+		project_id = self.kwargs.get('project_id') or self.request.GET.get('project')
+		if project_id:
+			kwargs['project_id'] = int(project_id)
+		return kwargs
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['is_create'] = True
+		context['page_title'] = 'ایجاد برچسب تجهیزات جدید'  # or English: "Create New Equipment Tag"
+		
+		# Recent tags for reference
+		context['recent_tags'] = EquipmentTag.objects.select_related(
+				'project', 'area'
+				).order_by('-created_at')[:5]
+		
+		# Project for the template
+		project_id = self.kwargs.get('project_id') or self.request.GET.get('project')
+		if project_id:
+			context['project'] = get_object_or_404(Project, pk=project_id)
+		
+		return context
+	
+	# @transaction.atomic
+	def form_valid(self, form):
+		# Save the equipment tag
+		self.object = form.save()
+		
+		# --- Handle new document uploads ---
+		documents = self.request.FILES.getlist('documents')
+		document_titles = self.request.POST.getlist('document_titles')
+		document_types = self.request.POST.getlist('document_types')
+		
+		if documents:
+			project = self.object.project
+			for i, file in enumerate(documents):
+				title = document_titles[i] if i < len(document_titles) and document_titles[i].strip() else file.name
+				doc_type = document_types[i] if i < len(document_types) and document_types[i] else 'OTHR'
+				doc_number = self._generate_document_number(project, doc_type, file.name)
+				
+				doc = Document.objects.create(
+						project=project,
+						document_number=doc_number,
+						title=title,
+						doc_type=doc_type,
+						discipline=self.object.discipline or 'GEN',
+						revision='A',
+						status='DRAFT',
+						file_upload=file,
+						submitted_by=self.request.user,
+						issue_date=timezone.now().date()
+						)
+				TagDocument.objects.create(
+						equipment_tag=self.object,
+						document=doc,
+						relation_type='references'
+						)
+		
+		# --- Link selected existing documents ---
+		linked_doc_ids = self.request.POST.getlist('linked_documents')
+		if linked_doc_ids:
+			existing_docs = Document.objects.filter(pk__in=linked_doc_ids)
+			for doc in existing_docs:
+				TagDocument.objects.get_or_create(
+						equipment_tag=self.object,
+						document=doc,
+						defaults={'relation_type': 'references'}
+						)
+		
+		messages.success(self.request, f'برچسب تجهیزات "{self.object.tag_number}" با موفقیت ایجاد شد.')
+		if documents or linked_doc_ids:
+			messages.info(self.request, f'{len(documents) + len(linked_doc_ids)} سند به این برچسب متصل شد.')
+		
+		return redirect(self.get_success_url())
+	
+	def form_invalid(self, form):
+		messages.error(self.request, 'لطفاً خطاهای زیر را اصلاح کنید.')
+		return super().form_invalid(form)
+	
+	def _generate_document_number(self, project, doc_type, filename):
+		"""Helper to auto‑generate a unique document number."""
+		project_code = project.code if project else 'GEN'
+		date_str = timezone.now().strftime('%y%m%d')
+		count = Document.objects.filter(project=project).count() + 1
+		clean_name = filename.rsplit('.', 1)[0][:10].upper().replace(' ', '-')
+		return f"{project_code}-{doc_type}-{clean_name}-{date_str}-{count:04d}"
+
+
 class ProjectCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new project."""
 	model = Project
 	form_class = ProjectForm
-	template_name = 'core/project_form.html'
+	lang = settings.SITE_LANG
+	if lang == 'fa':
+		template_name = 'rtl/core/project_form.html'
+	else:
+		template_name = 'core/project_form.html'
+	
 	success_message = "Project '%(name)s' was created successfully."
 	
 	def get_success_url(self):
@@ -195,6 +318,7 @@ class AreaCreateView(LoginRequiredMixin, CreateView):
 	def get_success_url(self):
 		# Redirect to project detail or area list; adjust as needed
 		return reverse("core:project-detail", kwargs={"pk": self.object.project.pk})
+
 
 class SystemCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new system with optional equipment tags."""
@@ -592,33 +716,39 @@ class SystemDetailView(LoginRequiredMixin, generic.DetailView):
 		# Equipment status changes
 		recent_tags = system.equipment_tags.order_by('-updated_at')[:5]
 		for tag in recent_tags:
-			activities.append({
-					'icon': 'tag',
-					'description': f'Equipment {tag.tag_number} status: {tag.get_status_display()}',
-					'date': tag.updated_at,
-					'type': 'equipment'
-					})
+			activities.append(
+					{
+							'icon':        'tag',
+							'description': f'Equipment {tag.tag_number} status: {tag.get_status_display()}',
+							'date':        tag.updated_at,
+							'type':        'equipment'
+							}
+					)
 		
 		# Test records
 		if hasattr(system, 'commissioning_phases'):
 			for cs in system.commissioning_phases.all():
 				for procedure in cs.test_procedures.all():
 					for record in procedure.test_records.order_by('-start_datetime')[:3]:
-						activities.append({
-								'icon': 'clipboard-check',
-								'description': f'Test {procedure.code} - {record.get_result_display()}',
-								'date': record.start_datetime,
-								'type': 'test'
-								})
+						activities.append(
+								{
+										'icon':        'clipboard-check',
+										'description': f'Test {procedure.code} - {record.get_result_display()}',
+										'date':        record.start_datetime,
+										'type':        'test'
+										}
+								)
 		
 		# Punch items
 		for punch in system.punch_items.order_by('-raised_date')[:3]:
-			activities.append({
-					'icon': 'flag',
-					'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
-					'date': punch.raised_date,
-					'type': 'punch'
-					})
+			activities.append(
+					{
+							'icon':        'flag',
+							'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
+							'date':        punch.raised_date,
+							'type':        'punch'
+							}
+					)
 		
 		# Sort by date
 		activities.sort(key=lambda x: x['date'], reverse=True)
@@ -628,130 +758,150 @@ class SystemDetailView(LoginRequiredMixin, generic.DetailView):
 		"""Get status timeline for the system."""
 		timeline = [
 				{
-						'stage': 'Design',
-						'status': 'completed',
+						'stage':       'Design',
+						'status':      'completed',
 						'description': 'System defined and equipment specified'
 						}
 				]
 		
 		# Check equipment procurement
 		if system.equipment_tags.filter(status__in=['DLVD', 'INST', 'COMM', 'HNDO']).exists():
-			timeline.append({
-					'stage': 'Procurement',
-					'status': 'completed',
-					'description': 'Equipment procured and delivered'
-					})
+			timeline.append(
+					{
+							'stage':       'Procurement',
+							'status':      'completed',
+							'description': 'Equipment procured and delivered'
+							}
+					)
 		elif system.equipment_tags.filter(status='PROC').exists():
-			timeline.append({
-					'stage': 'Procurement',
-					'status': 'in_progress',
-					'description': 'Equipment being procured'
-					})
+			timeline.append(
+					{
+							'stage':       'Procurement',
+							'status':      'in_progress',
+							'description': 'Equipment being procured'
+							}
+					)
 		else:
-			timeline.append({
-					'stage': 'Procurement',
-					'status': 'pending',
-					'description': 'Equipment not yet ordered'
-					})
+			timeline.append(
+					{
+							'stage':       'Procurement',
+							'status':      'pending',
+							'description': 'Equipment not yet ordered'
+							}
+					)
 		
 		# Check installation
 		installed_count = system.equipment_tags.filter(status__in=['INST', 'COMM', 'HNDO']).count()
 		total_count = system.equipment_tags.count()
 		
 		if total_count > 0 and installed_count == total_count:
-			timeline.append({
-					'stage': 'Installation',
-					'status': 'completed',
-					'description': 'All equipment installed'
-					})
+			timeline.append(
+					{
+							'stage':       'Installation',
+							'status':      'completed',
+							'description': 'All equipment installed'
+							}
+					)
 		elif installed_count > 0:
-			timeline.append({
-					'stage': 'Installation',
-					'status': 'in_progress',
-					'description': f'{installed_count}/{total_count} equipment installed'
-					})
+			timeline.append(
+					{
+							'stage':       'Installation',
+							'status':      'in_progress',
+							'description': f'{installed_count}/{total_count} equipment installed'
+							}
+					)
 		else:
-			timeline.append({
-					'stage': 'Installation',
-					'status': 'pending',
-					'description': 'Installation not started'
-					})
+			timeline.append(
+					{
+							'stage':       'Installation',
+							'status':      'pending',
+							'description': 'Installation not started'
+							}
+					)
 		
 		# Check commissioning
 		commissioning = system.commissioning_phases.first()
 		if commissioning:
 			if commissioning.status == 'HNDO':
-				timeline.append({
-						'stage': 'Commissioning',
-						'status': 'completed',
-						'description': 'System handed over'
-						})
+				timeline.append(
+						{
+								'stage':       'Commissioning',
+								'status':      'completed',
+								'description': 'System handed over'
+								}
+						)
 			elif commissioning.status in ['HOT', 'RAMP', 'PERF']:
-				timeline.append({
-						'stage': 'Commissioning',
-						'status': 'in_progress',
-						'description': f'Commissioning in progress - {commissioning.get_status_display()}'
-						})
+				timeline.append(
+						{
+								'stage':       'Commissioning',
+								'status':      'in_progress',
+								'description': f'Commissioning in progress - {commissioning.get_status_display()}'
+								}
+						)
 			else:
-				timeline.append({
-						'stage': 'Commissioning',
-						'status': 'in_progress',
-						'description': f'Commissioning started - {commissioning.get_status_display()}'
-						})
+				timeline.append(
+						{
+								'stage':       'Commissioning',
+								'status':      'in_progress',
+								'description': f'Commissioning started - {commissioning.get_status_display()}'
+								}
+						)
 		else:
-			timeline.append({
-					'stage': 'Commissioning',
-					'status': 'pending',
-					'description': 'Commissioning not started'
-					})
+			timeline.append(
+					{
+							'stage':       'Commissioning',
+							'status':      'pending',
+							'description': 'Commissioning not started'
+							}
+					)
 		
 		return timeline
-	
 
-class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
-	model = EquipmentTag
-	form_class = EquipmentTagForm
-	template_name = "core/equipmenttag_form.html"
-	
-	def dispatch(self, request, *args, **kwargs):
-		self.project = None
-		project_pk = kwargs.get("project_pk")
-		if project_pk:
-			self.project = get_object_or_404(Project, pk=project_pk)
-		return super().dispatch(request, *args, **kwargs)
-	
-	def get_initial(self):
-		initial = super().get_initial()
-		if self.project:
-			initial["project"] = self.project
-		return initial
-	
-	def get_form_kwargs(self):
-		kw = super().get_form_kwargs()
-		# Narrow parent_tag, area, system querysets to the selected project for better UX
-		if self.project:
-			kw.setdefault("initial", {})["project"] = self.project
-			form = self.get_form_class()
-		# We will set queryset restrictions after instantiating the form in get_form()
-		return kw
-	
-	def get_form(self, form_class=None):
-		form = super().get_form(form_class)
-		# If project is known, restrict related-object choices to that project
-		if self.project:
-			form.fields["project"].queryset = Project.objects.filter(pk=self.project.pk)
-			form.fields["area"].queryset = form.fields["area"].queryset.filter(project=self.project)
-			form.fields["system"].queryset = form.fields["system"].queryset.filter(project=self.project)
-			form.fields["parent_tag"].queryset = form.fields["parent_tag"].queryset.filter(project=self.project)
-		return form
-	
-	def form_valid(self, form):
-		if self.project:
-			form.instance.project = self.project
-		return super().form_valid(form)
-	
-	def get_success_url(self):
-		return reverse("core:project-detail", kwargs={"pk": self.object.project.pk})
+
+# class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
+# 	model = EquipmentTag
+# 	form_class = EquipmentTagForm
+# 	template_name = "core/equipmenttag_form.html"
+#
+# 	def dispatch(self, request, *args, **kwargs):
+# 		self.project = None
+# 		project_pk = kwargs.get("project_pk")
+# 		if project_pk:
+# 			self.project = get_object_or_404(Project, pk=project_pk)
+# 		return super().dispatch(request, *args, **kwargs)
+#
+# 	def get_initial(self):
+# 		initial = super().get_initial()
+# 		if self.project:
+# 			initial["project"] = self.project
+# 		return initial
+#
+# 	def get_form_kwargs(self):
+# 		kw = super().get_form_kwargs()
+# 		# Narrow parent_tag, area, system querysets to the selected project for better UX
+# 		if self.project:
+# 			kw.setdefault("initial", {})["project"] = self.project
+# 			form = self.get_form_class()
+# 		# We will set queryset restrictions after instantiating the form in get_form()
+# 		return kw
+#
+# 	def get_form(self, form_class=None):
+# 		form = super().get_form(form_class)
+# 		# If project is known, restrict related-object choices to that project
+# 		if self.project:
+# 			form.fields["project"].queryset = Project.objects.filter(pk=self.project.pk)
+# 			form.fields["area"].queryset = form.fields["area"].queryset.filter(project=self.project)
+# 			form.fields["system"].queryset = form.fields["system"].queryset.filter(project=self.project)
+# 			form.fields["parent_tag"].queryset = form.fields["parent_tag"].queryset.filter(project=self.project)
+# 		return form
+#
+# 	def form_valid(self, form):
+# 		if self.project:
+# 			form.instance.project = self.project
+# 		return super().form_valid(form)
+#
+# 	def get_success_url(self):
+# 		return reverse("core:project-detail", kwargs={"pk": self.object.project.pk})
 
 
 class ProjectListView(generic.ListView):
@@ -898,7 +1048,7 @@ class ProjectDetailView(generic.DetailView):
 
 class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 	model = EquipmentTag
-	template_name = 'core/equipment_tag_list.html'
+	template_name = 'rtl/core/equipment_tag_list.html'
 	context_object_name = 'tags'
 	paginate_by = 20
 	
@@ -988,9 +1138,10 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 		
 		# Filter form
 		context['filter_form'] = EquipmentTagFilterForm(self.request.GET)
-		
+	
 		# View mode (card or table)
 		context['view_mode'] = self.request.GET.get('view', 'table')
+		context['areas_list'] = Area.objects.all()
 		
 		# Statistics
 		queryset = EquipmentTag.objects.all()
@@ -1028,10 +1179,9 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 		return context
 
 
-
-class EquipmentTagDetailView( generic.DetailView):
+class EquipmentTagDetailView(generic.DetailView):
 	model = EquipmentTag
-	template_name = 'core/equipment_tag_detail.html'
+	template_name = 'rtl/core/equipment_tag_detail.html'
 	context_object_name = 'tag'
 	
 	def get_queryset(self):
@@ -1133,23 +1283,27 @@ class EquipmentTagDetailView( generic.DetailView):
 		
 		# Recent installation checks
 		for check in tag.installation_checks.order_by('-checked_date')[:3]:
-			activities.append({
-					'icon': 'check-circle',
-					'description': f'Installation check performed - {check.get_status_display()}',
-					'date': check.checked_date,
-					'user': check.checked_by.get_full_name() if check.checked_by else 'System',
-					'type': 'installation'
-					})
+			activities.append(
+					{
+							'icon':        'check-circle',
+							'description': f'Installation check performed - {check.get_status_display()}',
+							'date':        check.checked_date,
+							'user':        check.checked_by.get_full_name() if check.checked_by else 'System',
+							'type':        'installation'
+							}
+					)
 		
 		# Recent location updates
 		for location in tag.locations.order_by('-arrival_date')[:3]:
-			activities.append({
-					'icon': 'geo-alt',
-					'description': f'Location recorded - {location.get_location_type_display()} ({location.latitude}, {location.longitude})',
-					'date': location.arrival_date.date(),
-					'user': location.recorded_by.get_full_name() if location.recorded_by else 'System',
-					'type': 'location'
-					})
+			activities.append(
+					{
+							'icon':        'geo-alt',
+							'description': f'Location recorded - {location.get_location_type_display()} ({location.latitude}, {location.longitude})',
+							'date':        location.arrival_date.date(),
+							'user':        location.recorded_by.get_full_name() if location.recorded_by else 'System',
+							'type':        'location'
+							}
+					)
 		
 		# Recent test records
 		try:
@@ -1158,32 +1312,35 @@ class EquipmentTagDetailView( generic.DetailView):
 					test_procedure__equipment_tags=tag
 					).order_by('-start_datetime')[:3]
 			for test in recent_tests:
-				activities.append({
-						'icon': 'clipboard-check',
-						'description': f'Test "{test.test_procedure.code}" - {test.get_result_display()}',
-						'date': test.start_datetime.date(),
-						'user': test.executed_by.get_full_name() if test.executed_by else 'System',
-						'type': 'test'
-						})
+				activities.append(
+						{
+								'icon':        'clipboard-check',
+								'description': f'Test "{test.test_procedure.code}" - {test.get_result_display()}',
+								'date':        test.start_datetime.date(),
+								'user':        test.executed_by.get_full_name() if test.executed_by else 'System',
+								'type':        'test'
+								}
+						)
 		except:
 			pass
 		
 		# Recent punch items
 		for punch in tag.punch_items.order_by('-raised_date')[:3]:
-			activities.append({
-					'icon': 'flag',
-					'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
-					'date': punch.raised_date,
-					'user': punch.raised_by.get_full_name() if punch.raised_by else 'System',
-					'type': 'punch'
-					})
+			activities.append(
+					{
+							'icon':        'flag',
+							'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
+							'date':        punch.raised_date,
+							'user':        punch.raised_by.get_full_name() if punch.raised_by else 'System',
+							'type':        'punch'
+							}
+					)
 		
 		# Sort by date
 		activities.sort(key=lambda x: x['date'], reverse=True)
 		return activities[:10]
-	
-	
-	
+
+
 class EquipmentTagDetailView2(LoginRequiredMixin, generic.DetailView):
 	model = EquipmentTag
 	template_name = 'core/equipment_tag_detail.html'
@@ -1323,7 +1480,11 @@ class EquipmentTagDetailView2(LoginRequiredMixin, generic.DetailView):
 
 
 class DashboardView(LoginRequiredMixin, generic.TemplateView):
-	template_name = 'core/dashboard.html'
+	lang = settings.SITE_LANG
+	if lang == 'fa':
+		template_name = 'rtl/core/dashboard.html'
+	else:
+		template_name = 'core/dashboard.html'
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -1409,7 +1570,6 @@ class DashboardView(LoginRequiredMixin, generic.TemplateView):
 				).order_by('-created_at')
 		
 		return context
-
 
 
 class EquipmentLocationCreateView(LoginRequiredMixin, generic.CreateView):
@@ -1742,7 +1902,7 @@ class AreaDetailView(LoginRequiredMixin, generic.DetailView):
 				'work_package', 'reported_by'
 				).order_by('-report_date')
 		context['total_daily_reports'] = daily_reports_base.count()
-	
+		
 		# Daily reports
 		daily_reports = DailyProgressReport.objects.filter(
 				work_package__area=area
@@ -1762,8 +1922,7 @@ class AreaDetailView(LoginRequiredMixin, generic.DetailView):
 		context['reports_with_issues'] = daily_reports_base.filter(
 				report_date__gte=seven_days_ago
 				).exclude(issues_encountered='').count()
-
-
+		
 		# Systems in this area
 		context['systems'] = System.objects.filter(
 				equipment_tags__area=area
@@ -1811,7 +1970,7 @@ class AreaDetailView(LoginRequiredMixin, generic.DetailView):
 		context['today'] = today
 		
 		return context
-
+	
 	def get_area_activities(self, area):
 		"""Get recent activities for this area."""
 		from datetime import datetime, date, time
@@ -1843,56 +2002,66 @@ class AreaDetailView(LoginRequiredMixin, generic.DetailView):
 		
 		# Recent equipment updates
 		for tag in EquipmentTag.objects.filter(area=area).order_by('-updated_at')[:5]:
-			activities.append({
-					'icon': 'tag',
-					'description': f'Equipment {tag.tag_number} updated - Status: {tag.get_status_display()}',
-					'date': to_aware_datetime(tag.updated_at),
-					'type': 'equipment'
-					})
+			activities.append(
+					{
+							'icon':        'tag',
+							'description': f'Equipment {tag.tag_number} updated - Status: {tag.get_status_display()}',
+							'date':        to_aware_datetime(tag.updated_at),
+							'type':        'equipment'
+							}
+					)
 		
 		# Recent daily reports
 		for report in DailyProgressReport.objects.filter(
 				work_package__area=area
 				).select_related('work_package', 'reported_by').order_by('-created_at')[:5]:
-			activities.append({
-					'icon': 'journal-text',
-					'description': f'Daily report for {report.work_package.code} on {report.report_date}',
-					'date': to_aware_datetime(report.created_at),
-					'type': 'report'
-					})
+			activities.append(
+					{
+							'icon':        'journal-text',
+							'description': f'Daily report for {report.work_package.code} on {report.report_date}',
+							'date':        to_aware_datetime(report.created_at),
+							'type':        'report'
+							}
+					)
 		
 		# Recent timesheets
 		for ts in Timesheet.objects.filter(
 				work_package__area=area
 				).select_related('employee', 'work_package').order_by('-date', '-id')[:5]:
-			activities.append({
-					'icon': 'clock',
-					'description': f'{ts.employee.full_name} logged {ts.hours_worked}h on {ts.work_package.code}',
-					'date': to_aware_datetime(ts.date),
-					'type': 'timesheet'
-					})
+			activities.append(
+					{
+							'icon':        'clock',
+							'description': f'{ts.employee.full_name} logged {ts.hours_worked}h on {ts.work_package.code}',
+							'date':        to_aware_datetime(ts.date),
+							'type':        'timesheet'
+							}
+					)
 		
 		# Recent locations
 		for loc in EquipmentLocation.objects.filter(
 				area=area
 				).select_related('equipment_tag').order_by('-created_at')[:5]:
-			activities.append({
-					'icon': 'geo-alt',
-					'description': f'Location recorded for {loc.equipment_tag.tag_number}',
-					'date': to_aware_datetime(loc.created_at),
-					'type': 'location'
-					})
+			activities.append(
+					{
+							'icon':        'geo-alt',
+							'description': f'Location recorded for {loc.equipment_tag.tag_number}',
+							'date':        to_aware_datetime(loc.created_at),
+							'type':        'location'
+							}
+					)
 		
 		# Recent punch items
 		for punch in PunchItem.objects.filter(
 				Q(equipment_tag__area=area) | Q(system__equipment_tags__area=area)
 				).distinct().order_by('-raised_date')[:5]:
-			activities.append({
-					'icon': 'flag',
-					'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
-					'date': to_aware_datetime(punch.raised_date),
-					'type': 'punch'
-					})
+			activities.append(
+					{
+							'icon':        'flag',
+							'description': f'Punch item {punch.punch_number} - {punch.get_status_display()}',
+							'date':        to_aware_datetime(punch.raised_date),
+							'type':        'punch'
+							}
+					)
 		
 		# Sort by date - all dates are now timezone-aware datetime objects
 		activities.sort(key=lambda x: x['date'], reverse=True)
@@ -2050,4 +2219,3 @@ class SystemListView(LoginRequiredMixin, generic.ListView):
 				).values('equipment_type').annotate(count=Count('id')).order_by('-count')
 		
 		return context
-	

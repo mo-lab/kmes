@@ -4,15 +4,15 @@
   <div class="container-fluid">
 
     <!-- Brand Logo -->
-    <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">
-      <i class="bi bi-gear-fill text-warning me-2 fs-4"></i>
-      <div>
-        <span class="fw-bold">Copper Mine</span>
-        <small class="d-block text-white-50" style="font-size: 0.65rem; margin-top: -2px;">
-          Processing Facility Management
-        </small>
-      </div>
-    </a>
+<!--    <a class="navbar-brand d-flex align-items-center" href="{% url 'dashboard' %}">-->
+<!--      <i class="bi bi-gear-fill text-warning me-2 fs-4"></i>-->
+<!--      <div>-->
+<!--        <span class="fw-bold">Copper Mine</span>-->
+<!--        <small class="d-block text-white-50" style="font-size: 0.65rem; margin-top: -2px;">-->
+<!--          Processing Facility Management-->
+<!--        </small>-->
+<!--      </div>-->
+<!--    </a>-->
 
     <!-- Mobile Toggle Button -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
@@ -27,9 +27,9 @@
 
         <!-- Dashboard -->
         <li class="nav-item">
-          <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+          <a style="max-height: 40px; width: 117px;" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
              href="{% url 'dashboard' %}">
-            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            <i class="bi bi-speedometer2 me-1" style="max-width: 90px;" ></i> Dashboard
           </a>
         </li>
 
@@ -176,6 +176,16 @@
             <li>
               <a class="dropdown-item" href="{% url 'construction:daily_report_create' %}">
                 <i class="bi bi-plus-circle"></i> New Report
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:daily_report_employees' %}">
+                <i class="bi bi-plus-circle"></i> New report timesheet
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:manage_daily_timesheets' %}">
+                <i class="bi bi-list-ul"></i> manage daily report timesheet
               </a>
             </li>
           </ul>
