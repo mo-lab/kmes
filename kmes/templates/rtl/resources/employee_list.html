@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Employees - Resource Management{% endblock %}
+{% block title %}کارمندان - مدیریت منابع{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -137,16 +137,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h2 mb-1">Employees</h1>
+            <h1 class="h2 mb-1">کارمندان</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Employees</li>
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+                    <li class="breadcrumb-item active">کارمندان</li>
                 </ol>
             </nav>
         </div>
@@ -162,7 +162,7 @@
                 </a>
             </div>
             <a href="{% url 'resources:employee_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Add Employee
+                <i class="bi bi-plus-lg"></i> افزودن کارمند
             </a>
         </div>
     </div>
@@ -173,32 +173,32 @@
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ total_employees }}</div>
-                    <div class="stat-label">Total Employees</div>
+                    <div class="stat-label">کل کارمندان</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ active_employees }}</div>
-                    <div class="stat-label">Active</div>
+                    <div class="stat-label">فعال</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ inactive_employees }}</div>
-                    <div class="stat-label">Inactive</div>
+                    <div class="stat-label">غیرفعال</div>
                 </div>
             </div>
 
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ recent_hires }}</div>
-                    <div class="stat-label">Recent Hires (30d)</div>
+                    <div class="stat-label">استخدام‌های اخیر (۳۰ روز)</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value text-warning">{{ expired_certifications_count }}</div>
-                    <div class="stat-label">Expired Certs</div>
+                    <div class="stat-label">گواهینامه‌های منقضی</div>
                 </div>
             </div>
         </div>
@@ -209,46 +209,46 @@
         <div class="col-lg-3 mb-4">
             <div class="filter-sidebar">
                 <h5 class="mb-3">
-                    <i class="bi bi-funnel"></i> Filters
+                    <i class="bi bi-funnel"></i> فیلترها
                 </h5>
 
                 <form method="get" id="filterForm">
                     <!-- Search -->
                     <div class="mb-3">
-                        <label class="form-label small">Search</label>
+                        <label class="form-label small">جستجو</label>
                         <div class="input-group input-group-sm">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" name="search" class="form-control"
-                                   placeholder="Name, ID, company, email..."
+                                   placeholder="نام، شناسه، شرکت، ایمیل..."
                                    value="{{ request.GET.search|default:'' }}">
                         </div>
                     </div>
 
                     <!-- Trade -->
                     <div class="mb-3">
-                        <label class="form-label small">Trade / Role</label>
+                        <label class="form-label small">تخصص / نقش</label>
                         <select name="trade" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="">All Trades</option>
-                            <option value="MLWR" {% if request.GET.trade == 'MLWR' %}selected{% endif %}>Millwright</option>
-                            <option value="ELEC" {% if request.GET.trade == 'ELEC' %}selected{% endif %}>Electrician</option>
-                            <option value="WELD" {% if request.GET.trade == 'WELD' %}selected{% endif %}>Welder</option>
-                            <option value="PIPE" {% if request.GET.trade == 'PIPE' %}selected{% endif %}>Pipe Fitter</option>
-                            <option value="INST" {% if request.GET.trade == 'INST' %}selected{% endif %}>Instrument Tech</option>
-                            <option value="RIGG" {% if request.GET.trade == 'RIGG' %}selected{% endif %}>Rigger</option>
-                            <option value="SUPV" {% if request.GET.trade == 'SUPV' %}selected{% endif %}>Supervisor</option>
-                            <option value="ENGR" {% if request.GET.trade == 'ENGR' %}selected{% endif %}>Engineer</option>
-                            <option value="SAFE" {% if request.GET.trade == 'SAFE' %}selected{% endif %}>Safety Officer</option>
-                            <option value="LAB" {% if request.GET.trade == 'LAB' %}selected{% endif %}>Laborer</option>
-                            <option value="OPER" {% if request.GET.trade == 'OPER' %}selected{% endif %}>Operator</option>
-                            <option value="OTHR" {% if request.GET.trade == 'OTHR' %}selected{% endif %}>Other</option>
+                            <option value="">همه تخصص‌ها</option>
+                            <option value="MLWR" {% if request.GET.trade == 'MLWR' %}selected{% endif %}>مکانیک صنعتی</option>
+                            <option value="ELEC" {% if request.GET.trade == 'ELEC' %}selected{% endif %}>برق‌کار</option>
+                            <option value="WELD" {% if request.GET.trade == 'WELD' %}selected{% endif %}>جوشکار</option>
+                            <option value="PIPE" {% if request.GET.trade == 'PIPE' %}selected{% endif %}>لوله‌کش</option>
+                            <option value="INST" {% if request.GET.trade == 'INST' %}selected{% endif %}>تکنسین ابزار دقیق</option>
+                            <option value="RIGG" {% if request.GET.trade == 'RIGG' %}selected{% endif %}>تکنسین بالابری</option>
+                            <option value="SUPV" {% if request.GET.trade == 'SUPV' %}selected{% endif %}>ناظر</option>
+                            <option value="ENGR" {% if request.GET.trade == 'ENGR' %}selected{% endif %}>مهندس</option>
+                            <option value="SAFE" {% if request.GET.trade == 'SAFE' %}selected{% endif %}>افسر ایمنی</option>
+                            <option value="LAB" {% if request.GET.trade == 'LAB' %}selected{% endif %}>کارگر</option>
+                            <option value="OPER" {% if request.GET.trade == 'OPER' %}selected{% endif %}>اپراتور</option>
+                            <option value="OTHR" {% if request.GET.trade == 'OTHR' %}selected{% endif %}>سایر</option>
                         </select>
                     </div>
 
                     <!-- Company -->
                     <div class="mb-3">
-                        <label class="form-label small">Company</label>
+                        <label class="form-label small">شرکت</label>
                         <select name="company" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="">All Companies</option>
+                            <option value="">همه شرکت‌ها</option>
                             {% for company in companies %}
                             <option value="{{ company }}" {% if request.GET.company == company %}selected{% endif %}>
                                 {{ company }}
@@ -259,24 +259,24 @@
 
                     <!-- Active Status -->
                     <div class="mb-3">
-                        <label class="form-label small">Status</label>
+                        <label class="form-label small">وضعیت</label>
                         <select name="is_active" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="">All</option>
-                            <option value="true" {% if request.GET.is_active == 'true' %}selected{% endif %}>Active</option>
-                            <option value="false" {% if request.GET.is_active == 'false' %}selected{% endif %}>Inactive</option>
+                            <option value="">همه</option>
+                            <option value="true" {% if request.GET.is_active == 'true' %}selected{% endif %}>فعال</option>
+                            <option value="false" {% if request.GET.is_active == 'false' %}selected{% endif %}>غیرفعال</option>
                         </select>
                     </div>
 
                     <!-- Certification Filters -->
                     <div class="mb-3">
-                        <label class="form-label small">Certifications</label>
+                        <label class="form-label small">گواهینامه‌ها</label>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="has_certifications"
                                    value="true" id="hasCertsFilter"
                                    {% if request.GET.has_certifications == 'true' %}checked{% endif %}
                             onchange="this.form.submit()">
                             <label class="form-check-label small" for="hasCertsFilter">
-                                Has certifications only
+                                فقط دارای گواهینامه
                             </label>
                         </div>
                         <div class="form-check form-switch">
@@ -285,18 +285,18 @@
                                    {% if request.GET.has_expired_certs == 'true' %}checked{% endif %}
                             onchange="this.form.submit()">
                             <label class="form-check-label small" for="hasExpiredFilter">
-                                Has expired certifications
+                                دارای گواهینامه منقضی
                             </label>
                         </div>
                     </div>
 
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="bi bi-search"></i> Apply Filters
+                            <i class="bi bi-search"></i> اعمال فیلترها
                         </button>
                         {% if request.GET %}
                         <a href="{% url 'resources:employee_list' %}" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-x-circle"></i> Clear All Filters
+                            <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها
                         </a>
                         {% endif %}
                     </div>
@@ -326,9 +326,9 @@
             <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <div>
-                    <strong>{{ expiring_certifications.count }} certification(s)</strong> expiring within 30 days.
+                    <strong>{{ expiring_certifications.count }} گواهینامه</strong> در ۳۰ روز آینده منقضی می‌شود.
                     <button class="btn btn-sm btn-outline-warning ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#expiringCertsList">
-                        View Details
+                        مشاهده جزئیات
                     </button>
                 </div>
             </div>
@@ -341,9 +341,9 @@
                                 <div>
                                     <strong>{{ cert.employee.full_name }}</strong> - {{ cert.name }}
                                     <br>
-                                    <small class="text-muted">Expires: {{ cert.expiry_date|date:"M d, Y" }} ({{ cert.expiry_date|timeuntil }})</small>
+                                    <small class="text-muted">تاریخ انقضا: {{ cert.expiry_date|date:"M d, Y" }} ({{ cert.expiry_date|timeuntil }} باقی مانده)</small>
                                 </div>
-                                <span class="badge bg-warning text-dark">Expiring Soon</span>
+                                <span class="badge bg-warning text-dark">در حال انقضا</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -356,24 +356,24 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="pagination-info">
                     {% if is_paginated %}
-                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} employees
+                    نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} کارمند
                     {% else %}
-                    {{ employees.count }} employee(s) found
+                    {{ employees.count }} کارمند پیدا شد
                     {% endif %}
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <select name="sort" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
-                        <option value="last_name" {% if request.GET.sort == 'last_name' %}selected{% endif %}>Name (A-Z)</option>
-                        <option value="-last_name" {% if request.GET.sort == '-last_name' %}selected{% endif %}>Name (Z-A)</option>
-                        <option value="company" {% if request.GET.sort == 'company' %}selected{% endif %}>Company</option>
-                        <option value="-hire_date" {% if request.GET.sort == '-hire_date' %}selected{% endif %}>Newest Hires</option>
-                        <option value="-certification_count" {% if request.GET.sort == '-certification_count' %}selected{% endif %}>Most Certs</option>
-                        <option value="-total_hours" {% if request.GET.sort == '-total_hours' %}selected{% endif %}>Most Hours</option>
+                        <option value="last_name" {% if request.GET.sort == 'last_name' %}selected{% endif %}>نام (الف-ی)</option>
+                        <option value="-last_name" {% if request.GET.sort == '-last_name' %}selected{% endif %}>نام (ی-الف)</option>
+                        <option value="company" {% if request.GET.sort == 'company' %}selected{% endif %}>شرکت</option>
+                        <option value="-hire_date" {% if request.GET.sort == '-hire_date' %}selected{% endif %}>جدیدترین استخدام</option>
+                        <option value="-certification_count" {% if request.GET.sort == '-certification_count' %}selected{% endif %}>بیشترین گواهینامه</option>
+                        <option value="-total_hours" {% if request.GET.sort == '-total_hours' %}selected{% endif %}>بیشترین ساعت</option>
                     </select>
                     <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
-                        <option value="30" {% if request.GET.per_page == '30' %}selected{% endif %}>30 per page</option>
-                        <option value="60" {% if request.GET.per_page == '60' %}selected{% endif %}>60 per page</option>
-                        <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>100 per page</option>
+                        <option value="30" {% if request.GET.per_page == '30' %}selected{% endif %}>۳۰ در هر صفحه</option>
+                        <option value="60" {% if request.GET.per_page == '60' %}selected{% endif %}>۶۰ در هر صفحه</option>
+                        <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option>
                     </select>
                 </div>
             </div>
@@ -387,14 +387,14 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                         <tr>
-                            <th>Employee</th>
-                            <th>ID</th>
-                            <th>Company</th>
-                            <th>Trade</th>
-                            <th>Hours</th>
-                            <th>Status</th>
-                            <th>Hire Date</th>
-                            <th>Actions</th>
+                            <th>کارمند</th>
+                            <th>شناسه</th>
+                            <th>شرکت</th>
+                            <th>تخصص</th>
+                            <th>ساعت</th>
+                            <th>وضعیت</th>
+                            <th>تاریخ استخدام</th>
+                            <th>عملیات</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -435,42 +435,42 @@
                             <td>
                                 {% if employee.total_hours %}
                                 <span class="badge bg-info hours-badge">
-                                            <i class="bi bi-clock"></i> {{ employee.total_hours|floatformat:1 }}h
+                                            <i class="bi bi-clock"></i> {{ employee.total_hours|floatformat:1 }} ساعت
                                         </span>
                                 {% if employee.total_overtime %}
                                 <br>
-                                <small class="text-warning">{{ employee.total_overtime|floatformat:1 }}h OT</small>
+                                <small class="text-warning">{{ employee.total_overtime|floatformat:1 }} ساعت اضافه‌کاری</small>
                                 {% endif %}
                                 {% else %}
-                                <span class="text-muted small">No hours</span>
+                                <span class="text-muted small">بدون ساعت</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if employee.is_active %}
-                                <span class="badge bg-success">Active</span>
+                                <span class="badge bg-success">فعال</span>
                                 {% else %}
-                                <span class="badge bg-danger">Inactive</span>
+                                <span class="badge bg-danger">غیرفعال</span>
                                 {% endif %}
                             </td>
                             <td>
                                 <small>{{ employee.hire_date|date:"M d, Y"|default:"-" }}</small>
                                 {% if employee.termination_date %}
-                                <br><small class="text-danger">To: {{ employee.termination_date|date:"M d, Y" }}</small>
+                                <br><small class="text-danger">تا: {{ employee.termination_date|date:"M d, Y" }}</small>
                                 {% endif %}
                             </td>
                             <td onclick="event.stopPropagation()">
                                 <div class="btn-group btn-group-sm">
                                     <a href="#"
-                                       class="btn btn-outline-primary" title="View">
+                                       class="btn btn-outline-primary" title="مشاهده">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <a href="#"
-                                       class="btn btn-outline-secondary" title="Edit">
+                                       class="btn btn-outline-secondary" title="ویرایش">
                                         <i class="bi bi-pencil"></i>
                                     </a>
 
                                     <a href="#"
-                                       class="btn btn-outline-success" title="Add Timesheet">
+                                       class="btn btn-outline-success" title="افزودن برگه زمانی">
                                         <i class="bi bi-clock"></i>
                                     </a>
                                 </div>
@@ -514,9 +514,9 @@
                             <!-- Status Indicators -->
                             <div class="d-flex justify-content-center gap-2 mt-2">
                                 {% if employee.is_active %}
-                                <span class="badge bg-success small">Active</span>
+                                <span class="badge bg-success small">فعال</span>
                                 {% else %}
-                                <span class="badge bg-danger small">Inactive</span>
+                                <span class="badge bg-danger small">غیرفعال</span>
                                 {% endif %}
 
 
@@ -526,9 +526,9 @@
                             {% if employee.total_hours %}
                             <div class="mt-2 pt-2 border-top">
                                 <small class="text-muted">
-                                    <i class="bi bi-clock"></i> {{ employee.total_hours|floatformat:1 }}h total
+                                    <i class="bi bi-clock"></i> {{ employee.total_hours|floatformat:1 }} ساعت کل
                                     {% if employee.total_overtime %}
-                                    | <span class="text-warning">{{ employee.total_overtime|floatformat:1 }}h OT</span>
+                                    | <span class="text-warning">{{ employee.total_overtime|floatformat:1 }} ساعت اضافه‌کاری</span>
                                     {% endif %}
                                 </small>
                             </div>
@@ -537,12 +537,12 @@
 
                         <div class="card-footer bg-transparent border-top text-center">
                             <small class="text-muted">
-                                Hired: {{ employee.hire_date|date:"M d, Y"|default:"N/A" }}
+                                استخدام: {{ employee.hire_date|date:"M d, Y"|default:"نامشخص" }}
                             </small>
                             {% if employee.termination_date %}
                             <br>
                             <small class="text-danger">
-                                Terminated: {{ employee.termination_date|date:"M d, Y" }}
+                                اخراج: {{ employee.termination_date|date:"M d, Y" }}
                             </small>
                             {% endif %}
                         </div>
@@ -556,9 +556,9 @@
             {% if is_paginated %}
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <div class="pagination-info">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
                 </div>
-                <nav aria-label="Employee pagination">
+                <nav aria-label="صفحه‌بندی کارمندان">
                     <ul class="pagination mb-0">
                         {% if page_obj.has_previous %}
                         <li class="page-item">
@@ -606,22 +606,22 @@
                 <div class="card-body">
                     <div class="empty-state">
                         <i class="bi bi-people"></i>
-                        <h3 class="mt-3">No Employees Found</h3>
+                        <h3 class="mt-3">هیچ کارمندی پیدا نشد</h3>
                         <p class="text-muted">
                             {% if request.GET %}
-                            No employees match your search criteria. Try adjusting your filters.
+                            هیچ کارمندی با معیارهای جستجوی شما مطابقت ندارد. لطفاً فیلترهای خود را تنظیم کنید.
                             {% else %}
-                            Get started by adding your first employee to the system.
+                            با افزودن اولین کارمند به سیستم شروع کنید.
                             {% endif %}
                         </p>
                         <div class="mt-3">
                             {% if request.GET %}
                             <a href="{% url 'resources:employee_list' %}" class="btn btn-outline-secondary me-2">
-                                <i class="bi bi-x-circle"></i> Clear Filters
+                                <i class="bi bi-x-circle"></i> پاک کردن فیلترها
                             </a>
                             {% endif %}
                             <a href="{% url 'resources:employee_create' %}" class="btn btn-primary">
-                                <i class="bi bi-plus-lg"></i> Add Employee
+                                <i class="bi bi-plus-lg"></i> افزودن کارمند
                             </a>
                         </div>
                     </div>

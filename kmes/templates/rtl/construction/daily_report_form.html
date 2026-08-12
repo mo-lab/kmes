@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -72,13 +72,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">Work Packages</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">بسته‌های کاری</a></li>
             {% if work_package %}
             <li class="breadcrumb-item">
                 <a href="#">
@@ -96,18 +96,18 @@
             <h1 class="h2 mb-1">{{ page_title }}</h1>
             <p class="text-muted mb-0">
                 {% if work_package %}
-                Work Package: <strong>{{ work_package.code }}</strong> - {{ work_package.name }}
+                بسته کاری: <strong>{{ work_package.code }}</strong> - {{ work_package.name }}
                 {% endif %}
             </p>
         </div>
         <div>
             {% if work_package %}
             <a href="#" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Work Package
+                <i class="bi bi-arrow-left"></i> بازگشت به بسته کاری
             </a>
             {% else %}
             <a href="#" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Reports
+                <i class="bi bi-arrow-left"></i> بازگشت به گزارش‌ها
             </a>
             {% endif %}
         </div>
@@ -116,9 +116,9 @@
     {% if today_report and is_create %}
     <div class="alert alert-warning">
         <i class="bi bi-exclamation-triangle"></i>
-        A report for today already exists.
+        یک گزارش برای امروز قبلاً وجود دارد.
         <a href="#" class="alert-link">
-            Click here to edit it
+            برای ویرایش آن کلیک کنید
         </a>.
     </div>
     {% endif %}
@@ -140,14 +140,14 @@
                 <!-- Report Header -->
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="bi bi-calendar-check me-2"></i>Report Header
+                        <i class="bi bi-calendar-check me-2"></i>سربرگ گزارش
                     </div>
 
                     <div class="row g-3">
                         <!-- Work Package -->
                         <div class="col-md-6">
                             <label for="{{ form.work_package.id_for_label }}" class="form-label required-field">
-                                Work Package
+                                بسته کاری
                             </label>
                             {{ form.work_package }}
                             {% if form.work_package.errors %}
@@ -158,7 +158,7 @@
                         <!-- Report Date -->
                         <div class="col-md-3">
                             <label for="{{ form.report_date.id_for_label }}" class="form-label required-field">
-                                Report Date
+                                تاریخ گزارش
                             </label>
                             {{ form.report_date }}
                             {% if form.report_date.errors %}
@@ -169,8 +169,8 @@
                         <!-- Quick Date Buttons -->
                         <div class="col-md-3 d-flex align-items-end">
                             <div class="btn-group btn-group-sm">
-                                <button type="button" class="btn btn-outline-secondary" onclick="setDate('today')">Today</button>
-                                <button type="button" class="btn btn-outline-secondary" onclick="setDate('yesterday')">Yesterday</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="setDate('today')">امروز</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="setDate('yesterday')">دیروز</button>
                             </div>
                         </div>
                     </div>
@@ -179,13 +179,13 @@
                 <!-- Weather Conditions -->
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="bi bi-cloud-sun me-2"></i>Weather Conditions
+                        <i class="bi bi-cloud-sun me-2"></i>شرایط آب و هوا
                     </div>
 
                     <div class="row g-3">
                         <!-- Weather -->
                         <div class="col-md-8">
-                            <label class="form-label">Weather</label>
+                            <label class="form-label">آب و هوا</label>
                             <div class="d-flex flex-wrap gap-1" id="weatherButtons">
                                 {% for weather in weather_options %}
                                 <button type="button"
@@ -206,7 +206,7 @@
                         <!-- Temperature -->
                         <div class="col-md-4">
                             <label for="{{ form.temperature_celsius.id_for_label }}" class="form-label">
-                                Temperature (°C)
+                                دما (درجه سانتی‌گراد)
                             </label>
                             <div class="input-group">
                                 {{ form.temperature_celsius }}
@@ -222,34 +222,34 @@
                 <!-- Work Performed -->
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="bi bi-tools me-2"></i>Work Performed
+                        <i class="bi bi-tools me-2"></i>کار انجام شده
                     </div>
 
                     <!-- Quick Templates -->
                     <div class="mb-2">
-                        <small class="text-muted">Quick Templates:</small>
+                        <small class="text-muted">قالب‌های سریع:</small>
                         <button type="button" class="btn btn-outline-secondary btn-sm quick-template-btn"
                                 onclick="appendTemplate('installation')">
-                            Installation
+                            نصب
                         </button>
                         <button type="button" class="btn btn-outline-secondary btn-sm quick-template-btn"
                                 onclick="appendTemplate('inspection')">
-                            Inspection
+                            بازرسی
                         </button>
                         <button type="button" class="btn btn-outline-secondary btn-sm quick-template-btn"
                                 onclick="appendTemplate('testing')">
-                            Testing
+                            تست
                         </button>
                         <button type="button" class="btn btn-outline-secondary btn-sm quick-template-btn"
                                 onclick="appendTemplate('general')">
-                            General
+                            عمومی
                         </button>
                     </div>
 
                     <!-- Work Description -->
                     <div class="mb-3">
                         <label for="{{ form.work_performed_description.id_for_label }}" class="form-label required-field">
-                            Work Performed Description
+                            توضیحات کار انجام شده
                         </label>
                         {{ form.work_performed_description }}
                         {% if form.work_performed_description.errors %}
@@ -260,7 +260,7 @@
                     <!-- Issues Encountered -->
                     <div class="mb-3">
                         <label for="{{ form.issues_encountered.id_for_label }}" class="form-label">
-                            Issues Encountered
+                            مشکلات پیش آمده
                         </label>
                         {{ form.issues_encountered }}
                         {% if form.issues_encountered.errors %}
@@ -272,14 +272,14 @@
                 <!-- Manpower -->
                 <div class="form-section">
                     <div class="form-section-title">
-                        <i class="bi bi-people me-2"></i>Manpower
+                        <i class="bi bi-people me-2"></i>نیروی انسانی
                     </div>
 
                     <div class="row g-3">
                         <!-- Manpower Count -->
                         <div class="col-md-6">
                             <label for="{{ form.manpower_count.id_for_label }}" class="form-label required-field">
-                                Number of Workers
+                                تعداد کارگران
                             </label>
                             <div class="manpower-counter">
                                 <button type="button" class="btn btn-outline-secondary btn-sm"
@@ -296,10 +296,10 @@
                         <!-- Hours Worked -->
                         <div class="col-md-6">
                             <label for="{{ form.hours_worked.id_for_label }}" class="form-label">
-                                Total Hours Worked
+                                کل ساعت‌های کارکرد
                             </label>
                             {{ form.hours_worked }}
-                            <div class="form-text">Total man-hours for all workers</div>
+                            <div class="form-text">کل نفر-ساعت برای همه کارگران</div>
                             {% if form.hours_worked.errors %}
                             <div class="invalid-feedback d-block">{{ form.hours_worked.errors.0 }}</div>
                             {% endif %}
@@ -312,21 +312,21 @@
                     <div>
                         {% if work_package %}
                         <a href="#" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
+                            <i class="bi bi-x-circle"></i> لغو
                         </a>
                         {% else %}
                         <a href="#" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
+                            <i class="bi bi-x-circle"></i> لغو
                         </a>
                         {% endif %}
                     </div>
                     <div>
                         <button type="submit" name="save_add_another" class="btn btn-outline-primary">
-                            <i class="bi bi-plus-circle"></i> Save & Add Another
+                            <i class="bi bi-plus-circle"></i> ذخیره و افزودن دیگری
                         </button>
                         <button type="submit" class="btn btn-primary ms-2">
                             <i class="bi bi-check-circle"></i>
-                            {% if is_create %}Submit Report{% else %}Save Changes{% endif %}
+                            {% if is_create %}ثبت گزارش{% else %}ذخیره تغییرات{% endif %}
                         </button>
                     </div>
                 </div>
@@ -340,20 +340,20 @@
                 {% if work_package %}
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Work Package Info</h6>
+                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>اطلاعات بسته کاری</h6>
                     </div>
                     <div class="card-body">
                         <table class="table table-sm mb-0">
-                            <tr><th class="text-muted">Code:</th><td>{{ work_package.code }}</td></tr>
-                            <tr><th class="text-muted">Name:</th><td>{{ work_package.name|truncatechars:40 }}</td></tr>
-                            <tr><th class="text-muted">Status:</th><td><span class="badge bg-warning text-dark">{{ work_package.get_status_display }}</span></td></tr>
-                            <tr><th class="text-muted">Progress:</th><td>
+                            <tr><th class="text-muted">کد:</th><td>{{ work_package.code }}</td></tr>
+                            <tr><th class="text-muted">نام:</th><td>{{ work_package.name|truncatechars:40 }}</td></tr>
+                            <tr><th class="text-muted">وضعیت:</th><td><span class="badge bg-warning text-dark">{{ work_package.get_status_display }}</span></td></tr>
+                            <tr><th class="text-muted">پیشرفت:</th><td>
                                 <div class="progress" style="height: 6px;">
                                     <div class="progress-bar" style="width: {{ work_package.percent_complete }}%"></div>
                                 </div>
                                 <small>{{ work_package.percent_complete }}%</small>
                             </td></tr>
-                            <tr><th class="text-muted">Items:</th><td>{{ work_package.items.count }} tags</td></tr>
+                            <tr><th class="text-muted">آیتم‌ها:</th><td>{{ work_package.items.count }} برچسب</td></tr>
                         </table>
                     </div>
                 </div>
@@ -364,7 +364,7 @@
                 <div class="card mb-3">
                     <div class="card-header">
                         <h6 class="mb-0">
-                            <i class="bi bi-tag me-2"></i>Equipment Tags
+                            <i class="bi bi-tag me-2"></i>برچسب‌های تجهیزات
                             <span class="badge bg-primary">{{ work_package_items.count }}</span>
                         </h6>
                     </div>
@@ -383,7 +383,7 @@
                                            id="tag_{{ item.pk }}"
                                            onchange="toggleTagComplete({{ item.pk }}, this.checked)">
                                     <label class="form-check-label small" for="tag_{{ item.pk }}">
-                                        Done
+                                        انجام شد
                                     </label>
                                 </div>
                             </div>
@@ -397,7 +397,7 @@
                 {% if previous_reports %}
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Previous Reports</h6>
+                        <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>گزارش‌های قبلی</h6>
                     </div>
                     <div class="card-body p-0">
                         {% for report in previous_reports %}
@@ -405,13 +405,13 @@
                              onclick="copyFromPrevious({{ report.pk }})">
                             <div class="d-flex justify-content-between">
                                 <strong class="small">{{ report.report_date|date:"M d, Y" }}</strong>
-                                <small class="text-muted">{{ report.manpower_count }} workers</small>
+                                <small class="text-muted">{{ report.manpower_count }} کارگر</small>
                             </div>
                             <small class="text-muted">{{ report.work_performed_description|truncatechars:60 }}</small>
                             <br>
                             <span class="badge bg-light text-dark small">{{ report.weather_conditions }}</span>
                             {% if report.issues_encountered %}
-                            <i class="bi bi-exclamation-triangle text-warning small" title="Issues reported"></i>
+                            <i class="bi bi-exclamation-triangle text-warning small" title="مشکلات گزارش شده"></i>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -422,15 +422,15 @@
                 <!-- Tips Card -->
                 <div class="card">
                     <div class="card-header bg-info bg-opacity-10">
-                        <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+                        <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>نکات</h6>
                     </div>
                     <div class="card-body small">
                         <ul class="mb-0">
-                            <li class="mb-2">Be specific about work performed</li>
-                            <li class="mb-2">Include equipment tag numbers in description</li>
-                            <li class="mb-2">Report any safety incidents immediately</li>
-                            <li class="mb-2">Track weather for delay documentation</li>
-                            <li>Mark completed equipment tags as done</li>
+                            <li class="mb-2">در مورد کار انجام شده دقیق باشید</li>
+                            <li class="mb-2">شماره برچسب تجهیزات را در توضیحات ذکر کنید</li>
+                            <li class="mb-2">هرگونه حادثه ایمنی را فوراً گزارش دهید</li>
+                            <li class="mb-2">برای مستندسازی تأخیرها، آب و هوا را پیگیری کنید</li>
+                            <li>برچسب‌های تجهیزات تکمیل شده را به‌عنوان انجام‌شده علامت‌گذاری کنید</li>
                         </ul>
                     </div>
                 </div>
@@ -492,10 +492,10 @@
     function appendTemplate(type) {
         const textarea = document.getElementById('{{ form.work_performed_description.id_for_label }}');
         const templates = {
-            'installation': 'Installation of [equipment tag] completed.\n- Foundation checked: OK\n- Alignment verified: OK\n- Bolting completed: OK\n- Electrical connections: [status]',
-            'inspection': 'Inspection performed on [equipment/area].\n- Visual inspection: [result]\n- Measurements taken: [details]\n- Non-conformities found: [list if any]',
-            'testing': 'Testing of [system/equipment] performed.\n- Test procedure: [code]\n- Test results: [pass/fail]\n- Observations: [details]',
-            'general': 'Work performed today:\n1. [task description]\n2. [task description]\n3. [task description]\n\nMaterials used:\n- [material]\n- [material]\n\nNext steps:\n- [planned work]'
+            'installation': 'نصب [equipment tag] تکمیل شد.\n- فونداسیون بررسی شد: OK\n- ترازبندی تأیید شد: OK\n- پیچ‌ها تکمیل شد: OK\n- اتصالات برقی: [status]',
+            'inspection': 'بازرسی [equipment/area] انجام شد.\n- بازرسی چشمی: [result]\n- اندازه‌گیری‌ها انجام شد: [details]\n- مغایرت‌ها: [list if any]',
+            'testing': 'تست [system/equipment] انجام شد.\n- روش تست: [code]\n- نتایج تست: [pass/fail]\n- مشاهدات: [details]',
+            'general': 'کار انجام شده امروز:\n1. [توضیح فعالیت]\n2. [توضیح فعالیت]\n3. [توضیح فعالیت]\n\nمواد مصرفی:\n- [material]\n- [material]\n\nمراحل بعدی:\n- [کار برنامه‌ریزی شده]'
         };
 
         const template = templates[type] || '';
@@ -509,10 +509,10 @@
 
     // Copy from previous report
     function copyFromPrevious(reportId) {
-        if (confirm('Copy work description from this previous report?')) {
+        if (confirm('آیا توضیحات کار را از این گزارش قبلی کپی می‌کنید؟')) {
             // You can implement AJAX call to get previous report content
             // For now, just show a message
-            alert('Previous report content would be loaded here.');
+            alert('محتوای گزارش قبلی در اینجا بارگذاری می‌شد.');
         }
     }
 
@@ -539,7 +539,7 @@
     window.addEventListener('beforeunload', function(e) {
         if (formChanged) {
             e.preventDefault();
-            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            e.returnValue = 'تغییرات ذخیره‌نشده‌ای دارید. آیا مطمئن هستید که می‌خواهید خارج شوید؟';
         }
     });
 

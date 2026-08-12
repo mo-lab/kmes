@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -125,16 +125,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="#">Work Packages</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+      <li class="breadcrumb-item"><a href="#">بسته‌های کاری</a></li>
       {% if project %}
       <li class="breadcrumb-item">
-        <a href="{% url 'core:project_detail' project.pk %}">{{ project.name }}</a>
+        <a href="{% url 'core:project-detail' project.pk %}">{{ project.name }}</a>
       </li>
       {% endif %}
       <li class="breadcrumb-item active">{{ page_title }}</li>
@@ -147,15 +147,15 @@
       <h1 class="h2 mb-1">{{ page_title }}</h1>
       <p class="text-muted mb-0">
         {% if is_create %}
-        Create a new work package and assign equipment tags
+        ایجاد بسته کاری جدید و اختصاص برچسب‌های تجهیزات
         {% else %}
-        Update work package details and manage equipment tags
+        به‌روزرسانی جزئیات بسته کاری و مدیریت برچسب‌های تجهیزات
         {% endif %}
       </p>
     </div>
     <div>
       <a href="#" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Back to List
+        <i class="bi bi-arrow-left"></i> بازگشت به لیست
       </a>
     </div>
   </div>
@@ -177,14 +177,14 @@
         <!-- Basic Information -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-info-circle me-2"></i>Basic Information
+            <i class="bi bi-info-circle me-2"></i>اطلاعات پایه
           </div>
 
           <div class="row g-3">
             <!-- Project -->
             <div class="col-md-6">
               <label for="{{ form.project.id_for_label }}" class="form-label required-field">
-                Project
+                پروژه
               </label>
               {{ form.project }}
               {% if form.project.errors %}
@@ -195,10 +195,10 @@
             <!-- Work Package Code -->
             <div class="col-md-6">
               <label for="{{ form.code.id_for_label }}" class="form-label required-field">
-                Work Package Code
+                کد بسته کاری
               </label>
               {{ form.code }}
-              <div class="form-text">Auto-generated if left blank</div>
+              <div class="form-text">در صورت خالی بودن به‌طور خودکار تولید می‌شود</div>
               {% if form.code.errors %}
               <div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>
               {% endif %}
@@ -207,7 +207,7 @@
             <!-- Name -->
             <div class="col-12">
               <label for="{{ form.name.id_for_label }}" class="form-label required-field">
-                Work Package Name
+                نام بسته کاری
               </label>
               {{ form.name }}
               {% if form.name.errors %}
@@ -218,7 +218,7 @@
             <!-- Description -->
             <div class="col-12">
               <label for="{{ form.description.id_for_label }}" class="form-label">
-                Description / Scope of Work
+                توضیحات / حوزه فعالیت
               </label>
               {{ form.description }}
               {% if form.description.errors %}
@@ -231,14 +231,14 @@
         <!-- Location & Assignment -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-geo-alt me-2"></i>Location & Assignment
+            <i class="bi bi-geo-alt me-2"></i>موقعیت و تخصیص
           </div>
 
           <div class="row g-3">
             <!-- Area -->
             <div class="col-md-6">
               <label for="{{ form.area.id_for_label }}" class="form-label required-field">
-                Area
+                منطقه
               </label>
               {{ form.area }}
               {% if form.area.errors %}
@@ -249,7 +249,7 @@
             <!-- System -->
             <div class="col-md-6">
               <label for="{{ form.system.id_for_label }}" class="form-label">
-                System
+                سیستم
               </label>
               {{ form.system }}
               {% if form.system.errors %}
@@ -260,7 +260,7 @@
             <!-- Supervisor -->
             <div class="col-md-6">
               <label for="{{ form.supervisor.id_for_label }}" class="form-label">
-                Supervisor
+                ناظر
               </label>
               {{ form.supervisor }}
               {% if form.supervisor.errors %}
@@ -271,7 +271,7 @@
             <!-- Contractor -->
             <div class="col-md-6">
               <label for="{{ form.contractor.id_for_label }}" class="form-label">
-                Contractor
+                پیمانکار
               </label>
               {{ form.contractor }}
               {% if form.contractor.errors %}
@@ -284,14 +284,14 @@
         <!-- Schedule & Priority -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-calendar me-2"></i>Schedule & Priority
+            <i class="bi bi-calendar me-2"></i>برنامه‌زمانی و اولویت
           </div>
 
           <div class="row g-3">
             <!-- Planned Start -->
             <div class="col-md-4">
               <label for="{{ form.planned_start.id_for_label }}" class="form-label required-field">
-                Planned Start
+                شروع برنامه‌ریزی شده
               </label>
               {{ form.planned_start }}
               {% if form.planned_start.errors %}
@@ -302,7 +302,7 @@
             <!-- Planned Finish -->
             <div class="col-md-4">
               <label for="{{ form.planned_finish.id_for_label }}" class="form-label required-field">
-                Planned Finish
+                پایان برنامه‌ریزی شده
               </label>
               {{ form.planned_finish }}
               {% if form.planned_finish.errors %}
@@ -313,7 +313,7 @@
             <!-- Priority -->
             <div class="col-md-4">
               <label for="{{ form.priority.id_for_label }}" class="form-label">
-                Priority
+                اولویت
               </label>
               {{ form.priority }}
               {% if form.priority.errors %}
@@ -324,7 +324,7 @@
             <!-- Status -->
             <div class="col-md-6">
               <label for="{{ form.status.id_for_label }}" class="form-label required-field">
-                Status
+                وضعیت
               </label>
               {{ form.status }}
               {% if form.status.errors %}
@@ -337,7 +337,7 @@
         <!-- Notes -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-sticky me-2"></i>Notes
+            <i class="bi bi-sticky me-2"></i>یادداشت‌ها
           </div>
           {{ form.notes }}
           {% if form.notes.errors %}
@@ -353,7 +353,7 @@
         <!-- Add Equipment Tags -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-tag me-2"></i>Equipment Tags
+            <i class="bi bi-tag me-2"></i>برچسب‌های تجهیزات
           </div>
 
           <!-- Search Tags -->
@@ -363,14 +363,14 @@
               <input type="text"
                      id="tagSearchInput"
                      class="form-control"
-                     placeholder="Search tags by number or description..."
+                     placeholder="جستجوی برچسب‌ها بر اساس شماره یا توضیحات..."
                      autocomplete="off">
               <button type="submit"
                       name="add_search_results"
                       value="1"
                       class="btn btn-outline-primary"
-                      title="Add all search results">
-                <i class="bi bi-plus-lg"></i> Add All
+                      title="افزودن همه نتایج جستجو">
+                <i class="bi bi-plus-lg"></i> افزودن همه
               </button>
             </div>
             <input type="hidden" name="tag_search" id="tagSearchHidden">
@@ -383,24 +383,24 @@
                     name="add_all_area_tags"
                     value="1"
                     class="btn btn-outline-info btn-sm"
-                    onclick="return confirm('Add all tags from the selected area?')">
-              <i class="bi bi-map"></i> Add All Area Tags
+                    onclick="return confirm('آیا همه برچسب‌های منطقه انتخاب‌شده اضافه شوند؟')">
+              <i class="bi bi-map"></i> افزودن همه برچسب‌های منطقه
             </button>
             <button type="submit"
                     name="add_all_system_tags"
                     value="1"
                     class="btn btn-outline-info btn-sm"
-                    onclick="return confirm('Add all tags from the selected system?')">
-              <i class="bi bi-diagram-3"></i> Add All System Tags
+                    onclick="return confirm('آیا همه برچسب‌های سیستم انتخاب‌شده اضافه شوند؟')">
+              <i class="bi bi-diagram-3"></i> افزودن همه برچسب‌های سیستم
             </button>
           </div>
           <input type="hidden" name="bulk_add_area" id="bulkAddArea" value="{{ form.area.value|default:'' }}">
           <input type="hidden" name="bulk_add_system" id="bulkAddSystem" value="{{ form.system.value|default:'' }}">
 
           <!-- Selected Tags Preview -->
-          <label class="form-label small fw-semibold">Selected Tags</label>
+          <label class="form-label small fw-semibold">برچسب‌های انتخاب شده</label>
           <div class="selected-tags-preview" id="selectedTagsPreview">
-            <small class="text-muted">No tags selected. Use the list below or search to add tags.</small>
+            <small class="text-muted">هیچ برچسبی انتخاب نشده است. از لیست زیر یا جستجو برای افزودن برچسب استفاده کنید.</small>
           </div>
 
           <!-- Available Tags List -->
@@ -408,11 +408,11 @@
           <div class="tag-selection-panel mt-3">
             <div class="p-2 bg-light border-bottom">
               <small class="fw-semibold">
-                Available Tags ({{ available_tags.count }})
+                برچسب‌های موجود ({{ available_tags.count }})
               </small>
               <div class="form-check float-end">
                 <input class="form-check-input" type="checkbox" id="selectAllTags">
-                <label class="form-check-label small" for="selectAllTags">Select All</label>
+                <label class="form-check-label small" for="selectAllTags">انتخاب همه</label>
               </div>
             </div>
             <div class="tag-list" id="tagList">
@@ -441,7 +441,7 @@
           {% else %}
           <div class="alert alert-info small">
             <i class="bi bi-info-circle"></i>
-            Select a project to see available equipment tags.
+            برای مشاهده برچسب‌های تجهیزات موجود، یک پروژه انتخاب کنید.
           </div>
           {% endif %}
         </div>
@@ -449,15 +449,15 @@
         <!-- Tips Card -->
         <div class="card">
           <div class="card-header bg-success bg-opacity-10">
-            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>نکات</h6>
           </div>
           <div class="card-body small">
             <ul class="mb-0">
-              <li class="mb-2">Select tags from the list or use search to find specific tags</li>
-              <li class="mb-2">Use "Add All Area Tags" to quickly add all tags from an area</li>
-              <li class="mb-2">Tags can be reordered after creation</li>
-              <li class="mb-2">A tag can only belong to one work package at a time</li>
-              <li>Set priority 1 for critical path work packages</li>
+              <li class="mb-2">برای انتخاب برچسب‌ها از لیست استفاده کنید یا از جستجو برای یافتن برچسب‌های خاص استفاده کنید</li>
+              <li class="mb-2">از "افزودن همه برچسب‌های منطقه" برای افزودن سریع همه برچسب‌های یک منطقه استفاده کنید</li>
+              <li class="mb-2">برچسب‌ها پس از ایجاد قابل مرتب‌سازی مجدد هستند</li>
+              <li class="mb-2">یک برچسب فقط می‌تواند همزمان به یک بسته کاری تعلق داشته باشد</li>
+              <li>برای بسته‌های کاری مسیر بحرانی، اولویت ۱ را تنظیم کنید</li>
             </ul>
           </div>
         </div>
@@ -469,13 +469,13 @@
     <div class="d-flex justify-content-between align-items-center mt-4">
       <div>
         <a href="#" class="btn btn-outline-secondary">
-          <i class="bi bi-x-circle"></i> Cancel
+          <i class="bi bi-x-circle"></i> لغو
         </a>
       </div>
       <div>
         <button type="submit" class="btn btn-primary">
           <i class="bi bi-check-circle"></i>
-          {% if is_create %}Create Work Package{% else %}Save Changes{% endif %}
+          {% if is_create %}ایجاد بسته کاری{% else %}ذخیره تغییرات{% endif %}
         </button>
       </div>
     </div>
@@ -533,7 +533,7 @@
 
   function updateSelectedTagsPreview() {
     if (selectedTags.size === 0) {
-      selectedTagsPreview.innerHTML = '<small class="text-muted">No tags selected. Use the list below or search to add tags.</small>';
+      selectedTagsPreview.innerHTML = '<small class="text-muted">هیچ برچسبی انتخاب نشده است. از لیست زیر یا جستجو برای افزودن برچسب استفاده کنید.</small>';
     } else {
       selectedTagsPreview.innerHTML = '';
       selectedTags.forEach(tagId => {
@@ -594,10 +594,10 @@
       });
 
       if (hasResults) {
-        searchResults.innerHTML = `<div class="p-2 small text-muted">Found matching tags in the list below</div>`;
+        searchResults.innerHTML = `<div class="p-2 small text-muted">برچسب‌های منطبق در لیست زیر پیدا شدند</div>`;
         searchResults.classList.add('show');
       } else {
-        searchResults.innerHTML = `<div class="p-2 small text-muted">No tags found matching "${query}"</div>`;
+        searchResults.innerHTML = `<div class="p-2 small text-muted">هیچ برچسبی با "${query}" مطابقت نداشت</div>`;
         searchResults.classList.add('show');
       }
     }, 300);
@@ -640,7 +640,7 @@
   window.addEventListener('beforeunload', function(e) {
     if (formChanged) {
       e.preventDefault();
-      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      e.returnValue = 'تغییرات ذخیره‌نشده‌ای دارید. آیا مطمئن هستید که می‌خواهید خارج شوید؟';
     }
   });
 

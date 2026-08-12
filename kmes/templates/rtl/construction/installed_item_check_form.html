@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Record Installation Check{% endblock %}
+{% block title %}ثبت بازرسی نصب{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -16,54 +16,54 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>Record Installation Check</h2>
+<div class="container mt-4" dir="rtl">
+  <h2>ثبت بازرسی نصب</h2>
 
   <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
 
     <!-- Main Check Fields -->
     <div class="form-section">
-      <h5>Check Details</h5>
+      <h5>جزئیات بازرسی</h5>
       <div class="row g-3">
         <div class="col-md-6">
-          <label for="{{ form.equipment_tag.id_for_label }}" class="form-label required-field">Equipment Tag</label>
+          <label for="{{ form.equipment_tag.id_for_label }}" class="form-label required-field">برچسب تجهیزات</label>
           {{ form.equipment_tag }}
           {{ form.equipment_tag.errors }}
         </div>
         <div class="col-md-6">
-          <label for="{{ form.checked_date.id_for_label }}" class="form-label required-field">Date</label>
+          <label for="{{ form.checked_date.id_for_label }}" class="form-label required-field">تاریخ</label>
           {{ form.checked_date }}
           {{ form.checked_date.errors }}
         </div>
 
         <div class="col-md-4">
-          <label for="{{ form.foundation_ok.id_for_label }}" class="form-label">Foundation OK?</label>
+          <label for="{{ form.foundation_ok.id_for_label }}" class="form-label">فونداسیون OK؟</label>
           {{ form.foundation_ok }}
         </div>
         <div class="col-md-4">
-          <label for="{{ form.grouting_ok.id_for_label }}" class="form-label">Grouting OK?</label>
+          <label for="{{ form.grouting_ok.id_for_label }}" class="form-label">گروت‌ریزی OK؟</label>
           {{ form.grouting_ok }}
         </div>
         <div class="col-md-4">
-          <label for="{{ form.bolting_ok.id_for_label }}" class="form-label">Bolting OK?</label>
+          <label for="{{ form.bolting_ok.id_for_label }}" class="form-label">پیچ‌ها OK؟</label>
           {{ form.bolting_ok }}
         </div>
         <div class="col-md-4">
-          <label for="{{ form.alignment_ok.id_for_label }}" class="form-label">Alignment OK?</label>
+          <label for="{{ form.alignment_ok.id_for_label }}" class="form-label">ترازبندی OK؟</label>
           {{ form.alignment_ok }}
         </div>
         <div class="col-md-4">
-          <label for="{{ form.electrical_ok.id_for_label }}" class="form-label">Electrical OK?</label>
+          <label for="{{ form.electrical_ok.id_for_label }}" class="form-label">اتصالات برقی OK؟</label>
           {{ form.electrical_ok }}
         </div>
         <div class="col-md-4">
-          <label for="{{ form.status.id_for_label }}" class="form-label required-field">Overall Status</label>
+          <label for="{{ form.status.id_for_label }}" class="form-label required-field">وضعیت کلی</label>
           {{ form.status }}
         </div>
       </div>
       <div class="mt-3">
-        <label for="{{ form.comments.id_for_label }}" class="form-label">Comments</label>
+        <label for="{{ form.comments.id_for_label }}" class="form-label">نظرات</label>
         {{ form.comments }}
         {{ form.comments.errors }}
       </div>
@@ -71,21 +71,21 @@
 
     <!-- Photos -->
     <div class="form-section">
-      <h5>Photos</h5>
+      <h5>عکس‌ها</h5>
       {{ photo_formset.management_form }}
       {% for photo_form in photo_formset %}
       <div class="row g-2 align-items-end mb-2 photo-row">
         <div class="col-md-6">
-          <label class="form-label small">Photo</label>
+          <label class="form-label small">عکس</label>
           {{ photo_form.photo }}
         </div>
         <div class="col-md-4">
-          <label class="form-label small">Caption</label>
+          <label class="form-label small">عنوان</label>
           {{ photo_form.caption }}
         </div>
         <div class="col-md-2">
           {% if photo_form.instance.pk %}
-          <label class="form-label small">Delete?</label>
+          <label class="form-label small">حذف؟</label>
           {{ photo_form.DELETE }}
           {% endif %}
         </div>
@@ -93,8 +93,8 @@
       {% endfor %}
     </div>
 
-    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Check</button>
-    <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-outline-secondary">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> ذخیره بازرسی</button>
+    <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-outline-secondary">لغو</a>
   </form>
 </div>
 {% endblock %}

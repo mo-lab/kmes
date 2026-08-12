@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}{{ project.name }} - Project Details{% endblock %}
+{% block title %}{{ project.name }} - جزئیات پروژه{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -113,13 +113,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'core:project-list' %}">Projects</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:project-list' %}">پروژه‌ها</a></li>
             <li class="breadcrumb-item active">{{ project.name }}</li>
         </ol>
     </nav>
@@ -150,11 +150,11 @@
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
                 <div class="btn-group">
-                    <a href="#" class="btn btn-light">
-                        <i class="bi bi-pencil"></i> Edit
+                    <a href="{% url 'core:project_update' project.pk %}" class="btn btn-light">
+                        <i class="bi bi-pencil"></i> ویرایش
                     </a>
                     <a href="#" class="btn btn-outline-light">
-                        <i class="bi bi-trash"></i> Delete
+                        <i class="bi bi-trash"></i> حذف
                     </a>
                 </div>
             </div>
@@ -163,13 +163,13 @@
         <!-- Progress Bar -->
         <div class="mt-3">
             <div class="d-flex justify-content-between small mb-1">
-                <span>Overall Progress</span>
+                <span>پیشرفت کلی</span>
                 <span>
-                    {% if project.status == 'INIT' %}5%
-                    {% elif project.status == 'PLAN' %}20%
-                    {% elif project.status == 'EXEC' %}60%
-                    {% elif project.status == 'COMM' %}85%
-                    {% elif project.status == 'CLSD' %}100%
+                    {% if project.status == 'INIT' %}۵%
+                    {% elif project.status == 'PLAN' %}۲۰%
+                    {% elif project.status == 'EXEC' %}۶۰%
+                    {% elif project.status == 'COMM' %}۸۵%
+                    {% elif project.status == 'CLSD' %}۱۰۰%
                     {% endif %}
                 </span>
             </div>
@@ -190,7 +190,7 @@
                 <div class="card-body text-center">
                     <div class="icon text-primary"><i class="bi bi-map"></i></div>
                     <div class="value text-primary">{{ areas.count }}</div>
-                    <div class="label text-primary">Areas</div>
+                    <div class="label text-primary">مناطق</div>
                 </div>
             </div>
         </div>
@@ -199,7 +199,7 @@
                 <div class="card-body text-center">
                     <div class="icon text-success"><i class="bi bi-diagram-3"></i></div>
                     <div class="value text-success">{{ systems.count }}</div>
-                    <div class="label text-success">Systems</div>
+                    <div class="label text-success">سیستم‌ها</div>
                 </div>
             </div>
         </div>
@@ -208,7 +208,7 @@
                 <div class="card-body text-center">
                     <div class="icon text-info"><i class="bi bi-tag"></i></div>
                     <div class="value text-info">{{ equipment_count }}</div>
-                    <div class="label text-info">Equipment Tags</div>
+                    <div class="label text-info">برچسب‌های تجهیزات</div>
                 </div>
             </div>
         </div>
@@ -217,7 +217,7 @@
                 <div class="card-body text-center">
                     <div class="icon text-warning"><i class="bi bi-file-earmark-text"></i></div>
                     <div class="value text-warning">{{ project.documents.count }}</div>
-                    <div class="label text-warning">Documents</div>
+                    <div class="label text-warning">مدارک</div>
                 </div>
             </div>
         </div>
@@ -226,7 +226,7 @@
                 <div class="card-body text-center">
                     <div class="icon text-danger"><i class="bi bi-clipboard-check"></i></div>
                     <div class="value text-danger">{{ project.work_packages.count }}</div>
-                    <div class="label text-danger">Work Packages</div>
+                    <div class="label text-danger">بسته‌های کاری</div>
                 </div>
             </div>
         </div>
@@ -235,7 +235,7 @@
                 <div class="card-body text-center">
                     <div class="icon text-secondary"><i class="bi bi-exclamation-triangle"></i></div>
                     <div class="value text-secondary">{{ punch_items_count }}</div>
-                    <div class="label text-secondary">Open Punch Items</div>
+                    <div class="label text-secondary">آیتم‌های Punch باز</div>
                 </div>
             </div>
         </div>
@@ -245,32 +245,32 @@
     <div class="row g-2 mb-4">
         <div class="col-auto">
             <a href="{% url 'core:area_create' %}" class="btn btn-outline-primary btn-sm quick-action-btn">
-                <i class="bi bi-plus-circle"></i> Add Area
+                <i class="bi bi-plus-circle"></i> افزودن منطقه
             </a>
         </div>
         <div class="col-auto">
             <a href="{% url 'core:system_create' %}" class="btn btn-outline-primary btn-sm quick-action-btn">
-                <i class="bi bi-plus-circle"></i> Add System
+                <i class="bi bi-plus-circle"></i> افزودن سیستم
             </a>
         </div>
         <div class="col-auto">
-            <a href="{% url 'core:equipmenttag-create' %}" class="btn btn-outline-primary btn-sm quick-action-btn">
-                <i class="bi bi-plus-circle"></i> Add Equipment Tag
+            <a href="{% url 'core:equipment_tag_create' %}" class="btn btn-outline-primary btn-sm quick-action-btn">
+                <i class="bi bi-plus-circle"></i> افزودن برچسب تجهیزات
             </a>
         </div>
         <div class="col-auto">
-            <a href="{% url 'documents:document-create' %}" class="btn btn-outline-success btn-sm quick-action-btn">
-                <i class="bi bi-file-earmark-plus"></i> Upload Document
+            <a href="{% url 'documents:document-create' %}?project={{ project.pk }}" class="btn btn-outline-success btn-sm quick-action-btn">
+                <i class="bi bi-file-earmark-plus"></i> بارگذاری مدرک
             </a>
         </div>
         <div class="col-auto">
             <a href="{% url 'construction:work_package_create' %}" class="btn btn-outline-warning btn-sm quick-action-btn">
-                <i class="bi bi-tools"></i> Create Work Package
+                <i class="bi bi-tools"></i> ایجاد بسته کاری
             </a>
         </div>
 <!--        <div class="col-auto">-->
 <!--            <a href="#" class="btn btn-outline-danger btn-sm quick-action-btn">-->
-<!--                <i class="bi bi-flag"></i> Raise Punch Item-->
+<!--                <i class="bi bi-flag"></i> ثبت آیتم Punch-->
 <!--            </a>-->
 <!--        </div>-->
     </div>
@@ -281,36 +281,36 @@
             <ul class="nav nav-tabs card-header-tabs" id="projectTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
-                        <i class="bi bi-info-circle"></i> Overview
+                        <i class="bi bi-info-circle"></i> نمای کلی
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="areas-tab" data-bs-toggle="tab" data-bs-target="#areas" type="button" role="tab">
-                        <i class="bi bi-map"></i> Areas
+                        <i class="bi bi-map"></i> مناطق
                         <span class="badge bg-primary ms-1">{{ areas.count }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="systems-tab" data-bs-toggle="tab" data-bs-target="#systems" type="button" role="tab">
-                        <i class="bi bi-diagram-3"></i> Systems
+                        <i class="bi bi-diagram-3"></i> سیستم‌ها
                         <span class="badge bg-primary ms-1">{{ systems.count }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment" type="button" role="tab">
-                        <i class="bi bi-tag"></i> Equipment Tags
+                        <i class="bi bi-tag"></i> برچسب‌های تجهیزات
                         <span class="badge bg-primary ms-1">{{ equipment_count }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">
-                        <i class="bi bi-file-earmark-text"></i> Documents
+                        <i class="bi bi-file-earmark-text"></i> مدارک
                         <span class="badge bg-primary ms-1">{{ project.documents.count }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="work-packages-tab" data-bs-toggle="tab" data-bs-target="#work-packages" type="button" role="tab">
-                        <i class="bi bi-clipboard-check"></i> Work Packages
+                        <i class="bi bi-clipboard-check"></i> بسته‌های کاری
                         <span class="badge bg-primary ms-1">{{ project.work_packages.count }}</span>
                     </button>
                 </li>
@@ -324,43 +324,43 @@
                 <div class="tab-pane fade show active" id="overview" role="tabpanel">
                     <div class="row">
                         <div class="col-md-8">
-                            <h5 class="mb-3">Project Timeline</h5>
+                            <h5 class="mb-3">جدول زمانی پروژه</h5>
                             <div class="timeline">
                                 <div class="timeline-item {% if project.status != 'INIT' %}completed{% endif %}">
-                                    <h6>Initiation</h6>
+                                    <h6>آغاز</h6>
                                     <small class="text-muted">{{ project.start_date|date:"F d, Y" }}</small>
                                     {% if project.status == 'INIT' %}
-                                    <span class="badge bg-primary ms-2">Current</span>
+                                    <span class="badge bg-primary ms-2">جاری</span>
                                     {% endif %}
                                 </div>
                                 <div class="timeline-item {% if project.status not in 'INIT,PLAN' %}completed{% elif project.status == 'PLAN' %}current{% endif %}">
-                                    <h6>Planning</h6>
-                                    <small class="text-muted">Design, procurement planning, resource allocation</small>
+                                    <h6>برنامه‌ریزی</h6>
+                                    <small class="text-muted">طراحی، برنامه‌ریزی تدارکات، تخصیص منابع</small>
                                     {% if project.status == 'PLAN' %}
-                                    <span class="badge bg-info ms-2">Current</span>
+                                    <span class="badge bg-info ms-2">جاری</span>
                                     {% endif %}
                                 </div>
                                 <div class="timeline-item {% if project.status not in 'INIT,PLAN,EXEC' %}completed{% elif project.status == 'EXEC' %}current{% endif %}">
-                                    <h6>Execution</h6>
-                                    <small class="text-muted">Construction, installation, assembly</small>
+                                    <h6>اجرا</h6>
+                                    <small class="text-muted">ساخت، نصب، مونتاژ</small>
                                     {% if project.status == 'EXEC' %}
-                                    <span class="badge bg-warning ms-2">Current</span>
+                                    <span class="badge bg-warning ms-2">جاری</span>
                                     {% endif %}
                                 </div>
                                 <div class="timeline-item {% if project.status == 'COMM' %}current{% elif project.status == 'CLSD' %}completed{% endif %}">
-                                    <h6>Commissioning</h6>
-                                    <small class="text-muted">Testing, verification, handover</small>
+                                    <h6>راه‌اندازی</h6>
+                                    <small class="text-muted">تست، تأیید، تحویل</small>
                                     {% if project.status == 'COMM' %}
-                                    <span class="badge bg-orange ms-2">Current</span>
+                                    <span class="badge bg-orange ms-2">جاری</span>
                                     {% endif %}
                                 </div>
                                 <div class="timeline-item {% if project.status == 'CLSD' %}completed{% endif %}">
-                                    <h6>Closed</h6>
+                                    <h6>بسته شده</h6>
                                     <small class="text-muted">
                                         {% if project.actual_completion_date %}
                                         {{ project.actual_completion_date|date:"F d, Y" }}
                                         {% else %}
-                                        Target: {{ project.target_completion_date|date:"F d, Y" }}
+                                        هدف: {{ project.target_completion_date|date:"F d, Y" }}
                                         {% endif %}
                                     </small>
                                 </div>
@@ -368,37 +368,37 @@
                         </div>
 
                         <div class="col-md-4">
-                            <h5 class="mb-3">Project Details</h5>
+                            <h5 class="mb-3">جزئیات پروژه</h5>
                             <table class="table table-sm">
                                 <tr>
-                                    <th class="text-muted">Code:</th>
+                                    <th class="text-muted">کد:</th>
                                     <td>{{ project.code }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="text-muted">Location:</th>
+                                    <th class="text-muted">موقعیت:</th>
                                     <td>{{ project.location }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="text-muted">Start Date:</th>
+                                    <th class="text-muted">تاریخ شروع:</th>
                                     <td>{{ project.start_date|date:"F d, Y" }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="text-muted">Target Completion:</th>
+                                    <th class="text-muted">تاریخ هدف تکمیل:</th>
                                     <td>{{ project.target_completion_date|date:"F d, Y" }}</td>
                                 </tr>
                                 {% if project.actual_completion_date %}
                                 <tr>
-                                    <th class="text-muted">Actual Completion:</th>
+                                    <th class="text-muted">تاریخ تکمیل واقعی:</th>
                                     <td>{{ project.actual_completion_date|date:"F d, Y" }}</td>
                                 </tr>
                                 {% endif %}
                                 <tr>
-                                    <th class="text-muted">Created:</th>
+                                    <th class="text-muted">ایجاد:</th>
                                     <td>{{ project.created_at|date:"F d, Y" }}</td>
                                 </tr>
                                 <tr>
-                                    <th class="text-muted">Last Updated:</th>
-                                    <td>{{ project.updated_at|timesince }} ago</td>
+                                    <th class="text-muted">آخرین به‌روزرسانی:</th>
+                                    <td>{{ project.updated_at|timesince }} پیش</td>
                                 </tr>
                             </table>
                         </div>
@@ -406,7 +406,7 @@
 
                     <!-- Recent Activity -->
                     <div class="mt-4">
-                        <h5 class="mb-3">Recent Activity</h5>
+                        <h5 class="mb-3">فعالیت‌های اخیر</h5>
                         {% if recent_activities %}
                         <div class="list-group list-group-flush">
                             {% for activity in recent_activities %}
@@ -416,13 +416,13 @@
                                         <i class="bi bi-{{ activity.icon }} me-2"></i>
                                         {{ activity.description }}
                                     </div>
-                                    <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
+                                    <small class="text-muted">{{ activity.timestamp|timesince }} پیش</small>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                         {% else %}
-                        <p class="text-muted">No recent activity.</p>
+                        <p class="text-muted">هیچ فعالیت اخیری وجود ندارد.</p>
                         {% endif %}
                     </div>
                 </div>
@@ -430,9 +430,9 @@
                 <!-- Areas Tab -->
                 <div class="tab-pane fade" id="areas" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Project Areas</h5>
-                        <a href="{% url 'core:area_create' %}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-plus-lg"></i> Add Area
+                        <h5 class="mb-0">مناطق پروژه</h5>
+                        <a href="{% url 'core:area_create' %}?project_pk={{ project.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> افزودن منطقه
                         </a>
                     </div>
 
@@ -441,11 +441,11 @@
                         <table class="table table-hover">
                             <thead class="table-light">
                             <tr>
-                                <th>Code</th>
-                                <th>Name</th>
-                                <th>Equipment Tags</th>
-                                <th>Work Packages</th>
-                                <th>Actions</th>
+                                <th>کد</th>
+                                <th>نام</th>
+                                <th>برچسب‌های تجهیزات</th>
+                                <th>بسته‌های کاری</th>
+                                <th>عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -457,10 +457,10 @@
                                 <td><span class="badge bg-warning text-dark">{{ area.work_packages.count }}</span></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="#" class="btn btn-outline-secondary" title="Edit">
+                                        <a href="{% url 'core:area_update' area.pk %}" class="btn btn-outline-secondary" title="ویرایش">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="#" class="btn btn-outline-danger" title="Delete">
+                                        <a href="#" class="btn btn-outline-danger" title="حذف">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </div>
@@ -473,10 +473,10 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-map"></i>
-                        <h5>No Areas Defined</h5>
-                        <p>Areas help organize your project into physical or logical zones.</p>
-                        <a href="#" class="btn btn-primary">
-                            <i class="bi bi-plus-lg"></i> Add First Area
+                        <h5>هیچ منطقه‌ای تعریف نشده است</h5>
+                        <p>مناطق به سازماندهی پروژه شما به مناطق فیزیکی یا منطقی کمک می‌کنند.</p>
+                        <a href="{% url 'core:area_create' %}?project_pk={{ project.pk }}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> افزودن اولین منطقه
                         </a>
                     </div>
                     {% endif %}
@@ -485,9 +485,9 @@
                 <!-- Systems Tab -->
                 <div class="tab-pane fade" id="systems" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Project Systems</h5>
-                        <a href="{% url 'core:system_create' %}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-plus-lg"></i> Add System
+                        <h5 class="mb-0">سیستم‌های پروژه</h5>
+                        <a href="{% url 'core:system_create' %}?project={{ project.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> افزودن سیستم
                         </a>
                     </div>
 
@@ -496,11 +496,11 @@
                         <table class="table table-hover">
                             <thead class="table-light">
                             <tr>
-                                <th>Code</th>
-                                <th>Name</th>
-                                <th>Equipment Tags</th>
-                                <th>Commissioning Status</th>
-                                <th>Actions</th>
+                                <th>کد</th>
+                                <th>نام</th>
+                                <th>برچسب‌های تجهیزات</th>
+                                <th>وضعیت راه‌اندازی</th>
+                                <th>عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -521,16 +521,16 @@
                                                     {{ commissioning.get_status_display }}
                                                 </span>
                                     {% else %}
-                                    <span class="badge bg-light text-dark">Not Started</span>
+                                    <span class="badge bg-light text-dark">شروع نشده</span>
                                     {% endif %}
                                     {% endwith %}
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="#" class="btn btn-outline-secondary" title="Edit">
+                                        <a href="{% url 'core:system_update' system.pk %}" class="btn btn-outline-secondary" title="ویرایش">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="#" class="btn btn-outline-danger" title="Delete">
+                                        <a href="#" class="btn btn-outline-danger" title="حذف">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </div>
@@ -543,10 +543,10 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-diagram-3"></i>
-                        <h5>No Systems Defined</h5>
-                        <p>Systems represent functional groups like lubrication, cooling, or power distribution.</p>
+                        <h5>هیچ سیستمی تعریف نشده است</h5>
+                        <p>سیستم‌ها گروه‌های عملکردی مانند روغن‌کاری، خنک‌کننده یا توزیع برق را نشان می‌دهند.</p>
                         <a href="#" class="btn btn-primary">
-                            <i class="bi bi-plus-lg"></i> Add First System
+                            <i class="bi bi-plus-lg"></i> افزودن اولین سیستم
                         </a>
                     </div>
                     {% endif %}
@@ -555,9 +555,9 @@
                 <!-- Equipment Tags Tab -->
                 <div class="tab-pane fade" id="equipment" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Equipment Tags</h5>
-                        <a href="{% url 'core:equipmenttag-create' %}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-plus-lg"></i> Add Equipment Tag
+                        <h5 class="mb-0">برچسب‌های تجهیزات</h5>
+                        <a href="{% url 'core:equipment_tag_create' %}?project={{ project.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> افزودن برچسب تجهیزات
                         </a>
                     </div>
 
@@ -566,12 +566,12 @@
                         <table class="table table-hover">
                             <thead class="table-light">
                             <tr>
-                                <th>Tag Number</th>
-                                <th>Description</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>Area</th>
-                                <th>Actions</th>
+                                <th>شماره برچسب</th>
+                                <th>توضیحات</th>
+                                <th>نوع</th>
+                                <th>وضعیت</th>
+                                <th>منطقه</th>
+                                <th>عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -595,10 +595,10 @@
                                 <td>{{ tag.area.code|default:"-" }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm" onclick="event.stopPropagation()">
-                                        <a href="#" class="btn btn-outline-primary" title="View">
+                                        <a href="#" class="btn btn-outline-primary" title="مشاهده">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="#" class="btn btn-outline-secondary" title="Edit">
+                                        <a href="#" class="btn btn-outline-secondary" title="ویرایش">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                     </div>
@@ -611,10 +611,10 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-tag"></i>
-                        <h5>No Equipment Tags</h5>
-                        <p>Equipment tags represent individual assets like pumps, motors, and instruments.</p>
+                        <h5>هیچ برچسب تجهیزاتی وجود ندارد</h5>
+                        <p>برچسب‌های تجهیزات دارایی‌های جداگانه مانند پمپ‌ها، موتورها و ابزارآلات را نشان می‌دهند.</p>
                         <a href="#" class="btn btn-primary">
-                            <i class="bi bi-plus-lg"></i> Add First Equipment Tag
+                            <i class="bi bi-plus-lg"></i> افزودن اولین برچسب تجهیزات
                         </a>
                     </div>
                     {% endif %}
@@ -623,13 +623,13 @@
                 <!-- Documents Tab -->
                 <div class="tab-pane fade" id="documents" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Documents</h5>
+                        <h5 class="mb-0">مدارک</h5>
                         <div>
                             <a href="#" class="btn btn-outline-primary btn-sm me-1">
-                                <i class="bi bi-upload"></i> Bulk Upload
+                                <i class="bi bi-upload"></i> بارگذاری گروهی
                             </a>
-                            <a href="#" class="btn btn-primary btn-sm">
-                                <i class="bi bi-plus-lg"></i> Add Document
+                            <a href="{% url 'documents:document-create' %}?project={{ project.pk }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-lg"></i> افزودن مدرک
                             </a>
                         </div>
                     </div>
@@ -639,13 +639,13 @@
                         <table class="table table-hover">
                             <thead class="table-light">
                             <tr>
-                                <th>Document Number</th>
-                                <th>Title</th>
-                                <th>Type</th>
-                                <th>Revision</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Actions</th>
+                                <th>شماره مدرک</th>
+                                <th>عنوان</th>
+                                <th>نوع</th>
+                                <th>نسخه</th>
+                                <th>وضعیت</th>
+                                <th>تاریخ</th>
+                                <th>عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -669,11 +669,11 @@
                                 <td><small>{{ doc.issue_date|date:"M d, Y"|default:"-" }}</small></td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="#" class="btn btn-outline-primary" title="View">
+                                        <a href="#" class="btn btn-outline-primary" title="مشاهده">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                         {% if doc.file_upload %}
-                                        <a href="{{ doc.file_upload.url }}" class="btn btn-outline-success" title="Download" download>
+                                        <a href="{{ doc.file_upload.url }}" class="btn btn-outline-success" title="دانلود" download>
                                             <i class="bi bi-download"></i>
                                         </a>
                                         {% endif %}
@@ -687,10 +687,10 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-file-earmark-text"></i>
-                        <h5>No Documents</h5>
-                        <p>Upload drawings, datasheets, manuals, and other project documents.</p>
-                        <a href="#" class="btn btn-primary">
-                            <i class="bi bi-plus-lg"></i> Upload First Document
+                        <h5>هیچ مدرکی وجود ندارد</h5>
+                        <p>نقشه‌ها، دیتاشیت‌ها، دفترچه‌های راهنما و سایر مدارک پروژه را بارگذاری کنید.</p>
+                        <a href="{% url 'documents:document-create' %}?project={{ project.pk }}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> بارگذاری اولین مدرک
                         </a>
                     </div>
                     {% endif %}
@@ -699,9 +699,9 @@
                 <!-- Work Packages Tab -->
                 <div class="tab-pane fade" id="work-packages" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Work Packages</h5>
-                        <a href="#" class="btn btn-primary btn-sm">
-                            <i class="bi bi-plus-lg"></i> Create Work Package
+                        <h5 class="mb-0">بسته‌های کاری</h5>
+                        <a href="{% url 'construction:work_package_create' %}?project={{ project.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> ایجاد بسته کاری
                         </a>
                     </div>
 
@@ -710,13 +710,13 @@
                         <table class="table table-hover">
                             <thead class="table-light">
                             <tr>
-                                <th>Code</th>
-                                <th>Name</th>
-                                <th>Area</th>
-                                <th>Status</th>
-                                <th>Progress</th>
-                                <th>Dates</th>
-                                <th>Actions</th>
+                                <th>کد</th>
+                                <th>نام</th>
+                                <th>منطقه</th>
+                                <th>وضعیت</th>
+                                <th>پیشرفت</th>
+                                <th>تاریخ‌ها</th>
+                                <th>عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -756,10 +756,10 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" onclick="event.stopPropagation()">
-                                        <a href="#" class="btn btn-outline-primary" title="View">
+                                        <a href="{% url 'construction:work_package_detail' wp.pk %}" class="btn btn-outline-primary" title="مشاهده">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="#" class="btn btn-outline-secondary" title="Edit">
+                                        <a href="#" class="btn btn-outline-secondary" title="ویرایش">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                     </div>
@@ -772,10 +772,10 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-clipboard-check"></i>
-                        <h5>No Work Packages</h5>
-                        <p>Work packages break down the installation and construction scope into manageable chunks.</p>
-                        <a href="#" class="btn btn-primary">
-                            <i class="bi bi-plus-lg"></i> Create First Work Package
+                        <h5>هیچ بسته کاری وجود ندارد</h5>
+                        <p>بسته‌های کاری محدوده نصب و ساخت را به بخش‌های قابل مدیریت تقسیم می‌کنند.</p>
+                        <a href="{% url 'construction:work_package_create' %}?project={{ project.pk }}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> ایجاد اولین بسته کاری
                         </a>
                     </div>
                     {% endif %}

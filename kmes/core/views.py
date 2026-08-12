@@ -41,8 +41,10 @@ class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 	
 	def get_initial(self):
 		initial = super().get_initial()
-		project_id = self.kwargs.get('project_id') or self.request.GET.get('project')
+		
+		project_id = self.request.GET.get('project')
 		if project_id:
+			project_id=int(project_id)
 			initial['project'] = get_object_or_404(Project, pk=project_id)
 		
 		parent_id = self.request.GET.get('parent_tag')
@@ -59,8 +61,11 @@ class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 		kwargs = super().get_form_kwargs()
 		# Pass project_id to the form so dropdowns are filtered
 		project_id = self.kwargs.get('project_id') or self.request.GET.get('project')
+		area_id = self.kwargs.get('area_id') or self.request.GET.get('area')
 		if project_id:
 			kwargs['project_id'] = int(project_id)
+		if area_id:
+			kwargs['area_id'] = int(area_id)
 		return kwargs
 	
 	def get_context_data(self, **kwargs):
@@ -243,11 +248,11 @@ class ProjectUpdateView(LoginRequiredMixin, generic.UpdateView):
 	"""Update an existing project."""
 	model = Project
 	form_class = ProjectForm
-	template_name = 'core/project_form.html'
+	template_name = 'rtl/core/project_form.html'
 	success_message = "Project '%(name)s' was updated successfully."
 	
 	def get_success_url(self):
-		return reverse('core:project_detail', kwargs={'pk': self.object.pk})
+		return reverse('core:project-detail', kwargs={'pk': self.object.pk})
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -287,11 +292,11 @@ class ProjectUpdateView(LoginRequiredMixin, generic.UpdateView):
 class AreaCreateView(LoginRequiredMixin, CreateView):
 	model = Area
 	form_class = AreaForm
-	template_name = "core/area_form.html"
+	template_name = "rtl/core/area_form.html"
 	
 	def dispatch(self, request, *args, **kwargs):
 		self.project = None
-		project_pk = kwargs.get("project_pk")
+		project_pk = request.GET.get("project_pk")
 		if project_pk:
 			self.project = get_object_or_404(Project, pk=project_pk)
 		return super().dispatch(request, *args, **kwargs)
@@ -324,7 +329,7 @@ class SystemCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new system with optional equipment tags."""
 	model = System
 	form_class = SystemForm
-	template_name = 'core/system_form.html'
+	template_name = 'rtl/core/system_form.html'
 	success_message = "System '%(code)s - %(name)s' was created successfully."
 	
 	def get_success_url(self):
@@ -479,7 +484,7 @@ class SystemUpdateView(LoginRequiredMixin, generic.UpdateView):
 	"""Update an existing system."""
 	model = System
 	form_class = SystemForm
-	template_name = 'core/system_form.html'
+	template_name = 'rtl/core/system_form.html'
 	success_message = "System '%(code)s - %(name)s' was updated successfully."
 	
 	def get_success_url(self):
@@ -553,7 +558,7 @@ class SystemUpdateView(LoginRequiredMixin, generic.UpdateView):
 class SystemDetailView(LoginRequiredMixin, generic.DetailView):
 	"""View system details with equipment tags, commissioning status, and related items."""
 	model = System
-	template_name = 'core/system_detail.html'
+	template_name = 'rtl/core/system_detail.html'
 	context_object_name = 'system'
 	
 	def get_queryset(self):
@@ -861,7 +866,7 @@ class SystemDetailView(LoginRequiredMixin, generic.DetailView):
 # class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 # 	model = EquipmentTag
 # 	form_class = EquipmentTagForm
-# 	template_name = "core/equipmenttag_form.html"
+# 	template_name = "rtl/core/equipmenttag_form.html"
 #
 # 	def dispatch(self, request, *args, **kwargs):
 # 		self.project = None
@@ -906,7 +911,7 @@ class SystemDetailView(LoginRequiredMixin, generic.DetailView):
 
 class ProjectListView(generic.ListView):
 	model = Project
-	template_name = 'core/project_list.html'
+	template_name = 'rtl/core/project_list.html'
 	context_object_name = 'projects'
 	paginate_by = 12
 	
@@ -963,7 +968,7 @@ class ProjectListView(generic.ListView):
 
 class ProjectDetailView(generic.DetailView):
 	model = Project
-	template_name = 'core/project_detail.html'
+	template_name = 'rtl/core/project_detail.html'
 	context_object_name = 'project'
 	
 	def get_context_data(self, **kwargs):
@@ -1343,7 +1348,7 @@ class EquipmentTagDetailView(generic.DetailView):
 
 class EquipmentTagDetailView2(LoginRequiredMixin, generic.DetailView):
 	model = EquipmentTag
-	template_name = 'core/equipment_tag_detail.html'
+	template_name = 'rtl/core/equipment_tag_detail.html'
 	context_object_name = 'tag'
 	
 	def get_queryset(self):
@@ -1576,7 +1581,7 @@ class EquipmentLocationCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Record a new location for equipment."""
 	model = EquipmentLocation
 	form_class = EquipmentLocationForm
-	template_name = 'core/equipment_location_form.html'
+	template_name = 'rtl/core/equipment_location_form.html'
 	
 	def get_success_url(self):
 		return self.object.equipment_tag.get_absolute_url()
@@ -1610,7 +1615,7 @@ class EquipmentLocationCreateView(LoginRequiredMixin, generic.CreateView):
 class EquipmentLocationDetailView(LoginRequiredMixin, generic.DetailView):
 	"""View location details with images."""
 	model = EquipmentLocation
-	template_name = 'core/equipment_location_detail.html'
+	template_name = 'rtl/core/equipment_location_detail.html'
 	context_object_name = 'location'
 	
 	def get_queryset(self):
@@ -1685,7 +1690,7 @@ def verify_location(request, location_id):
 
 class AreaListView(LoginRequiredMixin, generic.ListView):
 	model = Area
-	template_name = 'core/area_list.html'
+	template_name = 'rtl/core/area_list.html'
 	context_object_name = 'areas'
 	paginate_by = 20
 	
@@ -1782,7 +1787,7 @@ class AreaListView(LoginRequiredMixin, generic.ListView):
 
 class AreaDetailView(LoginRequiredMixin, generic.DetailView):
 	model = Area
-	template_name = 'core/area_detail.html'
+	template_name = 'rtl/core/area_detail.html'
 	context_object_name = 'area'
 	
 	def get_queryset(self):
@@ -2070,7 +2075,7 @@ class AreaDetailView(LoginRequiredMixin, generic.DetailView):
 
 class SystemListView(LoginRequiredMixin, generic.ListView):
 	model = System
-	template_name = 'core/system_list.html'
+	template_name = 'rtl/core/system_list.html'
 	context_object_name = 'systems'
 	paginate_by = 20
 	
@@ -2219,3 +2224,24 @@ class SystemListView(LoginRequiredMixin, generic.ListView):
 				).values('equipment_type').annotate(count=Count('id')).order_by('-count')
 		
 		return context
+
+
+class AreaUpdateView(LoginRequiredMixin, generic.UpdateView):
+	model = Area
+	form_class = AreaForm
+	template_name = 'rtl/core/area_form.html'          # reuse the same form template as create
+	success_message = "ناحیه '%(code)s - %(name)s' با موفقیت به‌روزرسانی شد."
+	
+	def get_success_url(self):
+		return reverse('core:area_list')            # redirect to area list after update
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['is_create'] = False
+		context['page_title'] = f"ویرایش ناحیه: {self.object.code} - {self.object.name}"
+		context['projects'] = Project.objects.all()   # if needed for project dropdown
+		return context
+	
+	def form_valid(self, form):
+		messages.success(self.request, self.success_message % {'code': form.cleaned_data['code'], 'name': form.cleaned_data['name']})
+		return super().form_valid(form)

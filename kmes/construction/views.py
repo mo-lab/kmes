@@ -31,11 +31,19 @@ class WorkPackageCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new work package with optional equipment tags."""
 	model = WorkPackage
 	form_class = WorkPackageForm
-	template_name = 'construction/work_package_form.html'
+	template_name = 'rtl/construction/work_package_form.html'
 	success_message = "Work Package '%(code)s' was created successfully."
 	
 	def get_success_url(self):
 		return HttpResponse('success')
+	
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		project_id = self.request.GET.get('project') or self.kwargs.get('project_id')
+		if project_id:
+			kwargs['project_id'] = int(project_id)
+		return kwargs
+	
 	
 	def get_initial(self):
 		initial = super().get_initial()
@@ -81,7 +89,7 @@ class WorkPackageCreateView(LoginRequiredMixin, generic.CreateView):
 		context['recent_work_packages'] = WorkPackage.objects.select_related(
 				'project', 'area', 'supervisor'
 				).order_by('-created_at')[:5]
-		
+		context['available_tags'] = EquipmentTag.objects.all().select_related('area').order_by('tag_number')
 		return context
 	
 	def get_form_kwargs(self):
@@ -249,7 +257,7 @@ class WorkPackageUpdateView(LoginRequiredMixin, generic.UpdateView):
 	"""Update an existing work package."""
 	model = WorkPackage
 	form_class = WorkPackageForm
-	template_name = 'construction/work_package_form.html'
+	template_name = 'rtl/construction/work_package_form.html'
 	success_message = "Work Package '%(code)s' was updated successfully."
 	
 	def get_success_url(self):
@@ -335,7 +343,7 @@ class WorkPackageUpdateView(LoginRequiredMixin, generic.UpdateView):
 
 class WorkPackageListView( generic.ListView):
 	model = WorkPackage
-	template_name = 'construction/work_package_list.html'
+	template_name = 'rtl/construction/work_package_list.html'
 	context_object_name = 'work_packages'
 	paginate_by = 20
 	
@@ -486,7 +494,7 @@ class DailyProgressReportCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a daily progress report for a work package."""
 	model = DailyProgressReport
 	form_class = DailyProgressReportForm
-	template_name = 'construction/daily_report_form.html'
+	template_name = 'rtl/construction/daily_report_form.html'
 	success_message = "Daily progress report was created successfully."
 	
 	def get_success_url(self):
@@ -629,7 +637,7 @@ class DailyProgressReportUpdateView(LoginRequiredMixin, generic.UpdateView):
 	"""Update an existing daily progress report."""
 	model = DailyProgressReport
 	form_class = DailyProgressReportForm
-	template_name = 'construction/daily_report_form.html'
+	template_name = 'rtl/construction/daily_report_form.html'
 	success_message = "Daily progress report was updated successfully."
 	
 	def get_success_url(self):
@@ -662,7 +670,7 @@ class DailyProgressReportUpdateView(LoginRequiredMixin, generic.UpdateView):
 # class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 # 	"""List all daily progress reports."""
 # 	model = DailyProgressReport
-# 	template_name = 'construction/daily_report_list.html'
+# 	template_name = 'rtl/construction/daily_report_list.html'
 # 	context_object_name = 'reports'
 # 	paginate_by = 25
 #
@@ -701,7 +709,7 @@ class DailyProgressReportUpdateView(LoginRequiredMixin, generic.UpdateView):
 
 class WorkPackageDetailView(LoginRequiredMixin, generic.DetailView):
 	model = WorkPackage
-	template_name = 'construction/work_package_detail.html'
+	template_name = 'rtl/construction/work_package_detail.html'
 	context_object_name = 'work_package'
 	
 	def get_queryset(self):
@@ -926,7 +934,7 @@ class WorkPackageItemCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Add equipment tags to a work package."""
 	model = WorkPackageItem
 	form_class = WorkPackageItemForm
-	template_name = 'construction/work_package_item_form.html'
+	template_name = 'rtl/construction/work_package_item_form.html'
 	success_message = "Equipment tag added to work package successfully."
 	
 	def get_success_url(self):
@@ -1169,13 +1177,13 @@ def work_package_item_bulk_add_view(request, work_package_id):
 			'existing_items': work_package.items.select_related('equipment_tag').order_by('sequence_number'),
 			}
 	
-	return render(request, 'construction/work_package_item_bulk_form.html', context)
+	return render(request, 'rtl/construction/work_package_item_bulk_form.html', context)
 
 
 class WorkPackageItemDeleteView(LoginRequiredMixin, generic.DeleteView):
 	"""Remove an equipment tag from a work package."""
 	model = WorkPackageItem
-	template_name = 'construction/work_package_item_confirm_delete.html'
+	template_name = 'rtl/construction/work_package_item_confirm_delete.html'
 	success_message = "Equipment tag removed from work package successfully."
 	
 	def get_success_url(self):
@@ -1249,7 +1257,7 @@ def work_package_item_reorder_view(request, work_package_id):
 	
 	items = work_package.items.select_related('equipment_tag').order_by('sequence_number')
 	
-	return render(request, 'construction/work_package_item_reorder.html', {
+	return render(request, 'rtl/construction/work_package_item_reorder.html', {
 			'work_package': work_package,
 			'items': items,
 			})
@@ -1300,7 +1308,7 @@ def ajax_search_available_tags(request, work_package_id):
 
 class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 	model = DailyProgressReport
-	template_name = 'construction/daily_report_list.html'
+	template_name = 'rtl/construction/daily_report_list.html'
 	context_object_name = 'reports'
 	paginate_by = 25
 	
@@ -1503,7 +1511,7 @@ class DailyProgressReportListView(LoginRequiredMixin, generic.ListView):
 
 class DailyProgressReportListView2(LoginRequiredMixin, generic.ListView):
 	model = DailyProgressReport
-	template_name = 'construction/daily_report_list2.html'
+	template_name = 'rtl/construction/daily_report_list2.html'
 	context_object_name = 'reports'
 	paginate_by = 25
 	
@@ -1766,7 +1774,7 @@ def redirect_to_referer(request, fallback_url):
 
 class DailyProcessReportEmployeeList(LoginRequiredMixin, ListView):
 	model = Employee
-	template_name = 'construction/employee_simple_list.html'
+	template_name = 'rtl/construction/employee_simple_list.html'
 	context_object_name = 'employees'
 	ordering = ['company', 'last_name', 'first_name']
 	
@@ -1833,7 +1841,7 @@ class DailyProgressReportCreateView3( generic.CreateView):
 	"""Create a daily progress report – only for the user's company employees."""
 	model = DailyProgressReport
 	form_class = DailyProgressReportForm2
-	template_name = 'construction/daily_report_form2.html'
+	template_name = 'rtl/construction/daily_report_form2.html'
 	success_message = "Daily progress report was created successfully."
 	
 	# ---------- User company check ----------
@@ -1984,7 +1992,7 @@ class DailyProgressReportCreateView3( generic.CreateView):
 
 
 class ManageDailyTimesheetsView(LoginRequiredMixin, TemplateView):
-	template_name = 'construction/manage_daily_timesheets.html'
+	template_name = 'rtl/construction/manage_daily_timesheets.html'
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -2058,7 +2066,7 @@ class ManageDailyTimesheetsView(LoginRequiredMixin, TemplateView):
 
 class DailyProgressReportDetailView(LoginRequiredMixin, DetailView):
 	model = DailyProgressReport
-	template_name = 'construction/daily_report_detail.html'
+	template_name = 'rtl/construction/daily_report_detail.html'
 	context_object_name = 'report'
 	
 	def get_queryset(self):
@@ -2118,7 +2126,7 @@ class DailyProgressReportDetailView(LoginRequiredMixin, DetailView):
 class InstalledItemCheckCreateView(LoginRequiredMixin, CreateView):
 	model = InstalledItemCheck
 	form_class = InstalledItemCheckForm
-	template_name = 'construction/installed_item_check_form.html'
+	template_name = 'rtl/construction/installed_item_check_form.html'
 	
 	def get_success_url(self):
 		return reverse('core:equipment-tag-detail', kwargs={'pk': self.object.equipment_tag.pk})

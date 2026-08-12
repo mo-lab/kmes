@@ -10,9 +10,10 @@ urlpatterns = [
 		path("projects/<int:project_pk>/systems/create/", views.SystemCreateView.as_view(), name="system-create"),
 		path("tags/create/en/", views.EquipmentTagCreateView.as_view(), name="equipmenttag-create"),
 		path('tags/create/', views.EquipmentTagCreateView.as_view(), name='equipment_tag_create'),
-		path('tags/create/project/<int:project_id>/', views.EquipmentTagCreateView.as_view(), name='equipment_tag_create_for_project'),
+		
 		path('projects/', views.ProjectListView.as_view(), name='project-list'),
 		path('projects/<int:pk>/', views.ProjectDetailView.as_view(), name='project-detail'),
+		path('projects/<int:pk>/update/', views.ProjectUpdateView.as_view(), name='project_update'),
 		path('equipments/', views.EquipmentTagListView.as_view(), name='equipment-tag-list'),
 		path('tags/<int:pk>/', views.EquipmentTagDetailView.as_view(), name='equipment-tag-detail'),
 		path(
@@ -48,8 +49,11 @@ urlpatterns = [
 		path('areas/', views.AreaListView.as_view(), name='area_list'),
 		path('areas/<int:pk>/', views.AreaDetailView.as_view(), name='area_detail'),
 		path('areas/create/', views.AreaCreateView.as_view(), name='area_create'),
+		path('areas/<int:pk>/update/', views.AreaUpdateView.as_view(), name='area_update'),
+		
 		path('systems/', views.SystemListView.as_view(), name='system_list'),
 		path('systems/<int:pk>/', views.SystemDetailView.as_view(), name='system_detail'),
 		path('systems/create/', views.SystemCreateView.as_view(), name='system_create'),
+		path('systems/update/<int:pk>', views.SystemUpdateView.as_view(), name='system_update'),
 
 		]

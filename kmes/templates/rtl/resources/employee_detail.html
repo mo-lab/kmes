@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}{{ employee.full_name }} - Employee Details{% endblock %}
+{% block title %}{{ employee.full_name }} - جزئیات کارمند{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -133,13 +133,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'resources:employee_list' %}">Employees</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'resources:employee_list' %}">کارمندان</a></li>
       <li class="breadcrumb-item active">{{ employee.full_name }}</li>
     </ol>
   </nav>
@@ -161,9 +161,9 @@
             <p class="mb-0 opacity-75">
               <i class="bi bi-building"></i> {{ employee.company }}
               {% if employee.is_active %}
-              <span class="badge bg-success ms-2">Active</span>
+              <span class="badge bg-success ms-2">فعال</span>
               {% else %}
-              <span class="badge bg-danger ms-2">Inactive</span>
+              <span class="badge bg-danger ms-2">غیرفعال</span>
               {% endif %}
             </p>
           </div>
@@ -172,13 +172,13 @@
       <div class="col-md-4 text-md-end mt-3 mt-md-0">
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <a href="#" class="btn btn-light">
-            <i class="bi bi-pencil"></i> Edit
+            <i class="bi bi-pencil"></i> ویرایش
           </a>
           <a href="#" class="btn btn-outline-light">
-            <i class="bi bi-patch-plus"></i> Add Certification
+            <i class="bi bi-patch-plus"></i> افزودن گواهینامه
           </a>
           <a href="#" class="btn btn-outline-light">
-            <i class="bi bi-clock"></i> Add Timesheet
+            <i class="bi bi-clock"></i> افزودن برگه زمانی
           </a>
         </div>
       </div>
@@ -192,7 +192,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-clock fs-3 text-primary"></i>
           <div class="fs-4 fw-bold text-primary">{{ total_hours|floatformat:1 }}</div>
-          <small class="text-muted">Total Hours</small>
+          <small class="text-muted">کل ساعت‌ها</small>
         </div>
       </div>
     </div>
@@ -201,7 +201,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-clock-history fs-3 text-warning"></i>
           <div class="fs-4 fw-bold text-warning">{{ total_overtime|floatformat:1 }}</div>
-          <small class="text-muted">Overtime Hours</small>
+          <small class="text-muted">ساعت اضافه‌کاری</small>
         </div>
       </div>
     </div>
@@ -210,7 +210,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-calendar-check fs-3 text-info"></i>
           <div class="fs-4 fw-bold text-info">{{ total_days_worked }}</div>
-          <small class="text-muted">Days Worked</small>
+          <small class="text-muted">روزهای کارکرد</small>
         </div>
       </div>
     </div>
@@ -219,7 +219,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-patch-check fs-3 text-success"></i>
           <div class="fs-4 fw-bold text-success">{{ valid_certifications.count }}</div>
-          <small class="text-muted">Valid Certs</small>
+          <small class="text-muted">گواهینامه‌های معتبر</small>
         </div>
       </div>
     </div>
@@ -228,7 +228,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
           <div class="fs-4 fw-bold text-danger">{{ pending_count }}</div>
-          <small class="text-muted">Pending Approval</small>
+          <small class="text-muted">در انتظار تأیید</small>
         </div>
       </div>
     </div>
@@ -237,7 +237,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-diagram-3 fs-3 text-secondary"></i>
           <div class="fs-4 fw-bold text-secondary">{{ work_package_history|length }}</div>
-          <small class="text-muted">Work Packages</small>
+          <small class="text-muted">بسته‌های کاری</small>
         </div>
       </div>
     </div>
@@ -249,24 +249,24 @@
       <ul class="nav nav-pills" id="employeeTabs" role="tablist">
         <li class="nav-item">
           <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
-            <i class="bi bi-info-circle"></i> Overview
+            <i class="bi bi-info-circle"></i> نمای کلی
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#timesheets">
-            <i class="bi bi-clock"></i> Timesheets
+            <i class="bi bi-clock"></i> برگه‌های زمانی
             <span class="badge bg-primary ms-1">{{ total_entries }}</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#certifications">
-            <i class="bi bi-patch-check"></i> Certifications
+            <i class="bi bi-patch-check"></i> گواهینامه‌ها
             <span class="badge bg-primary ms-1">{{ certifications.count }}</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#work-history">
-            <i class="bi bi-diagram-3"></i> Work History
+            <i class="bi bi-diagram-3"></i> سابقه کاری
             <span class="badge bg-primary ms-1">{{ work_package_history|length }}</span>
           </button>
         </li>
@@ -281,32 +281,32 @@
           <div class="row">
             <div class="col-lg-8">
               <!-- Employee Details -->
-              <h5 class="mb-3">Employee Information</h5>
+              <h5 class="mb-3">اطلاعات کارمند</h5>
               <table class="table table-bordered">
-                <tr><th class="bg-light" width="200">Employee ID</th><td>{{ employee.employee_id }}</td></tr>
-                <tr><th class="bg-light">Full Name</th><td>{{ employee.full_name }}</td></tr>
-                <tr><th class="bg-light">Company</th><td>{{ employee.company }}</td></tr>
-                <tr><th class="bg-light">Trade / Role</th><td>{{ employee.get_trade_display }}</td></tr>
-                {% if employee.email %}<tr><th class="bg-light">Email</th><td><a href="mailto:{{ employee.email }}">{{ employee.email }}</a></td></tr>{% endif %}
-                {% if employee.phone %}<tr><th class="bg-light">Phone</th><td><a href="tel:{{ employee.phone }}">{{ employee.phone }}</a></td></tr>{% endif %}
-                <tr><th class="bg-light">Status</th><td>{% if employee.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Inactive</span>{% endif %}</td></tr>
-                <tr><th class="bg-light">Hire Date</th><td>{{ employee.hire_date|date:"F d, Y"|default:"-" }}</td></tr>
-                {% if employee.termination_date %}<tr><th class="bg-light">Termination Date</th><td class="text-danger">{{ employee.termination_date|date:"F d, Y" }}</td></tr>{% endif %}
-                {% if employee.user %}<tr><th class="bg-light">User Account</th><td>{{ employee.user.username }} ({{ employee.user.email }})</td></tr>{% endif %}
+                <tr><th class="bg-light" width="200">شناسه کارمند</th><td>{{ employee.employee_id }}</td></tr>
+                <tr><th class="bg-light">نام کامل</th><td>{{ employee.full_name }}</td></tr>
+                <tr><th class="bg-light">شرکت</th><td>{{ employee.company }}</td></tr>
+                <tr><th class="bg-light">تخصص / نقش</th><td>{{ employee.get_trade_display }}</td></tr>
+                {% if employee.email %}<tr><th class="bg-light">ایمیل</th><td><a href="mailto:{{ employee.email }}">{{ employee.email }}</a></td></tr>{% endif %}
+                {% if employee.phone %}<tr><th class="bg-light">تلفن</th><td><a href="tel:{{ employee.phone }}">{{ employee.phone }}</a></td></tr>{% endif %}
+                <tr><th class="bg-light">وضعیت</th><td>{% if employee.is_active %}<span class="badge bg-success">فعال</span>{% else %}<span class="badge bg-danger">غیرفعال</span>{% endif %}</td></tr>
+                <tr><th class="bg-light">تاریخ استخدام</th><td>{{ employee.hire_date|date:"F d, Y"|default:"-" }}</td></tr>
+                {% if employee.termination_date %}<tr><th class="bg-light">تاریخ اخراج</th><td class="text-danger">{{ employee.termination_date|date:"F d, Y" }}</td></tr>{% endif %}
+                {% if employee.user %}<tr><th class="bg-light">حساب کاربری</th><td>{{ employee.user.username }} ({{ employee.user.email }})</td></tr>{% endif %}
               </table>
 
               {% if employee.notes %}
               <div class="mt-3">
-                <h6>Notes</h6>
+                <h6>یادداشت‌ها</h6>
                 <p class="text-muted">{{ employee.notes|linebreaks }}</p>
               </div>
               {% endif %}
 
               <!-- Daily Hours Chart -->
-              <h5 class="mt-4 mb-3">Daily Hours (Last 14 Days)</h5>
+              <h5 class="mt-4 mb-3">ساعت‌های روزانه (۱۴ روز اخیر)</h5>
               <div class="chart-bar-container mb-4">
                 {% for day in daily_hours %}
-                <div class="chart-bar {% if day.is_today %}today{% elif day.is_weekend %}weekend{% endif %}" style="height: {% if day.hours > 0 %}{% widthratio day.hours 12 100 %}%{% else %}3px{% endif %}; max-height: 100px;margin: 12px;" title="{{ day.date|date:'M d' }}: {{ day.hours|floatformat:1 }}h">
+                <div class="chart-bar {% if day.is_today %}today{% elif day.is_weekend %}weekend{% endif %}" style="height: {% if day.hours > 0 %}{% widthratio day.hours 12 100 %}%{% else %}3px{% endif %}; max-height: 100px;margin: 12px;" title="{{ day.date|date:'M d' }}: {{ day.hours|floatformat:1 }} ساعت">
                   {% if day.hours > 0 %}
                   <span class="bar-value">{{ day.hours|floatformat:1 }}</span>
                   {% endif %}
@@ -317,31 +317,31 @@
               </div>
 
               <!-- Weekly Hours Chart -->
-              <h5 class="mt-4 mb-3">Weekly Hours (Last 8 Weeks)</h5>
+              <h5 class="mt-4 mb-3">ساعت‌های هفتگی (۸ هفته اخیر)</h5>
               <div class="table-responsive">
                 <table class="table table-sm">
                   <thead class="table-light">
                   <tr>
-                    <th>Week</th>
-                    <th>Regular Hours</th>
-                    <th>Overtime</th>
-                    <th>Total</th>
-                    <th>Progress</th>
+                    <th>هفته</th>
+                    <th>ساعت عادی</th>
+                    <th>اضافه‌کاری</th>
+                    <th>کل</th>
+                    <th>پیشرفت</th>
                   </tr>
                   </thead>
                   <tbody>
                   {% for week in weekly_hours %}
                   <tr>
                     <td><small>{{ week.week_start|date:"M d" }} - {{ week.week_end|date:"M d" }}</small></td>
-                    <td><span class="badge bg-primary">{{ week.hours|floatformat:1 }}h</span></td>
+                    <td><span class="badge bg-primary">{{ week.hours|floatformat:1 }} ساعت</span></td>
                     <td>
                       {% if week.overtime > 0 %}
-                      <span class="badge bg-warning text-dark">{{ week.overtime|floatformat:1 }}h</span>
+                      <span class="badge bg-warning text-dark">{{ week.overtime|floatformat:1 }} ساعت</span>
                       {% else %}
                       <span class="text-muted">-</span>
                       {% endif %}
                     </td>
-                    <td><strong>{{ week.hours|add:week.overtime|floatformat:1 }}h</strong></td>
+                    <td><strong>{{ week.hours|add:week.overtime|floatformat:1 }} ساعت</strong></td>
                     <td>
                       <div class="progress" style="height: 6px;">
                         <div class="progress-bar {% if week.hours > 40 %}bg-danger{% elif week.hours > 30 %}bg-warning{% else %}bg-success{% endif %}"
@@ -360,17 +360,17 @@
               <!-- This Week Summary -->
               <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
-                  <h6 class="mb-0"><i class="bi bi-calendar-week me-2"></i>This Week</h6>
+                  <h6 class="mb-0"><i class="bi bi-calendar-week me-2"></i>این هفته</h6>
                 </div>
                 <div class="card-body">
                   <div class="row text-center">
                     <div class="col-6 border-end">
-                      <div class="fs-4 fw-bold">{{ week_hours|floatformat:1 }}h</div>
-                      <small class="text-muted">Regular</small>
+                      <div class="fs-4 fw-bold">{{ week_hours|floatformat:1 }} ساعت</div>
+                      <small class="text-muted">عادی</small>
                     </div>
                     <div class="col-6">
-                      <div class="fs-4 fw-bold">{{ week_overtime|floatformat:1 }}h</div>
-                      <small class="text-muted">Overtime</small>
+                      <div class="fs-4 fw-bold">{{ week_overtime|floatformat:1 }} ساعت</div>
+                      <small class="text-muted">اضافه‌کاری</small>
                     </div>
                   </div>
                 </div>
@@ -379,17 +379,17 @@
               <!-- This Month Summary -->
               <div class="card mb-3">
                 <div class="card-header bg-info text-white">
-                  <h6 class="mb-0"><i class="bi bi-calendar-month me-2"></i>This Month</h6>
+                  <h6 class="mb-0"><i class="bi bi-calendar-month me-2"></i>این ماه</h6>
                 </div>
                 <div class="card-body">
                   <div class="row text-center">
                     <div class="col-6 border-end">
-                      <div class="fs-4 fw-bold">{{ month_hours|floatformat:1 }}h</div>
-                      <small class="text-muted">Regular</small>
+                      <div class="fs-4 fw-bold">{{ month_hours|floatformat:1 }} ساعت</div>
+                      <small class="text-muted">عادی</small>
                     </div>
                     <div class="col-6">
-                      <div class="fs-4 fw-bold">{{ month_overtime|floatformat:1 }}h</div>
-                      <small class="text-muted">Overtime</small>
+                      <div class="fs-4 fw-bold">{{ month_overtime|floatformat:1 }} ساعت</div>
+                      <small class="text-muted">اضافه‌کاری</small>
                     </div>
                   </div>
                 </div>
@@ -398,21 +398,21 @@
               <!-- Certifications Summary -->
               <div class="card mb-3">
                 <div class="card-header">
-                  <h6 class="mb-0"><i class="bi bi-patch-check me-2"></i>Certifications</h6>
+                  <h6 class="mb-0"><i class="bi bi-patch-check me-2"></i>گواهینامه‌ها</h6>
                 </div>
                 <div class="card-body">
                   <div class="d-flex justify-content-around text-center">
                     <div>
                       <div class="fs-4 fw-bold text-success">{{ valid_certifications.count }}</div>
-                      <small class="text-muted">Valid</small>
+                      <small class="text-muted">معتبر</small>
                     </div>
                     <div>
                       <div class="fs-4 fw-bold text-warning">{{ expiring_soon_certifications.count }}</div>
-                      <small class="text-muted">Expiring</small>
+                      <small class="text-muted">در حال انقضا</small>
                     </div>
                     <div>
                       <div class="fs-4 fw-bold text-danger">{{ expired_certifications.count }}</div>
-                      <small class="text-muted">Expired</small>
+                      <small class="text-muted">منقضی شده</small>
                     </div>
                   </div>
                 </div>
@@ -423,7 +423,7 @@
               <div class="card border-warning">
                 <div class="card-header bg-warning bg-opacity-10">
                   <h6 class="mb-0">
-                    <i class="bi bi-clock-history me-2"></i>Pending Approval
+                    <i class="bi bi-clock-history me-2"></i>در انتظار تأیید
                     <span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>
                   </h6>
                 </div>
@@ -433,7 +433,7 @@
                     <div class="list-group-item small d-flex justify-content-between align-items-center">
                       <div>
                         <strong>{{ ts.date|date:"M d, Y" }}</strong>
-                        <span class="badge bg-primary ms-1">{{ ts.hours_worked }}h</span>
+                        <span class="badge bg-primary ms-1">{{ ts.hours_worked }} ساعت</span>
                       </div>
                       <small class="text-muted">{{ ts.work_package.code }}</small>
                     </div>
@@ -449,9 +449,9 @@
         <!-- Timesheets Tab -->
         <div class="tab-pane fade" id="timesheets">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Timesheet History</h5>
+            <h5 class="mb-0">سابقه برگه‌های زمانی</h5>
             <a href="#" class="btn btn-primary btn-sm">
-              <i class="bi bi-plus-lg"></i> Add Timesheet
+              <i class="bi bi-plus-lg"></i> افزودن برگه زمانی
             </a>
           </div>
 
@@ -460,13 +460,13 @@
             <table class="table table-hover table-sm">
               <thead class="table-light">
               <tr>
-                <th>Date</th>
-                <th>Work Package</th>
-                <th>Regular Hours</th>
-                <th>Overtime</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Approved By</th>
+                <th>تاریخ</th>
+                <th>بسته کاری</th>
+                <th>ساعت عادی</th>
+                <th>اضافه‌کاری</th>
+                <th>کل</th>
+                <th>وضعیت</th>
+                <th>تأیید شده توسط</th>
               </tr>
               </thead>
               <tbody>
@@ -484,20 +484,20 @@
                   <br>
                   <small class="text-muted">{{ ts.work_package.name|truncatechars:40 }}</small>
                 </td>
-                <td><span class="badge bg-primary">{{ ts.hours_worked }}h</span></td>
+                <td><span class="badge bg-primary">{{ ts.hours_worked }} ساعت</span></td>
                 <td>
                   {% if ts.overtime_hours > 0 %}
-                  <span class="badge bg-warning text-dark">{{ ts.overtime_hours }}h</span>
+                  <span class="badge bg-warning text-dark">{{ ts.overtime_hours }} ساعت</span>
                   {% else %}
                   <span class="text-muted">-</span>
                   {% endif %}
                 </td>
-                <td><strong>{{ ts.hours_worked|add:ts.overtime_hours }}h</strong></td>
+                <td><strong>{{ ts.hours_worked|add:ts.overtime_hours }} ساعت</strong></td>
                 <td>
                   {% if ts.is_approved %}
-                  <span class="badge bg-success"><i class="bi bi-check-circle"></i> Approved</span>
+                  <span class="badge bg-success"><i class="bi bi-check-circle"></i> تأیید شده</span>
                   {% else %}
-                  <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Pending</span>
+                  <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> در انتظار</span>
                   {% endif %}
                 </td>
                 <td>
@@ -511,9 +511,9 @@
           {% else %}
           <div class="text-center py-4 text-muted">
             <i class="bi bi-clock" style="font-size: 3rem;"></i>
-            <p class="mt-2">No timesheets recorded yet.</p>
+            <p class="mt-2">هنوز هیچ برگه زمانی ثبت نشده است.</p>
             <a href="#" class="btn btn-primary">
-              <i class="bi bi-plus-lg"></i> Add First Timesheet
+              <i class="bi bi-plus-lg"></i> افزودن اولین برگه زمانی
             </a>
           </div>
           {% endif %}
@@ -522,9 +522,9 @@
         <!-- Certifications Tab -->
         <div class="tab-pane fade" id="certifications">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Certifications</h5>
+            <h5 class="mb-0">گواهینامه‌ها</h5>
             <a href="#" class="btn btn-primary btn-sm">
-              <i class="bi bi-plus-lg"></i> Add Certification
+              <i class="bi bi-plus-lg"></i> افزودن گواهینامه
             </a>
           </div>
 
@@ -542,31 +542,31 @@
                       <h6 class="mb-1">{{ cert.name }}</h6>
                       <small class="text-muted">{{ cert.issuing_body }}</small>
                       {% if cert.certificate_number %}
-                      <br><small>Certificate #: {{ cert.certificate_number }}</small>
+                      <br><small>شماره گواهینامه: {{ cert.certificate_number }}</small>
                       {% endif %}
                     </div>
                     <span class="badge
                                             {% if cert.is_valid and cert.expiry_date >= today %}bg-success
                                             {% elif cert.is_valid %}bg-warning text-dark
                                             {% else %}bg-danger{% endif %}">
-                                            {% if cert.is_valid and cert.expiry_date >= today %}Valid
-                                            {% elif cert.is_valid %}Expiring Soon
-                                            {% else %}Expired{% endif %}
+                                            {% if cert.is_valid and cert.expiry_date >= today %}معتبر
+                                            {% elif cert.is_valid %}در حال انقضا
+                                            {% else %}منقضی شده{% endif %}
                                         </span>
                   </div>
 
                   <div class="mt-2 small">
                     <div>
-                      <strong>Issued:</strong> {{ cert.issue_date|date:"M d, Y" }}
+                      <strong>تاریخ صدور:</strong> {{ cert.issue_date|date:"M d, Y" }}
                     </div>
                     <div>
-                      <strong>Expires:</strong>
+                      <strong>تاریخ انقضا:</strong>
                       <span class="{% if cert.expiry_date < today %}text-danger fw-bold{% elif cert.expiry_date < today|date:'Y-m-d'|add:'30 days' %}text-warning fw-bold{% endif %}">
                                                 {{ cert.expiry_date|date:"M d, Y" }}
                                                 {% if cert.expiry_date >= today %}
-                                                    ({{ cert.expiry_date|timeuntil }})
+                                                    ({{ cert.expiry_date|timeuntil }} باقی مانده)
                                                 {% else %}
-                                                    (Expired {{ cert.expiry_date|timesince }} ago)
+                                                    ({{ cert.expiry_date|timesince }} پیش منقضی شده)
                                                 {% endif %}
                                             </span>
                     </div>
@@ -581,7 +581,7 @@
                   {% if cert.document_upload %}
                   <div class="mt-2">
                     <a href="{{ cert.document_upload.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                      <i class="bi bi-file-earmark"></i> View Document
+                      <i class="bi bi-file-earmark"></i> مشاهده مدرک
                     </a>
                   </div>
                   {% endif %}
@@ -589,10 +589,10 @@
                 <div class="card-footer bg-transparent">
                   <div class="btn-group btn-group-sm">
                     <a href="#" class="btn btn-outline-secondary">
-                      <i class="bi bi-pencil"></i> Edit
+                      <i class="bi bi-pencil"></i> ویرایش
                     </a>
                     <a href="#" class="btn btn-outline-danger">
-                      <i class="bi bi-trash"></i> Delete
+                      <i class="bi bi-trash"></i> حذف
                     </a>
                   </div>
                 </div>
@@ -603,9 +603,9 @@
           {% else %}
           <div class="text-center py-4 text-muted">
             <i class="bi bi-patch-check" style="font-size: 3rem;"></i>
-            <p class="mt-2">No certifications recorded.</p>
+            <p class="mt-2">هیچ گواهینامه‌ای ثبت نشده است.</p>
             <a href="#" class="btn btn-primary">
-              <i class="bi bi-plus-lg"></i> Add Certification
+              <i class="bi bi-plus-lg"></i> افزودن گواهینامه
             </a>
           </div>
           {% endif %}
@@ -613,19 +613,19 @@
 
         <!-- Work History Tab -->
         <div class="tab-pane fade" id="work-history">
-          <h5 class="mb-3">Work Package History</h5>
+          <h5 class="mb-3">سابقه بسته‌های کاری</h5>
 
           {% if work_package_history %}
           <div class="table-responsive">
             <table class="table table-hover">
               <thead class="table-light">
               <tr>
-                <th>Work Package</th>
-                <th>Project</th>
-                <th>Total Hours</th>
-                <th>Overtime</th>
-                <th>Days Worked</th>
-                <th>Period</th>
+                <th>بسته کاری</th>
+                <th>پروژه</th>
+                <th>کل ساعت</th>
+                <th>اضافه‌کاری</th>
+                <th>روزهای کار</th>
+                <th>دوره</th>
               </tr>
               </thead>
               <tbody>
@@ -639,10 +639,10 @@
                   <small class="text-muted">{{ wp.work_package__name|truncatechars:50 }}</small>
                 </td>
                 <td><small>{{ wp.work_package__project__name|truncatechars:30 }}</small></td>
-                <td><span class="badge bg-primary">{{ wp.total_hours|floatformat:1 }}h</span></td>
+                <td><span class="badge bg-primary">{{ wp.total_hours|floatformat:1 }} ساعت</span></td>
                 <td>
                   {% if wp.total_overtime %}
-                  <span class="badge bg-warning text-dark">{{ wp.total_overtime|floatformat:1 }}h</span>
+                  <span class="badge bg-warning text-dark">{{ wp.total_overtime|floatformat:1 }} ساعت</span>
                   {% else %}
                   <span class="text-muted">-</span>
                   {% endif %}
@@ -659,7 +659,7 @@
           {% else %}
           <div class="text-center py-4 text-muted">
             <i class="bi bi-diagram-3" style="font-size: 3rem;"></i>
-            <p class="mt-2">No work history recorded yet.</p>
+            <p class="mt-2">هنوز هیچ سابقه کاری ثبت نشده است.</p>
           </div>
           {% endif %}
         </div>

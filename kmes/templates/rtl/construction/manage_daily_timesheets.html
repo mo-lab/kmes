@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Manage Daily Timesheets{% endblock %}
+{% block title %}مدیریت برگه‌های زمانی روزانه{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -22,8 +22,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Manage Daily Timesheets</h2>
+<div class="container mt-4" dir="rtl">
+    <h2>مدیریت برگه‌های زمانی روزانه</h2>
 
     {% if messages %}
     {% for msg in messages %}
@@ -34,17 +34,17 @@
     <!-- Date Filter -->
     <form method="get" class="row g-3 mb-3 align-items-end">
         <div class="col-auto">
-            <label for="dateFilter" class="form-label">Date</label>
+            <label for="dateFilter" class="form-label">تاریخ</label>
             <input type="date" name="date" id="dateFilter" class="form-control"
                    value="{{ selected_date }}" onchange="this.form.submit()">
         </div>
         <div class="col-auto d-flex align-items-end">
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setYesterday()">
-                Yesterday
+                دیروز
             </button>
         </div>
         <div class="col-auto d-flex align-items-end">
-            <a href="{% url 'construction:manage_daily_timesheets' %}" class="btn btn-sm btn-outline-secondary">Clear Date</a>
+            <a href="{% url 'construction:manage_daily_timesheets' %}" class="btn btn-sm btn-outline-secondary">پاک کردن تاریخ</a>
         </div>
     </form>
 
@@ -56,15 +56,15 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>
-                    <strong>Employees</strong>
+                    <strong>کارمندان</strong>
                     <span class="badge bg-primary ms-1">{{ employees.count }}</span>
                 </span>
                 <div>
                     <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAll()">
-                        <i class="bi bi-check-all"></i> All On
+                        <i class="bi bi-check-all"></i> همه روشن
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">
-                        <i class="bi bi-x-circle"></i> All Off
+                        <i class="bi bi-x-circle"></i> همه خاموش
                     </button>
                 </div>
             </div>
@@ -88,7 +88,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="5" class="text-center text-muted">No employees found.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted">هیچ کارمندی یافت نشد.</td></tr>
                         {% endfor %}
                         </tbody>
                     </table>
@@ -96,7 +96,7 @@
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Update Timesheets
+                    <i class="bi bi-save"></i> به‌روزرسانی برگه‌های زمانی
                 </button>
             </div>
         </div>

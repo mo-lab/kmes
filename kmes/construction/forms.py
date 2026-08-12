@@ -5,7 +5,7 @@ from .models import (
 	WorkPackage, WorkPackageItem, DailyProgressReport,
 	InstalledItemCheck, InstallationCheckPhoto, DailyProcessReportEmployees
 	)
-from core.models import EquipmentTag
+from core.models import EquipmentTag,Project,Area,System
 
 
 class WorkPackageForm(forms.ModelForm):
@@ -71,7 +71,18 @@ class WorkPackageForm(forms.ModelForm):
 								}
 						),
 				}
+		
+	def __init__(self, *args, **kwargs):
+		project_id = kwargs.pop('project_id', None)
 	
+		super().__init__(*args, **kwargs)
+		
+		if project_id:
+			self.fields['project'].queryset = Project.objects.filter(pk=project_id)
+			self.fields['area'].queryset = Area.objects.filter(project_id=project_id)
+			self.fields['system'].queryset = System.objects.filter(project_id=project_id)
+			
+			
 	def clean(self):
 		cleaned_data = super().clean()
 		planned_start = cleaned_data.get('planned_start')

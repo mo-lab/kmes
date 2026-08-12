@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -133,9 +133,9 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'documents:document_list' %}">Documents</a></li>
-            <li class="breadcrumb-item active">Shared With Me</li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'documents:document_list' %}">مدارک</a></li>
+            <li class="breadcrumb-item active">به اشتراک گذاشته شده با من</li>
         </ol>
     </nav>
 
@@ -144,19 +144,19 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h2 class="mb-2">
-                    <i class="bi bi-share me-2"></i>Documents Shared With Me
+                    <i class="bi bi-share me-2"></i>مدارک به اشتراک گذاشته شده با من
                 </h2>
                 <p class="mb-0 opacity-75">
-                    Documents that other users have shared with you
+                    مدارکی که کاربران دیگر با شما به اشتراک گذاشته‌اند
                     {% if unread_count > 0 %}
-                    <span class="badge bg-warning text-dark ms-2">{{ unread_count }} unread</span>
+                    <span class="badge bg-warning text-dark ms-2">{{ unread_count }} خوانده نشده</span>
                     {% endif %}
                 </p>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
                 {% if unread_count > 0 %}
                 <button class="btn btn-light" onclick="markAllAsSeen()">
-                    <i class="bi bi-check-all"></i> Mark All as Seen
+                    <i class="bi bi-check-all"></i> علامت‌گذاری همه به‌عنوان دیده شده
                 </button>
                 {% endif %}
             </div>
@@ -170,7 +170,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-share fs-3 text-primary"></i>
                     <div class="fs-4 fw-bold text-primary">{{ total_shared }}</div>
-                    <small class="text-muted">Total Shared</small>
+                    <small class="text-muted">کل اشتراک‌گذاری‌ها</small>
                 </div>
             </div>
         </div>
@@ -179,7 +179,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-envelope fs-3 text-warning"></i>
                     <div class="fs-4 fw-bold text-warning">{{ unread_count }}</div>
-                    <small class="text-muted">Unread</small>
+                    <small class="text-muted">خوانده نشده</small>
                 </div>
             </div>
         </div>
@@ -188,7 +188,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-check-circle fs-3 text-success"></i>
                     <div class="fs-4 fw-bold text-success">{{ read_count }}</div>
-                    <small class="text-muted">Read</small>
+                    <small class="text-muted">خوانده شده</small>
                 </div>
             </div>
         </div>
@@ -200,17 +200,17 @@
             <div class="btn-group" role="group">
                 <a href="?filter=all{% if search %}&search={{ search }}{% endif %}"
                    class="btn btn-outline-secondary btn-sm filter-btn {% if filter_type == 'all' %}active{% endif %}">
-                    <i class="bi bi-list"></i> All
+                    <i class="bi bi-list"></i> همه
                     <span class="badge bg-secondary ms-1">{{ total_shared }}</span>
                 </a>
                 <a href="?filter=unread{% if search %}&search={{ search }}{% endif %}"
                    class="btn btn-outline-secondary btn-sm filter-btn {% if filter_type == 'unread' %}active{% endif %}">
-                    <i class="bi bi-envelope"></i> Unread
+                    <i class="bi bi-envelope"></i> خوانده نشده
                     <span class="badge bg-warning text-dark ms-1">{{ unread_count }}</span>
                 </a>
                 <a href="?filter=read{% if search %}&search={{ search }}{% endif %}"
                    class="btn btn-outline-secondary btn-sm filter-btn {% if filter_type == 'read' %}active{% endif %}">
-                    <i class="bi bi-check-circle"></i> Read
+                    <i class="bi bi-check-circle"></i> خوانده شده
                     <span class="badge bg-success ms-1">{{ read_count }}</span>
                 </a>
             </div>
@@ -223,18 +223,18 @@
                 <div class="input-group input-group-sm">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" class="form-control"
-                           placeholder="Search by document number, title, or sender..."
+                           placeholder="جستجو بر اساس شماره مدرک، عنوان یا فرستنده..."
                            value="{{ search }}">
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <button type="submit" class="btn btn-primary">جستجو</button>
                 </div>
             </form>
         </div>
         <div class="col-md-3 text-end">
             <select class="form-select form-select-sm" style="width: auto; display: inline;" onchange="updateSort(this.value)">
-                <option value="-shared_date" {% if request.GET.sort == '-shared_date' %}selected{% endif %}>Newest First</option>
-                <option value="shared_date" {% if request.GET.sort == 'shared_date' %}selected{% endif %}>Oldest First</option>
-                <option value="document__document_number" {% if request.GET.sort == 'document__document_number' %}selected{% endif %}>Document # (A-Z)</option>
-                <option value="-document__document_number" {% if request.GET.sort == '-document__document_number' %}selected{% endif %}>Document # (Z-A)</option>
+                <option value="-shared_date" {% if request.GET.sort == '-shared_date' %}selected{% endif %}>جدیدترین اول</option>
+                <option value="shared_date" {% if request.GET.sort == 'shared_date' %}selected{% endif %}>قدیمی‌ترین اول</option>
+                <option value="document__document_number" {% if request.GET.sort == 'document__document_number' %}selected{% endif %}>شماره مدرک (الف-ی)</option>
+                <option value="-document__document_number" {% if request.GET.sort == '-document__document_number' %}selected{% endif %}>شماره مدرک (ی-الف)</option>
             </select>
         </div>
     </div>
@@ -255,9 +255,9 @@
                             <div>
                                 <div class="d-flex align-items-center">
                                     {% if not share.is_accessed %}
-                                    <span class="unread-dot me-2" title="Unread"></span>
+                                    <span class="unread-dot me-2" title="خوانده نشده"></span>
                                     {% else %}
-                                    <span class="read-dot me-2" title="Read"></span>
+                                    <span class="read-dot me-2" title="خوانده شده"></span>
                                     {% endif %}
                                     <h6 class="mb-0">
                                         <a href="{% url 'documents:document_detail' share.document.pk %}"
@@ -273,37 +273,37 @@
                         <!-- Status and Actions -->
                         <div class="d-flex align-items-center gap-2">
                             {% if not share.is_accessed %}
-                            <span class="badge bg-warning text-dark seen-badge">New</span>
+                            <span class="badge bg-warning text-dark seen-badge">جدید</span>
                             {% endif %}
 
                             <div class="dropdown quick-actions-dropdown">
                                 <button class="btn btn-sm btn-outline-secondary action-btn"
-                                        data-bs-toggle="dropdown" title="Actions">
+                                        data-bs-toggle="dropdown" title="عملیات">
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     {% if not share.is_accessed %}
                                     <li>
                                         <button class="dropdown-item" onclick="markAsSeen({{ share.pk }})">
-                                            <i class="bi bi-check-circle text-success"></i> Mark as Seen
+                                            <i class="bi bi-check-circle text-success"></i> علامت‌گذاری به‌عنوان دیده شده
                                         </button>
                                     </li>
                                     {% else %}
                                     <li>
                                         <button class="dropdown-item" onclick="markAsUnread({{ share.pk }})">
-                                            <i class="bi bi-arrow-counterclockwise text-warning"></i> Mark as Unread
+                                            <i class="bi bi-arrow-counterclockwise text-warning"></i> علامت‌گذاری به‌عنوان خوانده نشده
                                         </button>
                                     </li>
                                     {% endif %}
                                     <li>
                                         <a class="dropdown-item" href="{% url 'documents:document_detail' share.document.pk %}">
-                                            <i class="bi bi-eye text-primary"></i> View Document
+                                            <i class="bi bi-eye text-primary"></i> مشاهده مدرک
                                         </a>
                                     </li>
                                     {% if share.document.file_upload %}
                                     <li>
                                         <a class="dropdown-item" href="{% url 'documents:document_download' share.document.pk %}">
-                                            <i class="bi bi-download text-success"></i> Download
+                                            <i class="bi bi-download text-success"></i> دانلود
                                         </a>
                                     </li>
                                     {% endif %}
@@ -315,15 +315,15 @@
                     <!-- Document Details -->
                     <div class="row small mb-3">
                         <div class="col-md-6">
-                            <span class="text-muted">Type:</span>
+                            <span class="text-muted">نوع:</span>
                             <span class="badge bg-light text-dark">{{ share.document.get_doc_type_display }}</span>
                         </div>
                         <div class="col-md-6">
-                            <span class="text-muted">Revision:</span>
+                            <span class="text-muted">نسخه:</span>
                             <strong>{{ share.document.revision }}</strong>
                         </div>
                         <div class="col-md-6">
-                            <span class="text-muted">Status:</span>
+                            <span class="text-muted">وضعیت:</span>
                             <span class="badge 
                                 {% if share.document.status == 'APPR' %}bg-success
                                 {% elif share.document.status == 'IFC' %}bg-primary
@@ -334,8 +334,8 @@
                             </span>
                         </div>
                         <div class="col-md-6">
-                            <span class="text-muted">Project:</span>
-                            <small>{{ share.document.project.name|default:"N/A"|truncatechars:25 }}</small>
+                            <span class="text-muted">پروژه:</span>
+                            <small>{{ share.document.project.name|default:"نامشخص"|truncatechars:25 }}</small>
                         </div>
                     </div>
 
@@ -361,7 +361,7 @@
                                 </small>
                                 <br>
                                 <small class="text-muted">
-                                    Shared {{ share.shared_date|date:"M d, Y" }} ({{ share.shared_date|timesince }} ago)
+                                    اشتراک‌گذاری در {{ share.shared_date|date:"M d, Y" }} ({{ share.shared_date|timesince }} پیش)
                                 </small>
                             </div>
                         </div>
@@ -370,7 +370,7 @@
                             <!-- Seen Status -->
                             {% if share.is_accessed %}
                             <small class="text-success">
-                                <i class="bi bi-check-circle"></i> Seen {{ share.accessed_date|timesince }} ago
+                                <i class="bi bi-check-circle"></i> دیده شده {{ share.accessed_date|timesince }} پیش
                             </small>
                             {% endif %}
 
@@ -379,17 +379,17 @@
                                 {% if not share.is_accessed %}
                                 <button class="btn btn-outline-success"
                                         onclick="markAsSeen({{ share.pk }})"
-                                        title="Mark as Seen">
+                                        title="علامت‌گذاری به‌عنوان دیده شده">
                                     <i class="bi bi-check-lg"></i>
                                 </button>
                                 {% endif %}
                                 <a href="{% url 'documents:document_detail' share.document.pk %}"
-                                   class="btn btn-outline-primary" title="View Document">
+                                   class="btn btn-outline-primary" title="مشاهده مدرک">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 {% if share.document.file_upload %}
                                 <a href="{% url 'documents:document_download' share.document.pk %}"
-                                   class="btn btn-outline-success" title="Download">
+                                   class="btn btn-outline-success" title="دانلود">
                                     <i class="bi bi-download"></i>
                                 </a>
                                 {% endif %}
@@ -401,11 +401,11 @@
                     <div class="mt-2">
                         {% if share.can_edit %}
                         <span class="badge bg-warning text-dark seen-badge">
-                                <i class="bi bi-pencil"></i> Can Edit
+                                <i class="bi bi-pencil"></i> قابلیت ویرایش
                             </span>
                         {% else %}
                         <span class="badge bg-info seen-badge">
-                                <i class="bi bi-eye"></i> View Only
+                                <i class="bi bi-eye"></i> فقط مشاهده
                             </span>
                         {% endif %}
 
@@ -413,7 +413,7 @@
                         {% with tag_count=share.document.tag_documents.count %}
                         {% if tag_count > 0 %}
                         <span class="badge bg-light text-dark seen-badge ms-1">
-                                <i class="bi bi-link-45deg"></i> {{ tag_count }} linked tag(s)
+                                <i class="bi bi-link-45deg"></i> {{ tag_count }} برچسب متصل
                             </span>
                         {% endif %}
                         {% endwith %}
@@ -432,34 +432,34 @@
                 <i class="bi bi-share"></i>
                 <h3 class="mt-3">
                     {% if filter_type == 'unread' %}
-                    No Unread Documents
+                    هیچ مدرک خوانده نشده‌ای وجود ندارد
                     {% elif filter_type == 'read' %}
-                    No Read Documents
+                    هیچ مدرک خوانده شده‌ای وجود ندارد
                     {% elif search %}
-                    No Documents Found
+                    هیچ مدرکی پیدا نشد
                     {% else %}
-                    No Shared Documents
+                    هیچ مدرکی به اشتراک گذاشته نشده است
                     {% endif %}
                 </h3>
                 <p class="text-muted">
                     {% if filter_type == 'unread' %}
-                    You've read all documents shared with you. Great job!
+                    شما همه مدارک به اشتراک گذاشته شده را خوانده‌اید. عالی است!
                     {% elif filter_type == 'read' %}
-                    No documents have been marked as read yet.
+                    هنوز هیچ مدرکی به‌عنوان خوانده شده علامت‌گذاری نشده است.
                     {% elif search %}
-                    No documents match your search criteria. Try adjusting your search.
+                    هیچ مدرکی با معیارهای جستجوی شما مطابقت ندارد. لطفاً جستجوی خود را تنظیم کنید.
                     {% else %}
-                    No documents have been shared with you yet. When someone shares a document, it will appear here.
+                    هنوز هیچ مدرکی با شما به اشتراک گذاشته نشده است. وقتی کسی مدرکی را به اشتراک بگذارد، در اینجا ظاهر می‌شود.
                     {% endif %}
                 </p>
                 <div class="mt-3">
                     {% if filter_type != 'all' %}
                     <a href="{% url 'documents:shared_with_me' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i> Clear Filters
+                        <i class="bi bi-x-circle"></i> پاک کردن فیلترها
                     </a>
                     {% endif %}
                     <a href="{% url 'documents:document_list' %}" class="btn btn-primary ms-2">
-                        <i class="bi bi-files"></i> Browse All Documents
+                        <i class="bi bi-files"></i> مرور همه مدارک
                     </a>
                 </div>
             </div>
@@ -496,7 +496,7 @@
                 }
             })
             .catch(error => {
-                showToast('Error marking document as seen.', 'danger');
+                showToast('خطا در علامت‌گذاری مدرک به‌عنوان دیده شده.', 'danger');
                 console.error('Error:', error);
             });
     }
@@ -521,14 +521,14 @@
                 }
             })
             .catch(error => {
-                showToast('Error marking document as unread.', 'danger');
+                showToast('خطا در علامت‌گذاری مدرک به‌عنوان خوانده نشده.', 'danger');
                 console.error('Error:', error);
             });
     }
 
     // Mark all as seen
     function markAllAsSeen() {
-        if (confirm('Mark all shared documents as seen?')) {
+        if (confirm('آیا همه مدارک به اشتراک گذاشته شده به‌عنوان دیده شده علامت‌گذاری شوند؟')) {
             fetch('/documents/share/mark-all-seen/', {
                 method: 'POST',
                 headers: {
@@ -545,7 +545,7 @@
                     }
                 })
                 .catch(error => {
-                    showToast('Error marking documents as seen.', 'danger');
+                    showToast('خطا در علامت‌گذاری مدارک به‌عنوان دیده شده.', 'danger');
                     console.error('Error:', error);
                 });
         }

@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Daily Report #{{ report.pk }} – {{ report.report_date }}{% endblock %}
+{% block title %}گزارش روزانه #{{ report.pk }} – {{ report.report_date }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -22,14 +22,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4" dir="rtl">
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
       <li class="breadcrumb-item"><a href="{% url 'construction:work_package_detail' report.work_package.pk %}">
         {{ report.work_package.code }}</a></li>
-      <li class="breadcrumb-item active">Daily Report #{{ report.pk }}</li>
+      <li class="breadcrumb-item active">گزارش روزانه #{{ report.pk }}</li>
     </ol>
   </nav>
 
@@ -37,21 +37,21 @@
   <div class="report-header">
     <div class="row">
       <div class="col-md-8">
-        <h4>Daily Progress Report</h4>
-        <p class="mb-1"><strong>Work Package:</strong> {{ report.work_package.code }} – {{ report.work_package.name }}</p>
-        <p class="mb-1"><strong>Date:</strong> {{ report.report_date|date:"F d, Y" }}</p>
-        <p class="mb-1"><strong>Reported by:</strong> {{ report.reported_by.get_full_name|default:report.reported_by.username }}</p>
+        <h4>گزارش پیشرفت روزانه</h4>
+        <p class="mb-1"><strong>بسته کاری:</strong> {{ report.work_package.code }} – {{ report.work_package.name }}</p>
+        <p class="mb-1"><strong>تاریخ:</strong> {{ report.report_date|date:"F d, Y" }}</p>
+        <p class="mb-1"><strong>گزارش‌دهنده:</strong> {{ report.reported_by.get_full_name|default:report.reported_by.username }}</p>
         {% if report.weather_conditions %}
-        <p class="mb-1"><strong>Weather:</strong> {{ report.weather_conditions }} {% if report.temperature_celsius %}({{ report.temperature_celsius }}°C){% endif %}</p>
+        <p class="mb-1"><strong>آب و هوا:</strong> {{ report.weather_conditions }} {% if report.temperature_celsius %}({{ report.temperature_celsius }}°C){% endif %}</p>
         {% endif %}
-        <p class="mb-0"><strong>Manpower:</strong> {{ report.manpower_count }} workers | <strong>Hours worked:</strong> {{ report.hours_worked|default:"0" }} h</p>
+        <p class="mb-0"><strong>نیروی انسانی:</strong> {{ report.manpower_count }} کارگر | <strong>ساعت کار:</strong> {{ report.hours_worked|default:"0" }} ساعت</p>
       </div>
       <div class="col-md-4 text-md-end align-self-center">
         <a href="#" class="btn btn-light btn-sm">
-          <i class="bi bi-pencil"></i> Edit
+          <i class="bi bi-pencil"></i> ویرایش
         </a>
         <a href="{% url 'construction:daily_report_list' %}" class="btn btn-outline-light btn-sm">
-          <i class="bi bi-list"></i> All Reports
+          <i class="bi bi-list"></i> همه گزارش‌ها
         </a>
       </div>
     </div>
@@ -61,24 +61,24 @@
   <div class="row mb-4">
     <div class="col-md-6">
       <div class="card h-100">
-        <div class="card-header"><strong>Work Performed</strong></div>
+        <div class="card-header"><strong>کار انجام شده</strong></div>
         <div class="card-body">
           {% if report.work_performed_description %}
           <p>{{ report.work_performed_description|linebreaks }}</p>
           {% else %}
-          <p class="text-muted">No description provided.</p>
+          <p class="text-muted">هیچ توضیحی ارائه نشده است.</p>
           {% endif %}
         </div>
       </div>
     </div>
     <div class="col-md-6">
       <div class="card h-100">
-        <div class="card-header"><strong>Issues Encountered</strong></div>
+        <div class="card-header"><strong>مشکلات پیش آمده</strong></div>
         <div class="card-body">
           {% if report.issues_encountered %}
           <p>{{ report.issues_encountered|linebreaks }}</p>
           {% else %}
-          <p class="text-muted">No issues reported.</p>
+          <p class="text-muted">هیچ مشکلی گزارش نشده است.</p>
           {% endif %}
         </div>
       </div>
@@ -89,12 +89,12 @@
   <div class="card mt-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span>
-            <strong>All Employees – {{ report.report_date }}</strong>
+            <strong>همه کارمندان – {{ report.report_date }}</strong>
             <span class="badge bg-primary ms-1">{{ all_employee_status|length }}</span>
         </span>
       <div>
-        <span class="badge bg-success">Working (report): {{ working_count }}</span>
-        <span class="badge bg-info">Timesheets on date: {{ timesheet_count }}</span>
+        <span class="badge bg-success">در حال کار (گزارش): {{ working_count }}</span>
+        <span class="badge bg-info">برگه‌های زمانی در این تاریخ: {{ timesheet_count }}</span>
       </div>
     </div>
     <div class="card-body p-0">
@@ -102,11 +102,11 @@
         <table class="table table-hover mb-0">
           <thead class="table-light sticky-top">
           <tr>
-            <th>Employee</th>
-            <th>Company</th>
-            <th>Trade</th>
-            <th>Report Status</th>
-            <th>Timesheet</th>
+            <th>کارمند</th>
+            <th>شرکت</th>
+            <th>تخصص</th>
+            <th>وضعیت گزارش</th>
+            <th>برگه زمانی</th>
           </tr>
           </thead>
           <tbody>
@@ -118,18 +118,18 @@
             <td>
               {% if item.has_report_entry %}
               {% if item.is_working %}
-              <span class="badge bg-success"><i class="bi bi-check-circle"></i> Working</span>
+              <span class="badge bg-success"><i class="bi bi-check-circle"></i> در حال کار</span>
               {% else %}
-              <span class="badge bg-secondary"><i class="bi bi-dash-circle"></i> Not Working</span>
+              <span class="badge bg-secondary"><i class="bi bi-dash-circle"></i> در حال کار نیست</span>
               {% endif %}
               {% else %}
-              <span class="badge bg-light text-dark">Not in report</span>
+              <span class="badge bg-light text-dark">در گزارش نیست</span>
               {% endif %}
             </td>
             <td>
               {% if item.timesheet %}
               <a href="#" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-clock"></i> {{ item.timesheet_hours }}h
+                <i class="bi bi-clock"></i> {{ item.timesheet_hours }} ساعت
               </a>
               {% else %}
               <span class="text-muted">-</span>
@@ -137,7 +137,7 @@
             </td>
           </tr>
           {% empty %}
-          <tr><td colspan="5" class="text-center text-muted">No employees found.</td></tr>
+          <tr><td colspan="5" class="text-center text-muted">هیچ کارمندی یافت نشد.</td></tr>
           {% endfor %}
           </tbody>
         </table>

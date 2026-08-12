@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Record Equipment Location{% endblock %}
+{% block title %}ثبت موقعیت تجهیزات{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -78,29 +78,29 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="#">Equipment Tags</a></li>
+            <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="#">برچسب‌های تجهیزات</a></li>
             {% if equipment_tag %}
             <li class="breadcrumb-item">
                 <a href="#">{{ equipment_tag.tag_number }}</a>
             </li>
             {% endif %}
-            <li class="breadcrumb-item active">Record Location</li>
+            <li class="breadcrumb-item active">ثبت موقعیت</li>
         </ol>
     </nav>
 
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h2 mb-1">Record Equipment Location</h1>
+            <h1 class="h2 mb-1">ثبت موقعیت تجهیزات</h1>
             <p class="text-muted mb-0">
                 {% if equipment_tag %}
-                Tag: <strong>{{ equipment_tag.tag_number }}</strong> - {{ equipment_tag.description }}
+                برچسب: <strong>{{ equipment_tag.tag_number }}</strong> - {{ equipment_tag.description }}
                 {% endif %}
             </p>
         </div>
@@ -122,10 +122,10 @@
                 <div class="location-form-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">
-                            <i class="bi bi-geo-alt me-2"></i>GPS Location
+                            <i class="bi bi-geo-alt me-2"></i>موقعیت GPS
                         </h5>
                         <button type="button" class="btn btn-primary gps-button" id="getLocationBtn" onclick="getCurrentLocation()">
-                            <i class="bi bi-crosshair"></i> Get My Location
+                            <i class="bi bi-crosshair"></i> دریافت موقعیت من
                         </button>
                     </div>
 
@@ -141,15 +141,15 @@
                     <div class="coordinates-display mb-3">
                         <div class="row text-center">
                             <div class="col-md-5">
-                                <small class="text-muted">Latitude</small>
+                                <small class="text-muted">عرض جغرافیایی</small>
                                 <div class="coord-value" id="displayLat">--</div>
                             </div>
                             <div class="col-md-5">
-                                <small class="text-muted">Longitude</small>
+                                <small class="text-muted">طول جغرافیایی</small>
                                 <div class="coord-value" id="displayLng">--</div>
                             </div>
                             <div class="col-md-2">
-                                <small class="text-muted">Accuracy</small>
+                                <small class="text-muted">دقت</small>
                                 <div id="displayAccuracy">--</div>
                             </div>
                         </div>
@@ -172,13 +172,13 @@
                 <!-- Location Details -->
                 <div class="location-form-section">
                     <h5 class="mb-3">
-                        <i class="bi bi-info-circle me-2"></i>Location Details
+                        <i class="bi bi-info-circle me-2"></i>جزئیات موقعیت
                     </h5>
 
                     <div class="row g-3">
                         <!-- Location Type -->
                         <div class="col-md-6">
-                            <label for="{{ form.location_type.id_for_label }}" class="form-label">Location Type</label>
+                            <label for="{{ form.location_type.id_for_label }}" class="form-label">نوع موقعیت</label>
                             {{ form.location_type }}
                             {% if form.location_type.errors %}
                             <div class="invalid-feedback d-block">{{ form.location_type.errors.0 }}</div>
@@ -187,7 +187,7 @@
 
                         <!-- Area -->
                         <div class="col-md-6">
-                            <label for="{{ form.area.id_for_label }}" class="form-label">Area</label>
+                            <label for="{{ form.area.id_for_label }}" class="form-label">منطقه</label>
                             {{ form.area }}
                             {% if form.area.errors %}
                             <div class="invalid-feedback d-block">{{ form.area.errors.0 }}</div>
@@ -196,40 +196,40 @@
 
                         <!-- Elevation -->
                         <div class="col-md-4">
-                            <label for="{{ form.elevation.id_for_label }}" class="form-label">Elevation (m)</label>
+                            <label for="{{ form.elevation.id_for_label }}" class="form-label">ارتفاع (متر)</label>
                             {{ form.elevation }}
                             <button type="button" class="btn btn-sm btn-outline-secondary mt-1" id="getElevationBtn" onclick="getElevation()">
-                                <i class="bi bi-arrow-up-circle"></i> Get Elevation
+                                <i class="bi bi-arrow-up-circle"></i> دریافت ارتفاع
                             </button>
                         </div>
 
                         <!-- Building -->
                         <div class="col-md-4">
-                            <label for="{{ form.building.id_for_label }}" class="form-label">Building</label>
+                            <label for="{{ form.building.id_for_label }}" class="form-label">ساختمان</label>
                             {{ form.building }}
                         </div>
 
                         <!-- Floor -->
                         <div class="col-md-4">
-                            <label for="{{ form.floor.id_for_label }}" class="form-label">Floor</label>
+                            <label for="{{ form.floor.id_for_label }}" class="form-label">طبقه</label>
                             {{ form.floor }}
                         </div>
 
                         <!-- Grid Reference -->
                         <div class="col-md-6">
-                            <label for="{{ form.grid_reference.id_for_label }}" class="form-label">Grid Reference</label>
+                            <label for="{{ form.grid_reference.id_for_label }}" class="form-label">مرجع شبکه</label>
                             {{ form.grid_reference }}
                         </div>
 
                         <!-- Room -->
                         <div class="col-md-6">
-                            <label for="{{ form.room.id_for_label }}" class="form-label">Room</label>
+                            <label for="{{ form.room.id_for_label }}" class="form-label">اتاق</label>
                             {{ form.room }}
                         </div>
 
                         <!-- Arrival Date -->
                         <div class="col-md-6">
-                            <label for="{{ form.arrival_date.id_for_label }}" class="form-label">Arrival Date</label>
+                            <label for="{{ form.arrival_date.id_for_label }}" class="form-label">تاریخ ورود</label>
                             {{ form.arrival_date }}
                         </div>
 
@@ -238,14 +238,14 @@
                             <div class="form-check mb-3">
                                 {{ form.is_current }}
                                 <label class="form-check-label" for="{{ form.is_current.id_for_label }}">
-                                    This is the current location
+                                    این موقعیت فعلی است
                                 </label>
                             </div>
                         </div>
 
                         <!-- Notes -->
                         <div class="col-12">
-                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">یادداشت‌ها</label>
                             {{ form.notes }}
                         </div>
                     </div>
@@ -255,32 +255,32 @@
                 <div class="location-form-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">
-                            <i class="bi bi-house me-2"></i>Address
+                            <i class="bi bi-house me-2"></i>آدرس
                         </h5>
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="reverseGeocode()">
-                            <i class="bi bi-search"></i> Look Up Address
+                            <i class="bi bi-search"></i> جستجوی آدرس
                         </button>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-12">
-                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            <label for="{{ form.address.id_for_label }}" class="form-label">آدرس</label>
                             {{ form.address }}
                         </div>
                         <div class="col-md-6">
-                            <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                            <label for="{{ form.city.id_for_label }}" class="form-label">شهر</label>
                             {{ form.city }}
                         </div>
                         <div class="col-md-6">
-                            <label for="{{ form.state.id_for_label }}" class="form-label">State/Province</label>
+                            <label for="{{ form.state.id_for_label }}" class="form-label">استان</label>
                             {{ form.state }}
                         </div>
                         <div class="col-md-6">
-                            <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                            <label for="{{ form.country.id_for_label }}" class="form-label">کشور</label>
                             {{ form.country }}
                         </div>
                         <div class="col-md-6">
-                            <label for="{{ form.postal_code.id_for_label }}" class="form-label">Postal Code</label>
+                            <label for="{{ form.postal_code.id_for_label }}" class="form-label">کد پستی</label>
                             {{ form.postal_code }}
                         </div>
                     </div>
@@ -289,10 +289,10 @@
                 <!-- Form Actions -->
                 <div class="d-flex justify-content-between">
                     <a href="#" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i> Cancel
+                        <i class="bi bi-x-circle"></i> لغو
                     </a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Save Location
+                        <i class="bi bi-check-circle"></i> ذخیره موقعیت
                     </button>
                 </div>
 
@@ -304,15 +304,15 @@
             <!-- Tips Card -->
             <div class="card mb-3">
                 <div class="card-header bg-info bg-opacity-10">
-                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>How to Get GPS Location</h6>
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>نحوه دریافت موقعیت GPS</h6>
                 </div>
                 <div class="card-body small">
                     <ol class="mb-0">
-                        <li class="mb-2">Click <strong>"Get My Location"</strong> button</li>
-                        <li class="mb-2">Allow location access when prompted by your browser</li>
-                        <li class="mb-2">Wait for GPS to acquire your position</li>
-                        <li class="mb-2">You can drag the marker on the map to adjust</li>
-                        <li>Fill in additional details and save</li>
+                        <li class="mb-2">روی دکمه <strong>"دریافت موقعیت من"</strong> کلیک کنید</li>
+                        <li class="mb-2">هنگام درخواست مرورگر، اجازه دسترسی به موقعیت را بدهید</li>
+                        <li class="mb-2">منتظر بمانید تا GPS موقعیت شما را دریافت کند</li>
+                        <li class="mb-2">برای تنظیم موقعیت، می‌توانید نشانگر را روی نقشه بکشید</li>
+                        <li>جزئیات اضافی را وارد کرده و ذخیره کنید</li>
                     </ol>
                 </div>
             </div>
@@ -320,12 +320,12 @@
             <!-- Status Card -->
             <div class="card">
                 <div class="card-header bg-success bg-opacity-10">
-                    <h6 class="mb-0"><i class="bi bi-broadcast me-2"></i>GPS Status</h6>
+                    <h6 class="mb-0"><i class="bi bi-broadcast me-2"></i>وضعیت GPS</h6>
                 </div>
                 <div class="card-body" id="gpsInfoCard">
                     <p class="text-muted text-center mb-0">
                         <i class="bi bi-crosshair"></i><br>
-                        Click "Get My Location" to start
+                        برای شروع روی "دریافت موقعیت من" کلیک کنید
                     </p>
                 </div>
             </div>
@@ -392,14 +392,14 @@
 
         // Check if geolocation is supported
         if (!navigator.geolocation) {
-            showStatus('Geolocation is not supported by your browser', 'danger');
+            showStatus('مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند', 'danger');
             return;
         }
 
         // Update UI
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Acquiring GPS...';
-        showStatus('Acquiring GPS location... Please wait', 'info');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>دریافت موقعیت GPS...';
+        showStatus('در حال دریافت موقعیت GPS... لطفاً صبر کنید', 'info');
 
         // Geolocation options
         const options = {
@@ -423,7 +423,7 @@
                 updateCoordinates(lat, lng);
                 document.getElementById('id_accuracy').value = accuracy.toFixed(2);
                 document.getElementById('displayAccuracy').innerHTML =
-                    `<span class="accuracy-${getAccuracyClass(accuracy)}">${accuracy.toFixed(1)}m</span>`;
+                    `<span class="accuracy-${getAccuracyClass(accuracy)}">${accuracy.toFixed(1)}متر</span>`;
 
                 // Set elevation if available
                 if (altitude) {
@@ -435,7 +435,7 @@
 
                 // Show success
                 showStatus(
-                    `<i class="bi bi-check-circle"></i> Location acquired! Accuracy: ${accuracy.toFixed(1)}m`,
+                    `<i class="bi bi-check-circle"></i> موقعیت دریافت شد! دقت: ${accuracy.toFixed(1)}متر`,
                     'success'
                 );
 
@@ -444,7 +444,7 @@
 
                 // Reset button
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-crosshair"></i> Update Location';
+                btn.innerHTML = '<i class="bi bi-crosshair"></i> به‌روزرسانی موقعیت';
 
                 // Start watching for better accuracy
                 startWatchingPosition();
@@ -454,21 +454,21 @@
                 let errorMsg = '';
                 switch(error.code) {
                     case error.PERMISSION_DENIED:
-                        errorMsg = 'Location access denied. Please enable GPS/location permissions in your device settings.';
+                        errorMsg = 'دسترسی به موقعیت رد شد. لطفاً مجوز GPS/موقعیت را در تنظیمات دستگاه خود فعال کنید.';
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        errorMsg = 'Location information is unavailable. Please check your GPS signal.';
+                        errorMsg = 'اطلاعات موقعیت در دسترس نیست. لطفاً سیگنال GPS خود را بررسی کنید.';
                         break;
                     case error.TIMEOUT:
-                        errorMsg = 'Location request timed out. Please try again in an open area.';
+                        errorMsg = 'درخواست موقعیت زمان‌بر شد. لطفاً در فضای باز دوباره تلاش کنید.';
                         break;
                     default:
-                        errorMsg = 'An unknown error occurred while getting location.';
+                        errorMsg = 'خطای ناشناخته در دریافت موقعیت رخ داد.';
                 }
 
                 showStatus(errorMsg, 'danger');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-crosshair"></i> Try Again';
+                btn.innerHTML = '<i class="bi bi-crosshair"></i> تلاش مجدد';
             },
             options
         );
@@ -492,7 +492,7 @@
                     updateCoordinates(lat, lng);
                     document.getElementById('id_accuracy').value = position.coords.accuracy.toFixed(2);
                     document.getElementById('displayAccuracy').innerHTML =
-                        `<span class="accuracy-${getAccuracyClass(position.coords.accuracy)}">${position.coords.accuracy.toFixed(1)}m (improved)</span>`;
+                        `<span class="accuracy-${getAccuracyClass(position.coords.accuracy)}">${position.coords.accuracy.toFixed(1)}متر (بهبود یافته)</span>`;
 
                     if (marker) {
                         marker.setLatLng([lat, lng]);
@@ -520,7 +520,7 @@
         const lng = document.getElementById('id_longitude').value;
 
         if (!lat || !lng) {
-            alert('Please get GPS location first.');
+            alert('لطفاً ابتدا موقعیت GPS را دریافت کنید.');
             return;
         }
 
@@ -539,11 +539,11 @@
             })
             .catch(error => {
                 console.error('Error getting elevation:', error);
-                alert('Could not get elevation. Please enter manually.');
+                alert('امکان دریافت ارتفاع وجود ندارد. لطفاً به صورت دستی وارد کنید.');
             })
             .finally(() => {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-arrow-up-circle"></i> Get Elevation';
+                btn.innerHTML = '<i class="bi bi-arrow-up-circle"></i> دریافت ارتفاع';
             });
     }
 
@@ -553,7 +553,7 @@
         const lng = document.getElementById('id_longitude').value;
 
         if (!lat || !lng) {
-            alert('Please get GPS location first.');
+            alert('لطفاً ابتدا موقعیت GPS را دریافت کنید.');
             return;
         }
 
@@ -577,7 +577,7 @@
             })
             .catch(error => {
                 console.error('Error reverse geocoding:', error);
-                alert('Could not look up address. Please enter manually.');
+                alert('امکان جستجوی آدرس وجود ندارد. لطفاً به صورت دستی وارد کنید.');
             });
     }
 
@@ -602,31 +602,31 @@
         card.innerHTML = `
             <div class="small">
                 <div class="mb-2">
-                    <strong><i class="bi bi-bullseye"></i> GPS Status:</strong>
-                    <span class="text-success"><span class="pulse-dot"></span> Active</span>
+                    <strong><i class="bi bi-bullseye"></i> وضعیت GPS:</strong>
+                    <span class="text-success"><span class="pulse-dot"></span> فعال</span>
                 </div>
                 <div class="mb-2">
-                    <strong>Accuracy:</strong>
-                    <span class="accuracy-${getAccuracyClass(coords.accuracy)}">${coords.accuracy.toFixed(1)}m</span>
+                    <strong>دقت:</strong>
+                    <span class="accuracy-${getAccuracyClass(coords.accuracy)}">${coords.accuracy.toFixed(1)}متر</span>
                 </div>
                 ${coords.altitude ? `
                 <div class="mb-2">
-                    <strong>Altitude:</strong> ${coords.altitude.toFixed(1)}m
+                    <strong>ارتفاع:</strong> ${coords.altitude.toFixed(1)}متر
                 </div>` : ''}
                 ${coords.speed ? `
                 <div class="mb-2">
-                    <strong>Speed:</strong> ${(coords.speed * 3.6).toFixed(1)} km/h
+                    <strong>سرعت:</strong> ${(coords.speed * 3.6).toFixed(1)} کیلومتر بر ساعت
                 </div>` : ''}
                 ${coords.heading ? `
                 <div class="mb-2">
-                    <strong>Heading:</strong> ${coords.heading.toFixed(0)}&deg;
+                    <strong>جهت:</strong> ${coords.heading.toFixed(0)}&deg;
                 </div>` : ''}
                 <div class="mb-2">
-                    <strong>Source:</strong>
-                    ${navigator.userAgent.includes('Mobile') ? '📱 Mobile Device' : '💻 Desktop'}
+                    <strong>منبع:</strong>
+                    ${navigator.userAgent.includes('Mobile') ? '📱 دستگاه موبایل' : '💻 رایانه'}
                 </div>
                 <div class="mb-0">
-                    <strong>Last Update:</strong> ${new Date(position.timestamp).toLocaleTimeString()}
+                    <strong>آخرین به‌روزرسانی:</strong> ${new Date(position.timestamp).toLocaleTimeString()}
                 </div>
             </div>
         `;
@@ -653,7 +653,7 @@
             setTimeout(() => {
                 if (!existingLat && !existingLng) {
                     const shouldGetLocation = confirm(
-                        'You appear to be on a mobile device. Would you like to use your current GPS location?'
+                        'به نظر می‌رسد از دستگاه موبایل استفاده می‌کنید. آیا می‌خواهید از موقعیت GPS فعلی خود استفاده کنید؟'
                     );
                     if (shouldGetLocation) {
                         getCurrentLocation();

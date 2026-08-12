@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -30,16 +30,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
       {% if equipment_tag %}
-      <li class="breadcrumb-item"><a href="#">Equipment Tags</a></li>
+      <li class="breadcrumb-item"><a href="#">برچسب‌های تجهیزات</a></li>
       <li class="breadcrumb-item"><a href="#">{{ equipment_tag.tag_number }}</a></li>
       {% elif document %}
-      <li class="breadcrumb-item"><a href="#">Documents</a></li>
+      <li class="breadcrumb-item"><a href="#">مدارک</a></li>
       <li class="breadcrumb-item"><a href="#">{{ document.document_number }}</a></li>
       {% endif %}
       <li class="breadcrumb-item active">{{ page_title }}</li>
@@ -64,7 +64,7 @@
               <!-- Equipment Tag -->
               <div class="col-md-6">
                 <label for="{{ form.equipment_tag.id_for_label }}" class="form-label required-field">
-                  Equipment Tag
+                  برچسب تجهیزات
                 </label>
                 {{ form.equipment_tag }}
                 {% if form.equipment_tag.errors %}
@@ -75,7 +75,7 @@
               <!-- Document -->
               <div class="col-md-6">
                 <label for="{{ form.document.id_for_label }}" class="form-label required-field">
-                  Document
+                  مدرک
                 </label>
                 {{ form.document }}
                 {% if form.document.errors %}
@@ -86,21 +86,21 @@
               <!-- Relation Type -->
               <div class="col-md-6">
                 <label for="{{ form.relation_type.id_for_label }}" class="form-label">
-                  Relation Type
+                  نوع ارتباط
                 </label>
                 {{ form.relation_type }}
                 <div class="form-text">
-                  How does this document relate to the equipment tag?
+                  این مدرک چه ارتباطی با برچسب تجهیزات دارد؟
                 </div>
               </div>
             </div>
 
             <div class="d-flex justify-content-between mt-4">
               <a href="#" class="btn btn-outline-secondary">
-                <i class="bi bi-x-circle"></i> Cancel
+                <i class="bi bi-x-circle"></i> لغو
               </a>
               <button type="submit" class="btn btn-primary">
-                <i class="bi bi-link-45deg"></i> Link Document
+                <i class="bi bi-link-45deg"></i> پیوند مدرک
               </button>
             </div>
           </form>
@@ -115,7 +115,7 @@
         <div class="card-header">
           <h6 class="mb-0">
             <i class="bi bi-file-earmark-text me-2"></i>
-            Already Linked Documents
+            مدارک پیوند شده قبلی
             <span class="badge bg-primary">{{ linked_documents.count }}</span>
           </h6>
         </div>
@@ -148,7 +148,7 @@
         <div class="card-header">
           <h6 class="mb-0">
             <i class="bi bi-tag me-2"></i>
-            Already Linked Tags
+            برچسب‌های پیوند شده قبلی
             <span class="badge bg-primary">{{ linked_tags.count }}</span>
           </h6>
         </div>
@@ -179,15 +179,15 @@
       <!-- Tips Card -->
       <div class="card">
         <div class="card-header bg-info bg-opacity-10">
-          <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+          <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>نکات</h6>
         </div>
         <div class="card-body small">
           <ul class="mb-0">
-            <li class="mb-2">Link datasheets to equipment for quick reference</li>
-            <li class="mb-2">Attach installation drawings to track as-built conditions</li>
-            <li class="mb-2">Use "specifies" for specification documents</li>
-            <li class="mb-2">Use "defines" for documents that define the equipment</li>
-            <li>Bulk link multiple documents using the bulk link option</li>
+            <li class="mb-2">برای دسترسی سریع، دیتاشیت‌ها را به تجهیزات متصل کنید</li>
+            <li class="mb-2">برای پیگیری وضعیت ساخته شده، نقشه‌های نصب را متصل کنید</li>
+            <li class="mb-2">برای مدارک مشخصات فنی از "مشخص می‌کند" استفاده کنید</li>
+            <li class="mb-2">برای مدارکی که تجهیزات را تعریف می‌کنند از "تعریف می‌کند" استفاده کنید</li>
+            <li>با استفاده از گزینه پیوند گروهی، چندین مدرک را به طور همزمان متصل کنید</li>
           </ul>
         </div>
       </div>

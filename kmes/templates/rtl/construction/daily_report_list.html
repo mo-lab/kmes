@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Daily Progress Reports - Construction Management{% endblock %}
+{% block title %}گزارش‌های پیشرفت روزانه - مدیریت ساخت{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -139,16 +139,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h1 class="h2 mb-1">Daily Progress Reports</h1>
+      <h1 class="h2 mb-1">گزارش‌های پیشرفت روزانه</h1>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-          <li class="breadcrumb-item active">Daily Reports</li>
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+          <li class="breadcrumb-item active">گزارش‌های روزانه</li>
         </ol>
       </nav>
     </div>
@@ -164,7 +164,7 @@
         </a>
       </div>
       <a href="{% url 'construction:daily_report_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Add Daily Report
+        <i class="bi bi-plus-lg"></i> افزودن گزارش روزانه
       </a>
     </div>
   </div>
@@ -175,37 +175,37 @@
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_reports }}</div>
-          <div class="stat-label">Total Reports</div>
+          <div class="stat-label">کل گزارش‌ها</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_manpower }}</div>
-          <div class="stat-label">Total Manpower</div>
+          <div class="stat-label">کل نیروی انسانی</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_hours }}</div>
-          <div class="stat-label">Total Hours</div>
+          <div class="stat-label">کل ساعت‌ها</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value text-warning">{{ reports_with_issues }}</div>
-          <div class="stat-label">With Issues</div>
+          <div class="stat-label">با مشکل</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ pending_approval }}</div>
-          <div class="stat-label">Pending</div>
+          <div class="stat-label">در انتظار تأیید</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ week_reports }}</div>
-          <div class="stat-label">This Week</div>
+          <div class="stat-label">این هفته</div>
         </div>
       </div>
     </div>
@@ -216,15 +216,15 @@
     <div class="col-lg-3 mb-4">
       <div class="filter-sidebar">
         <h5 class="mb-3">
-          <i class="bi bi-funnel"></i> Filters
+          <i class="bi bi-funnel"></i> فیلترها
         </h5>
 
         <form method="get" id="filterForm">
           <!-- Project -->
           <div class="mb-3">
-            <label class="form-label small">Project</label>
+            <label class="form-label small">پروژه</label>
             <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All Projects</option>
+              <option value="">همه پروژه‌ها</option>
               {% for proj in projects %}
               <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}>
               {{ proj.code }} - {{ proj.name }}
@@ -235,9 +235,9 @@
 
           <!-- Work Package -->
           <div class="mb-3">
-            <label class="form-label small">Work Package</label>
+            <label class="form-label small">بسته کاری</label>
             <select name="work_package" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All Work Packages</option>
+              <option value="">همه بسته‌های کاری</option>
               {% for wp in work_packages %}
               <option value="{{ wp.pk }}" {% if request.GET.work_package == wp.pk|stringformat:"s" %}selected{% endif %}>
               {{ wp.code }}
@@ -248,9 +248,9 @@
 
           <!-- Area -->
           <div class="mb-3">
-            <label class="form-label small">Area</label>
+            <label class="form-label small">منطقه</label>
             <select name="area" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All Areas</option>
+              <option value="">همه مناطق</option>
               {% for area in areas %}
               <option value="{{ area.pk }}" {% if request.GET.area == area.pk|stringformat:"s" %}selected{% endif %}>
               {{ area.code }} - {{ area.name }}
@@ -260,9 +260,9 @@
           </div>
           <!-- company -->
           <div class="mb-3">
-            <label class="form-label small">company</label>
+            <label class="form-label small">شرکت</label>
             <select name="company" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All companies</option>
+              <option value="">همه شرکت‌ها</option>
               {% for company in companies %}
               <option value="{{ company.pk }}" {% if request.GET.company == company.pk|stringformat:"s" %}selected{% endif %}>
               {{ company.title }}
@@ -279,39 +279,39 @@
                      {% if request.GET.has_issues == 'true' %}checked{% endif %}
               onchange="this.form.submit()">
               <label class="form-check-label small" for="hasIssuesFilter">
-                Has issues only
+                فقط گزارش‌های دارای مشکل
               </label>
             </div>
           </div>
 
           <!-- Approval Status -->
           <div class="mb-3">
-            <label class="form-label small">Approval Status</label>
+            <label class="form-label small">وضعیت تأیید</label>
             <select name="is_approved" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All</option>
-              <option value="true" {% if request.GET.is_approved == 'true' %}selected{% endif %}>Approved</option>
-              <option value="false" {% if request.GET.is_approved == 'false' %}selected{% endif %}>Pending</option>
+              <option value="">همه</option>
+              <option value="true" {% if request.GET.is_approved == 'true' %}selected{% endif %}>تأیید شده</option>
+              <option value="false" {% if request.GET.is_approved == 'false' %}selected{% endif %}>در انتظار</option>
             </select>
           </div>
 
           <!-- Weather -->
           <div class="mb-3">
-            <label class="form-label small">Weather</label>
+            <label class="form-label small">آب و هوا</label>
             <input type="text" name="weather" class="form-control form-control-sm"
-                   placeholder="e.g., Sunny, Rainy..."
+                   placeholder="مثلاً آفتابی، بارانی..."
                    value="{{ request.GET.weather|default:'' }}">
           </div>
 
           <!-- Date Range -->
           <div class="mb-3">
-            <label class="form-label small">Date From</label>
+            <label class="form-label small">از تاریخ</label>
             <input type="date" name="date_from" class="form-control form-control-sm"
                    value="{{ request.GET.date_from|default:'' }}"
                    onchange="this.form.submit()">
           </div>
 
           <div class="mb-3">
-            <label class="form-label small">Date To</label>
+            <label class="form-label small">تا تاریخ</label>
             <input type="date" name="date_to" class="form-control form-control-sm"
                    value="{{ request.GET.date_to|default:'' }}"
                    onchange="this.form.submit()">
@@ -319,33 +319,33 @@
 
           <!-- Quick Date Filters -->
           <div class="mb-3">
-            <label class="form-label small">Quick Filter</label>
+            <label class="form-label small">فیلتر سریع</label>
             <div class="d-grid gap-1">
-              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Today</a>
-              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Yesterday</a>
-              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Last 7 Days</a>
-              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Last 30 Days</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">امروز</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">دیروز</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">۷ روز اخیر</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">۳۰ روز اخیر</a>
             </div>
           </div>
 
           <!-- Search -->
           <div class="mb-3">
-            <label class="form-label small">Search</label>
+            <label class="form-label small">جستجو</label>
             <div class="input-group input-group-sm">
               <span class="input-group-text"><i class="bi bi-search"></i></span>
               <input type="text" name="search" class="form-control"
-                     placeholder="Search reports..."
+                     placeholder="جستجوی گزارش‌ها..."
                      value="{{ request.GET.search|default:'' }}">
             </div>
           </div>
 
           <div class="d-grid gap-2">
             <button type="submit" class="btn btn-primary btn-sm">
-              <i class="bi bi-search"></i> Apply Filters
+              <i class="bi bi-search"></i> اعمال فیلترها
             </button>
             {% if request.GET %}
             <a href="{% url 'construction:daily_report_list' %}" class="btn btn-outline-secondary btn-sm">
-              <i class="bi bi-x-circle"></i> Clear All Filters
+              <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها
             </a>
             {% endif %}
           </div>
@@ -362,7 +362,7 @@
           <div class="card bg-light h-100">
             <div class="card-body text-center py-2">
               <div class="fw-bold text-primary">{{ today_reports }}</div>
-              <small class="text-muted">Today</small>
+              <small class="text-muted">امروز</small>
             </div>
           </div>
         </div>
@@ -370,7 +370,7 @@
           <div class="card bg-light h-100">
             <div class="card-body text-center py-2">
               <div class="fw-bold text-info">{{ week_reports }}</div>
-              <small class="text-muted">This Week</small>
+              <small class="text-muted">این هفته</small>
             </div>
           </div>
         </div>
@@ -378,7 +378,7 @@
           <div class="card bg-light h-100">
             <div class="card-body text-center py-2">
               <div class="fw-bold text-success">{{ avg_manpower }}</div>
-              <small class="text-muted">Avg Workers</small>
+              <small class="text-muted">میانگین کارگران</small>
             </div>
           </div>
         </div>
@@ -386,7 +386,7 @@
           <div class="card bg-light h-100">
             <div class="card-body text-center py-2">
               <div class="fw-bold text-warning">{{ week_hours }}</div>
-              <small class="text-muted">Week Hours</small>
+              <small class="text-muted">ساعت این هفته</small>
             </div>
           </div>
         </div>
@@ -394,7 +394,7 @@
           <div class="card bg-light h-100">
             <div class="card-body text-center py-2">
               <div class="fw-bold text-danger">{{ reports_with_issues }}</div>
-              <small class="text-muted">Issues</small>
+              <small class="text-muted">مشکلات</small>
             </div>
           </div>
         </div>
@@ -402,7 +402,7 @@
           <div class="card bg-light h-100">
             <div class="card-body text-center py-2">
               <div class="fw-bold text-secondary">{{ pending_approval }}</div>
-              <small class="text-muted">Pending</small>
+              <small class="text-muted">در انتظار</small>
             </div>
           </div>
         </div>
@@ -414,36 +414,36 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="pagination-info">
           {% if is_paginated %}
-          Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} reports
+          نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} گزارش
           {% else %}
-          {{ reports.count }} report(s) found
+          {{ reports.count }} گزارش پیدا شد
           {% endif %}
         </div>
         <div class="d-flex align-items-center gap-2">
           <select name="sort" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
-            <option value="-report_date" {% if request.GET.sort == '-report_date' %}selected{% endif %}>Newest First</option>
-            <option value="report_date" {% if request.GET.sort == 'report_date' %}selected{% endif %}>Oldest First</option>
-            <option value="work_package__code" {% if request.GET.sort == 'work_package__code' %}selected{% endif %}>Work Package</option>
-            <option value="-manpower_count" {% if request.GET.sort == '-manpower_count' %}selected{% endif %}>Most Workers</option>
-            <option value="-hours_worked" {% if request.GET.sort == '-hours_worked' %}selected{% endif %}>Most Hours</option>
+            <option value="-report_date" {% if request.GET.sort == '-report_date' %}selected{% endif %}>جدیدترین اول</option>
+            <option value="report_date" {% if request.GET.sort == 'report_date' %}selected{% endif %}>قدیمی‌ترین اول</option>
+            <option value="work_package__code" {% if request.GET.sort == 'work_package__code' %}selected{% endif %}>بسته کاری</option>
+            <option value="-manpower_count" {% if request.GET.sort == '-manpower_count' %}selected{% endif %}>بیشترین کارگر</option>
+            <option value="-hours_worked" {% if request.GET.sort == '-hours_worked' %}selected{% endif %}>بیشترین ساعت</option>
           </select>
           <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
-            <option value="25" {% if request.GET.per_page == '25' %}selected{% endif %}>25 per page</option>
-            <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>50 per page</option>
-            <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>100 per page</option>
+            <option value="25" {% if request.GET.per_page == '25' %}selected{% endif %}>۲۵ در هر صفحه</option>
+            <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>۵۰ در هر صفحه</option>
+            <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option>
           </select>
         </div>
       </div>
       <!-- Bulk Actions Bar -->
       <div id="bulkActionsBar" class="alert alert-warning d-none mb-3">
         <div class="d-flex justify-content-between align-items-center">
-          <span id="selectedCount">0 reports selected</span>
+          <span id="selectedCount">۰ گزارش انتخاب شده</span>
           <div class="d-flex gap-2">
             <button type="button" class="btn btn-success btn-sm" onclick="bulkApproveReports()">
-              <i class="bi bi-check-all"></i> Approve Selected
+              <i class="bi bi-check-all"></i> تأیید موارد انتخاب‌شده
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
-              Clear Selection
+              لغو انتخاب
             </button>
           </div>
         </div>
@@ -457,16 +457,16 @@
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
             <tr>
-              <th>Date</th>
-              <th>Work Package</th>
-              <th>Weather</th>
-              <th>Work Performed</th>
-              <th>Manpower</th>
-              <th>Hours</th>
-              <th>Issues</th>
-              <th>Status</th>
-              <th>compony</th>
-              <th>Actions</th>
+              <th>تاریخ</th>
+              <th>بسته کاری</th>
+              <th>آب و هوا</th>
+              <th>کار انجام شده</th>
+              <th>نیروی انسانی</th>
+              <th>ساعت</th>
+              <th>مشکل</th>
+              <th>وضعیت</th>
+              <th>شرکت</th>
+              <th>عملیات</th>
             </tr>
             </thead>
             <tbody>
@@ -522,7 +522,7 @@
               </td>
               <td>
                 {% if report.hours_worked %}
-                <span class="badge bg-info">{{ report.hours_worked }}h</span>
+                <span class="badge bg-info">{{ report.hours_worked }} ساعت</span>
                 {% else %}
                 <span class="text-muted">-</span>
                 {% endif %}
@@ -531,7 +531,7 @@
                 {% if report.issues_encountered %}
                 <span class="badge bg-warning text-dark issue-badge"
                       title="{{ report.issues_encountered|truncatechars:150 }}">
-                                            <i class="bi bi-exclamation-triangle"></i> Yes
+                                            <i class="bi bi-exclamation-triangle"></i> بله
                                         </span>
                 {% else %}
                 <span class="text-success"><i class="bi bi-check-circle"></i></span>
@@ -540,11 +540,11 @@
               <td>
                 {% if report.is_approved %}
                 <span class="badge bg-success">
-                                            <i class="bi bi-check-circle"></i> Approved
+                                            <i class="bi bi-check-circle"></i> تأیید شده
                                         </span>
                 {% else %}
                 <span class="badge bg-warning text-dark">
-                                            <i class="bi bi-clock"></i> Pending
+                                            <i class="bi bi-clock"></i> در انتظار
                                         </span>
                 {% endif %}
               </td>
@@ -556,13 +556,13 @@
                   {% if not report.is_approved %}
                   <button class="btn btn-outline-success"
                           onclick="approveReport({{ report.pk }}, this)"
-                          title="Approve Report">
+                          title="تأیید گزارش">
                     <i class="bi bi-check-lg"></i>
                   </button>
                   {% else %}
                   <button class="btn btn-outline-warning"
                           onclick="unapproveReport({{ report.pk }}, this)"
-                          title="Unapprove Report">
+                          title="لغو تأیید گزارش">
                     <i class="bi bi-arrow-counterclockwise"></i>
                   </button>
                   {% endif %}
@@ -573,30 +573,30 @@
                       <div class="modal-content">
                         <div class="modal-header">
                           <h6 class="modal-title">
-                            Daily Report - {{ report.report_date|date:"F d, Y" }}
+                            گزارش روزانه - {{ report.report_date|date:"F d, Y" }}
                           </h6>
                           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                          <p><strong>Work Package:</strong> {{ report.work_package.code }} - {{ report.work_package.name }}</p>
-                          <p><strong>Weather:</strong> {{ report.weather_conditions|default:"N/A" }}
+                          <p><strong>بسته کاری:</strong> {{ report.work_package.code }} - {{ report.work_package.name }}</p>
+                          <p><strong>آب و هوا:</strong> {{ report.weather_conditions|default:"نامشخص" }}
                             {% if report.temperature_celsius %} | {{ report.temperature_celsius }}°C{% endif %}</p>
-                          <p><strong>Manpower:</strong> {{ report.manpower_count }} workers |
-                            {{ report.hours_worked|default:"0" }} hours</p>
+                          <p><strong>نیروی انسانی:</strong> {{ report.manpower_count }} کارگر |
+                            {{ report.hours_worked|default:"0" }} ساعت</p>
                           <hr>
-                          <h6>Work Performed:</h6>
+                          <h6>کار انجام شده:</h6>
                           <p class="small">{{ report.work_performed_description|linebreaks }}</p>
                           {% if report.issues_encountered %}
                           <hr>
-                          <h6 class="text-warning"><i class="bi bi-exclamation-triangle"></i> Issues Encountered:</h6>
+                          <h6 class="text-warning"><i class="bi bi-exclamation-triangle"></i> مشکلات پیش آمده:</h6>
                           <p class="small">{{ report.issues_encountered|linebreaks }}</p>
                           {% endif %}
                           <hr>
                           <small class="text-muted">
-                            Reported by: {{ report.reported_by.get_full_name|default:"System" }}<br>
-                            Submitted: {{ report.created_at|date:"F d, Y H:i" }}
+                            گزارش‌دهنده: {{ report.reported_by.get_full_name|default:"سیستم" }}<br>
+                            ثبت: {{ report.created_at|date:"F d, Y H:i" }}
                             {% if report.is_approved %}
-                            <br>Approved by: {{ report.approved_by.get_full_name|default:"System" }}
+                            <br>تأیید شده توسط: {{ report.approved_by.get_full_name|default:"سیستم" }}
                             {% endif %}
                           </small>
                         </div>
@@ -604,15 +604,11 @@
                     </div>
                   </div>
                   <button type="button" class="btn btn-outline-info"
-                          title="Quick View"
+                          title="مشاهده سریع"
                           data-bs-toggle="modal"
                           data-bs-target="#reportModal{{ report.pk }}">
                     <i class="bi bi-eye"></i>
                   </button>
-                  <a href="#"
-                     class="btn btn-outline-secondary" title="Edit">
-                    <i class="bi bi-pencil"></i>
-                  </a>
                 </div>
               </td>
             </tr>
@@ -639,14 +635,14 @@
                 </div>
                 <div class="d-flex gap-1">
                   {% if report.issues_encountered %}
-                  <span class="badge bg-warning text-dark" title="Has issues">
+                  <span class="badge bg-warning text-dark" title="دارای مشکل">
                                             <i class="bi bi-exclamation-triangle"></i>
                                         </span>
                   {% endif %}
                   {% if not report.is_approved %}
-                  <span class="badge bg-danger">Pending</span>
+                  <span class="badge bg-danger">در انتظار</span>
                   {% else %}
-                  <span class="badge bg-success">Approved</span>
+                  <span class="badge bg-success">تأیید شده</span>
                   {% endif %}
                 </div>
               </div>
@@ -672,9 +668,9 @@
                                     {% if report.temperature_celsius %}{{ report.temperature_celsius }}°C{% endif %}
                                 </span>
                 {% endif %}
-                <span class="badge bg-primary">{{ report.manpower_count }} workers</span>
+                <span class="badge bg-primary">{{ report.manpower_count }} کارگر</span>
                 {% if report.hours_worked %}
-                <span class="badge bg-info">{{ report.hours_worked }}h</span>
+                <span class="badge bg-info">{{ report.hours_worked }} ساعت</span>
                 {% endif %}
               </div>
 
@@ -694,7 +690,7 @@
             <div class="card-footer bg-transparent border-top">
               <div class="d-flex justify-content-between align-items-center">
                 <small class="text-muted">
-                  {{ report.reported_by.get_full_name|default:"System"|truncatechars:15 }}
+                  {{ report.reported_by.get_full_name|default:"سیستم"|truncatechars:15 }}
                 </small>
                 <div class="btn-group btn-group-sm">
                   <a href="#"
@@ -714,9 +710,9 @@
       {% if is_paginated %}
       <div class="d-flex justify-content-between align-items-center mt-4">
         <div class="pagination-info">
-          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+          صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
         </div>
-        <nav aria-label="Report pagination">
+        <nav aria-label="صفحه‌بندی گزارش‌ها">
           <ul class="pagination mb-0">
             {% if page_obj.has_previous %}
             <li class="page-item">
@@ -764,22 +760,22 @@
         <div class="card-body">
           <div class="empty-state">
             <i class="bi bi-journal-text"></i>
-            <h3 class="mt-3">No Daily Reports Found</h3>
+            <h3 class="mt-3">هیچ گزارش روزانه‌ای پیدا نشد</h3>
             <p class="text-muted">
               {% if request.GET %}
-              No reports match your search criteria. Try adjusting your filters.
+              هیچ گزارشی با معیارهای جستجوی شما مطابقت ندارد. لطفاً فیلترهای خود را تنظیم کنید.
               {% else %}
-              Get started by creating your first daily progress report.
+              برای شروع، اولین گزارش پیشرفت روزانه خود را ایجاد کنید.
               {% endif %}
             </p>
             <div class="mt-3">
               {% if request.GET %}
               <a href="{% url 'construction:daily_report_list' %}" class="btn btn-outline-secondary me-2">
-                <i class="bi bi-x-circle"></i> Clear Filters
+                <i class="bi bi-x-circle"></i> پاک کردن فیلترها
               </a>
               {% endif %}
               <a href="{% url 'construction:daily_report_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Create First Report
+                <i class="bi bi-plus-lg"></i> ایجاد اولین گزارش
               </a>
             </div>
           </div>
@@ -820,7 +816,7 @@
 
   // Approve single report
   function approveReport(reportId, button) {
-    if (confirm('Approve this daily report?')) {
+    if (confirm('آیا این گزارش روزانه تأیید شود؟')) {
       // Show loading state
       const originalHtml = button.innerHTML;
       button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
@@ -844,17 +840,17 @@
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-warning"
                                     onclick="unapproveReport(${reportId}, this)"
-                                    title="Unapprove Report">
+                                    title="لغو تأیید گزارش">
                                 <i class="bi bi-arrow-counterclockwise"></i>
                             </button>
                             <button type="button" class="btn btn-outline-info"
-                                    title="Quick View"
+                                    title="مشاهده سریع"
                                     data-bs-toggle="modal"
                                     data-bs-target="#reportModal${reportId}">
                                 <i class="bi bi-eye"></i>
                             </button>
                             <a href="/construction/daily-reports/${reportId}/update/"
-                               class="btn btn-outline-secondary" title="Edit">
+                               class="btn btn-outline-secondary" title="ویرایش">
                                 <i class="bi bi-pencil"></i>
                             </a>
                         </div>
@@ -868,7 +864,7 @@
                     if (statusCell) {
                       statusCell.innerHTML = `
                             <span class="badge bg-success">
-                                <i class="bi bi-check-circle"></i> Approved
+                                <i class="bi bi-check-circle"></i> تأیید شده
                             </span>
                             <br><small class="text-muted">${data.approved_by}</small>
                         `;
@@ -890,7 +886,7 @@
               .catch(error => {
                 button.innerHTML = originalHtml;
                 button.disabled = false;
-                showToast('Error approving report. Please try again.', 'danger');
+                showToast('خطا در تأیید گزارش. لطفاً دوباره تلاش کنید.', 'danger');
                 console.error('Error:', error);
               });
     }
@@ -898,7 +894,7 @@
 
   // Unapprove single report
   function unapproveReport(reportId, button) {
-    if (confirm('Unapprove this daily report? This will revert it to pending status.')) {
+    if (confirm('آیا تأیید این گزارش روزانه لغو شود؟ این کار وضعیت را به «در انتظار» بازمی‌گرداند.')) {
       const originalHtml = button.innerHTML;
       button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
       button.disabled = true;
@@ -921,17 +917,17 @@
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-success"
                                     onclick="approveReport(${reportId}, this)"
-                                    title="Approve Report">
+                                    title="تأیید گزارش">
                                 <i class="bi bi-check-lg"></i>
                             </button>
                             <button type="button" class="btn btn-outline-info"
-                                    title="Quick View"
+                                    title="مشاهده سریع"
                                     data-bs-toggle="modal"
                                     data-bs-target="#reportModal${reportId}">
                                 <i class="bi bi-eye"></i>
                             </button>
                             <a href="/construction/daily-reports/${reportId}/update/"
-                               class="btn btn-outline-secondary" title="Edit">
+                               class="btn btn-outline-secondary" title="ویرایش">
                                 <i class="bi bi-pencil"></i>
                             </a>
                         </div>
@@ -945,7 +941,7 @@
                     if (statusCell) {
                       statusCell.innerHTML = `
                             <span class="badge bg-warning text-dark">
-                                <i class="bi bi-clock"></i> Pending
+                                <i class="bi bi-clock"></i> در انتظار
                             </span>
                         `;
                     }
@@ -959,7 +955,7 @@
               .catch(error => {
                 button.innerHTML = originalHtml;
                 button.disabled = false;
-                showToast('Error unapproving report.', 'danger');
+                showToast('خطا در لغو تأیید گزارش.', 'danger');
                 console.error('Error:', error);
               });
     }
@@ -979,7 +975,7 @@
 
     if (selected.length > 0) {
       bar.classList.remove('d-none');
-      count.textContent = `${selected.length} report(s) selected`;
+      count.textContent = `${selected.length} گزارش انتخاب شده`;
     } else {
       bar.classList.add('d-none');
     }
@@ -996,11 +992,11 @@
     const selected = document.querySelectorAll('.report-checkbox:checked');
 
     if (selected.length === 0) {
-      showToast('No reports selected.', 'warning');
+      showToast('هیچ گزارشی انتخاب نشده است.', 'warning');
       return;
     }
 
-    if (confirm(`Approve ${selected.length} selected report(s)?`)) {
+    if (confirm(`آیا ${selected.length} گزارش انتخاب‌شده تأیید شود؟`)) {
       const reportIds = Array.from(selected).map(cb => cb.value);
 
       // Create form data
@@ -1025,7 +1021,7 @@
                 }
               })
               .catch(error => {
-                showToast('Error approving reports.', 'danger');
+                showToast('خطا در تأیید گزارش‌ها.', 'danger');
                 console.error('Error:', error);
               });
     }

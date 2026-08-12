@@ -5,78 +5,51 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="employee report">
-      <change afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/webServers.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/daily_report_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/installed_item_check_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/construction/manage_daily_timesheets.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/base.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_process_employee_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_form2.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_list2.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/employee_simple_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/installed_item_check_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/manage_daily_timesheets.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_item_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/dashboard.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/system_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/system_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/system_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share_delete.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share_update.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/shared_with_me.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/tag_document_confirm_delete.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/tag_document_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/manifest.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/navbar.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/manifest.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/timesheet_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/timesheet_list.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/construction/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/construction/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/core/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/core/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/db.sqlite3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/documents/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/kmes/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/kmes/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/resources/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/resources/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/construction/daily_report_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/construction/daily_report_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/construction/employee_simple_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/construction/employee_simple_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/core/equipment_tag_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/equipment_tag_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/core/equipmenttag_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/equipmenttag_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/core/project_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/project_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/core/system_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/system_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/navbar.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/navbar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/resources/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_process_employee_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_process_employee_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/daily_report_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/employee_simple_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/employee_simple_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/installed_item_check_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/installed_item_check_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/manage_daily_timesheets.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/manage_daily_timesheets.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_item_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_item_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/area_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/area_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/area_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/system_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/system_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/system_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/system_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/system_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/system_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share_delete.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share_delete.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share_update.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share_update.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/shared_with_me.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/shared_with_me.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/tag_document_confirm_delete.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/tag_document_confirm_delete.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/tag_document_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/tag_document_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/employee_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/resources/timesheet_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/timesheet_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/resources/timesheet_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/resources/timesheet_list.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -184,7 +157,10 @@
       <workItem from="1786080896042" duration="1354000" />
       <workItem from="1786170025906" duration="5828000" />
       <workItem from="1786185980755" duration="2344000" />
-      <workItem from="1786286177631" duration="9072000" />
+      <workItem from="1786286177631" duration="9109000" />
+      <workItem from="1786462725635" duration="5353000" />
+      <workItem from="1786468941354" duration="396000" />
+      <workItem from="1786509452741" duration="8825000" />
     </task>
     <task id="LOCAL‎−۰۰۰۰۱" summary="init">
       <option name="closed" value="true" />
@@ -277,7 +253,14 @@
       <option name="presentableId" value="LOCAL‎−۰۰۰۱۳" />
       <updated>1785678515840</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL‎−۰۰۰۱۴" summary="employee report">
+      <option name="closed" value="true" />
+      <created>1786302369280</created>
+      <option name="number" value="LOCAL‎−۰۰۰۱۴" />
+      <option name="presentableId" value="LOCAL‎−۰۰۰۱۴" />
+      <updated>1786302369280</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

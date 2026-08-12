@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Areas - Copper Mine Processing{% endblock %}
+{% block title %}مناطق - کارخانه فرآوری مس{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -101,19 +101,19 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h1 class="h2 mb-1">Areas</h1>
+      <h1 class="h2 mb-1">مناطق</h1>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
           {% if selected_project %}
           <li class="breadcrumb-item"><a href="{% url 'core:project-detail' selected_project.pk %}">{{ selected_project.name }}</a></li>
           {% endif %}
-          <li class="breadcrumb-item active">Areas</li>
+          <li class="breadcrumb-item active">مناطق</li>
         </ol>
       </nav>
     </div>
@@ -129,7 +129,7 @@
         </a>
       </div>
       <a href="{% url 'core:area_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> New Area
+        <i class="bi bi-plus-lg"></i> منطقه جدید
       </a>
     </div>
   </div>
@@ -140,25 +140,25 @@
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_areas }}</div>
-          <div class="stat-label">Total Areas</div>
+          <div class="stat-label">کل مناطق</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_equipment }}</div>
-          <div class="stat-label">Equipment Tags</div>
+          <div class="stat-label">برچسب‌های تجهیزات</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_installed }}</div>
-          <div class="stat-label">Installed</div>
+          <div class="stat-label">نصب شده</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_work_packages }}</div>
-          <div class="stat-label">Work Packages</div>
+          <div class="stat-label">بسته‌های کاری</div>
         </div>
       </div>
     </div>
@@ -168,9 +168,9 @@
   <div class="filter-bar">
     <form method="get" class="row g-2 align-items-end">
       <div class="col-md-3">
-        <label class="form-label small">Project</label>
+        <label class="form-label small">پروژه</label>
         <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
-          <option value="">All Projects</option>
+          <option value="">همه پروژه‌ها</option>
           {% for proj in projects %}
           <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}>
           {{ proj.code }} - {{ proj.name }}
@@ -179,40 +179,40 @@
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label small">Equipment Status</label>
+        <label class="form-label small">وضعیت تجهیزات</label>
         <select name="has_equipment" class="form-select form-select-sm" onchange="this.form.submit()">
-          <option value="">All Areas</option>
-          <option value="true" {% if request.GET.has_equipment == 'true' %}selected{% endif %}>Has Equipment</option>
-          <option value="false" {% if request.GET.has_equipment == 'false' %}selected{% endif %}>No Equipment</option>
+          <option value="">همه مناطق</option>
+          <option value="true" {% if request.GET.has_equipment == 'true' %}selected{% endif %}>دارای تجهیزات</option>
+          <option value="false" {% if request.GET.has_equipment == 'false' %}selected{% endif %}>بدون تجهیزات</option>
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label small">Sort By</label>
+        <label class="form-label small">مرتب‌سازی بر اساس</label>
         <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
-          <option value="code" {% if request.GET.sort == 'code' %}selected{% endif %}>Code (A-Z)</option>
-          <option value="-code" {% if request.GET.sort == '-code' %}selected{% endif %}>Code (Z-A)</option>
-          <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
-          <option value="-equipment_count" {% if request.GET.sort == '-equipment_count' %}selected{% endif %}>Most Equipment</option>
-          <option value="-work_package_count" {% if request.GET.sort == '-work_package_count' %}selected{% endif %}>Most Work Packages</option>
+          <option value="code" {% if request.GET.sort == 'code' %}selected{% endif %}>کد (الف-ی)</option>
+          <option value="-code" {% if request.GET.sort == '-code' %}selected{% endif %}>کد (ی-الف)</option>
+          <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>نام (الف-ی)</option>
+          <option value="-equipment_count" {% if request.GET.sort == '-equipment_count' %}selected{% endif %}>بیشترین تجهیزات</option>
+          <option value="-work_package_count" {% if request.GET.sort == '-work_package_count' %}selected{% endif %}>بیشترین بسته‌های کاری</option>
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label small">Search</label>
+        <label class="form-label small">جستجو</label>
         <div class="input-group input-group-sm">
           <span class="input-group-text"><i class="bi bi-search"></i></span>
           <input type="text" name="search" class="form-control"
-                 placeholder="Search by code or name..."
+                 placeholder="جستجو بر اساس کد یا نام..."
                  value="{{ request.GET.search|default:'' }}">
         </div>
       </div>
       <div class="col-12">
         <div class="d-flex gap-2">
           <button type="submit" class="btn btn-primary btn-sm">
-            <i class="bi bi-funnel"></i> Apply Filters
+            <i class="bi bi-funnel"></i> اعمال فیلترها
           </button>
           {% if request.GET %}
           <a href="{% url 'core:area_list' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-x-circle"></i> Clear Filters
+            <i class="bi bi-x-circle"></i> پاک کردن فیلترها
           </a>
           {% endif %}
         </div>
@@ -224,16 +224,16 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="pagination-info">
       {% if is_paginated %}
-      Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} areas
+      نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} منطقه
       {% else %}
-      {{ areas.count }} area(s) found
+      {{ areas.count }} منطقه پیدا شد
       {% endif %}
     </div>
     <div>
       <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
-        <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>20 per page</option>
-        <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>50 per page</option>
-        <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>100 per page</option>
+        <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>۲۰ در هر صفحه</option>
+        <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>۵۰ در هر صفحه</option>
+        <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option>
       </select>
     </div>
   </div>
@@ -247,16 +247,16 @@
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
         <tr>
-          <th>Code</th>
-          <th>Name</th>
-          <th>Project</th>
-          <th>Equipment Tags</th>
-          <th>Installed</th>
-          <th>Commissioned</th>
-          <th>Work Packages</th>
-          <th>Locations</th>
-          <th>Description</th>
-          <th>Actions</th>
+          <th>کد</th>
+          <th>نام</th>
+          <th>پروژه</th>
+          <th>برچسب‌های تجهیزات</th>
+          <th>نصب شده</th>
+          <th>راه‌اندازی شده</th>
+          <th>بسته‌های کاری</th>
+          <th>موقعیت‌ها</th>
+          <th>توضیحات</th>
+          <th>عملیات</th>
         </tr>
         </thead>
         <tbody>
@@ -283,7 +283,7 @@
               <i class="bi bi-tag"></i> {{ area.equipment_count }}
             </a>
             {% else %}
-            <span class="badge bg-light text-dark">0</span>
+            <span class="badge bg-light text-dark">۰</span>
             {% endif %}
           </td>
           <td>
@@ -306,7 +306,7 @@
               <i class="bi bi-clipboard-check"></i> {{ area.work_package_count }}
             </a>
             {% else %}
-            <span class="badge bg-light text-dark">0</span>
+            <span class="badge bg-light text-dark">۰</span>
             {% endif %}
           </td>
           <td>
@@ -322,16 +322,16 @@
           <td>
             <div class="btn-group btn-group-sm">
               <a href="{% url 'core:area_detail' area.pk %}"
-                 class="btn btn-outline-secondary" title="view">
+                 class="btn btn-outline-secondary" title="مشاهده">
                 <i class="bi bi-eye"></i>
               </a>
               <a href="{% url 'core:equipment-tag-list' %}?area={{ area.pk }}"
-                 class="btn btn-outline-info" title="View Equipment">
+                 class="btn btn-outline-info" title="مشاهده تجهیزات">
                 <i class="bi bi-tag"></i>
               </a>
 
               <a href="#"
-                 class="btn btn-outline-danger" title="Delete">
+                 class="btn btn-outline-danger" title="حذف">
                 <i class="bi bi-trash"></i>
               </a>
             </div>
@@ -356,7 +356,7 @@
             </div>
             <div>
               <h6 class="mb-0">{{ area.code }}</h6>
-              <small class="text-muted">{{ area.project.code|default:"No Project" }}</small>
+              <small class="text-muted">{{ area.project.code|default:"بدون پروژه" }}</small>
             </div>
           </div>
 
@@ -370,15 +370,15 @@
           <div class="row border-top pt-2">
             <div class="col-4 stat-mini">
               <div class="value text-primary">{{ area.equipment_count }}</div>
-              <div class="label">Tags</div>
+              <div class="label">برچسب‌ها</div>
             </div>
             <div class="col-4 stat-mini">
               <div class="value text-success">{{ area.installed_count }}</div>
-              <div class="label">Installed</div>
+              <div class="label">نصب شده</div>
             </div>
             <div class="col-4 stat-mini">
               <div class="value text-warning">{{ area.work_package_count }}</div>
-              <div class="label">WPs</div>
+              <div class="label">بسته‌های کاری</div>
             </div>
           </div>
 
@@ -386,7 +386,7 @@
           {% if area.equipment_count > 0 %}
           <div class="mt-2">
             <div class="d-flex justify-content-between small mb-1">
-              <span>Installation Progress</span>
+              <span>پیشرفت نصب</span>
               <span>{% widthratio area.installed_count area.equipment_count 100 %}%</span>
             </div>
             <div class="progress progress-thin">
@@ -401,15 +401,15 @@
         <div class="card-footer bg-transparent border-top">
           <div class="d-flex justify-content-between align-items-center">
             <small class="text-muted">
-              {{ area.equipment_locations.count }} location(s)
+              {{ area.equipment_locations.count }} موقعیت
             </small>
             <div class="btn-group btn-group-sm">
               <a href="{% url 'core:equipment-tag-list' %}?area={{ area.pk }}"
-                 class="btn btn-outline-primary" title="View Tags">
+                 class="btn btn-outline-primary" title="مشاهده برچسب‌ها">
                 <i class="bi bi-tag"></i>
               </a>
               <a href="#"
-                 class="btn btn-outline-secondary" title="Edit">
+                 class="btn btn-outline-secondary" title="ویرایش">
                 <i class="bi bi-pencil"></i>
               </a>
             </div>
@@ -425,9 +425,9 @@
   {% if is_paginated %}
   <div class="d-flex justify-content-between align-items-center mt-4">
     <div class="pagination-info">
-      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
     </div>
-    <nav aria-label="Area pagination">
+    <nav aria-label="صفحه‌بندی مناطق">
       <ul class="pagination mb-0">
         {% if page_obj.has_previous %}
         <li class="page-item">
@@ -475,22 +475,22 @@
     <div class="card-body">
       <div class="empty-state">
         <i class="bi bi-map"></i>
-        <h3 class="mt-3">No Areas Found</h3>
+        <h3 class="mt-3">هیچ منطقه‌ای پیدا نشد</h3>
         <p class="text-muted">
           {% if request.GET %}
-          No areas match your search criteria. Try adjusting your filters.
+          هیچ منطقه‌ای با معیارهای جستجوی شما مطابقت ندارد. لطفاً فیلترهای خود را تنظیم کنید.
           {% else %}
-          Get started by creating your first area to organize your project.
+          برای سازمان‌دهی پروژه خود، اولین منطقه را ایجاد کنید.
           {% endif %}
         </p>
         <div class="mt-3">
           {% if request.GET %}
           <a href="{% url 'core:area_list' %}" class="btn btn-outline-secondary me-2">
-            <i class="bi bi-x-circle"></i> Clear Filters
+            <i class="bi bi-x-circle"></i> پاک کردن فیلترها
           </a>
           {% endif %}
           <a href="{% url 'core:area_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> Create First Area
+            <i class="bi bi-plus-lg"></i> ایجاد اولین منطقه
           </a>
         </div>
       </div>

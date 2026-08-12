@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Documents - Copper Mine Processing{% endblock %}
+{% block title %}مدارک - کارخانه فرآوری مس{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -106,16 +106,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h2 mb-1">Documents</h1>
+            <h1 class="h2 mb-1">مدارک</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Documents</li>
+                    <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+                    <li class="breadcrumb-item active">مدارک</li>
                 </ol>
             </nav>
         </div>
@@ -131,10 +131,10 @@
                 </a>
             </div>
             <a href="{% url 'documents:document-create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Upload Document
+                <i class="bi bi-plus-lg"></i> بارگذاری مدرک
             </a>
             <a href="#" class="btn btn-outline-primary">
-                <i class="bi bi-upload"></i> Bulk Upload
+                <i class="bi bi-upload"></i> بارگذاری گروهی
             </a>
         </div>
     </div>
@@ -145,37 +145,37 @@
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ total_documents }}</div>
-                    <div class="stat-label">Total Documents</div>
+                    <div class="stat-label">کل مدارک</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ approved_documents }}</div>
-                    <div class="stat-label">Approved</div>
+                    <div class="stat-label">تأیید شده</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ ifc_documents }}</div>
-                    <div class="stat-label">Issued for Construction</div>
+                    <div class="stat-label">صادر شده برای ساخت</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ draft_documents }}</div>
-                    <div class="stat-label">Drafts</div>
+                    <div class="stat-label">پیش‌نویس</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ superseded_documents }}</div>
-                    <div class="stat-label">Superseded</div>
+                    <div class="stat-label">جایگزین شده</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-item">
                     <div class="stat-value">{{ review_documents }}</div>
-                    <div class="stat-label">In Review</div>
+                    <div class="stat-label">در حال بررسی</div>
                 </div>
             </div>
         </div>
@@ -186,15 +186,15 @@
         <div class="col-lg-3 mb-4">
             <div class="filter-sidebar">
                 <h5 class="mb-3">
-                    <i class="bi bi-funnel"></i> Filters
+                    <i class="bi bi-funnel"></i> فیلترها
                 </h5>
 
                 <form method="get" id="filterForm">
                     <!-- Project -->
                     <div class="mb-3">
-                        <label class="form-label small">Project</label>
+                        <label class="form-label small">پروژه</label>
                         <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="">All Projects</option>
+                            <option value="">همه پروژه‌ها</option>
                             {% for proj in projects %}
                             <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}>
                             {{ proj.code }} - {{ proj.name }}
@@ -205,62 +205,62 @@
 
                     <!-- Document Type -->
                     <div class="mb-3">
-                        <label class="form-label small">Document Type</label>
+                        <label class="form-label small">نوع مدرک</label>
                         <select name="doc_type" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="">All Types</option>
-                            <option value="DWG" {% if request.GET.doc_type == 'DWG' %}selected{% endif %}>Drawing</option>
+                            <option value="">همه انواع</option>
+                            <option value="DWG" {% if request.GET.doc_type == 'DWG' %}selected{% endif %}>نقشه</option>
                             <option value="PNID" {% if request.GET.doc_type == 'PNID' %}selected{% endif %}>P&ID</option>
-                            <option value="DATA" {% if request.GET.doc_type == 'DATA' %}selected{% endif %}>Datasheet</option>
-                            <option value="MAN" {% if request.GET.doc_type == 'MAN' %}selected{% endif %}>Manual</option>
-                            <option value="PROC" {% if request.GET.doc_type == 'PROC' %}selected{% endif %}>Procedure</option>
-                            <option value="SPEC" {% if request.GET.doc_type == 'SPEC' %}selected{% endif %}>Specification</option>
-                            <option value="CERT" {% if request.GET.doc_type == 'CERT' %}selected{% endif %}>Certificate</option>
-                            <option value="RPT" {% if request.GET.doc_type == 'RPT' %}selected{% endif %}>Report</option>
-                            <option value="CALC" {% if request.GET.doc_type == 'CALC' %}selected{% endif %}>Calculation</option>
-                            <option value="OTHR" {% if request.GET.doc_type == 'OTHR' %}selected{% endif %}>Other</option>
+                            <option value="DATA" {% if request.GET.doc_type == 'DATA' %}selected{% endif %}>دیتاشیت</option>
+                            <option value="MAN" {% if request.GET.doc_type == 'MAN' %}selected{% endif %}>دفترچه راهنما</option>
+                            <option value="PROC" {% if request.GET.doc_type == 'PROC' %}selected{% endif %}>روش کار</option>
+                            <option value="SPEC" {% if request.GET.doc_type == 'SPEC' %}selected{% endif %}>مشخصات فنی</option>
+                            <option value="CERT" {% if request.GET.doc_type == 'CERT' %}selected{% endif %}>گواهی</option>
+                            <option value="RPT" {% if request.GET.doc_type == 'RPT' %}selected{% endif %}>گزارش</option>
+                            <option value="CALC" {% if request.GET.doc_type == 'CALC' %}selected{% endif %}>محاسبات</option>
+                            <option value="OTHR" {% if request.GET.doc_type == 'OTHR' %}selected{% endif %}>سایر</option>
                         </select>
                     </div>
 
                     <!-- Discipline -->
                     <div class="mb-3">
-                        <label class="form-label small">Discipline</label>
+                        <label class="form-label small">رشته تخصصی</label>
                         <select name="discipline" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="">All Disciplines</option>
-                            <option value="MECH" {% if request.GET.discipline == 'MECH' %}selected{% endif %}>Mechanical</option>
-                            <option value="ELEC" {% if request.GET.discipline == 'ELEC' %}selected{% endif %}>Electrical</option>
-                            <option value="PIPE" {% if request.GET.discipline == 'PIPE' %}selected{% endif %}>Piping</option>
-                            <option value="INSTR" {% if request.GET.discipline == 'INSTR' %}selected{% endif %}>Instrumentation</option>
-                            <option value="CIVL" {% if request.GET.discipline == 'CIVL' %}selected{% endif %}>Civil</option>
-                            <option value="STRU" {% if request.GET.discipline == 'STRU' %}selected{% endif %}>Structural</option>
-                            <option value="PROC" {% if request.GET.discipline == 'PROC' %}selected{% endif %}>Process</option>
-                            <option value="GEN" {% if request.GET.discipline == 'GEN' %}selected{% endif %}>General</option>
+                            <option value="">همه رشته‌ها</option>
+                            <option value="MECH" {% if request.GET.discipline == 'MECH' %}selected{% endif %}>مکانیک</option>
+                            <option value="ELEC" {% if request.GET.discipline == 'ELEC' %}selected{% endif %}>برق</option>
+                            <option value="PIPE" {% if request.GET.discipline == 'PIPE' %}selected{% endif %}>لوله‌کشی</option>
+                            <option value="INSTR" {% if request.GET.discipline == 'INSTR' %}selected{% endif %}>ابزار دقیق</option>
+                            <option value="CIVL" {% if request.GET.discipline == 'CIVL' %}selected{% endif %}>عمران</option>
+                            <option value="STRU" {% if request.GET.discipline == 'STRU' %}selected{% endif %}>سازه</option>
+                            <option value="PROC" {% if request.GET.discipline == 'PROC' %}selected{% endif %}>فرآیند</option>
+                            <option value="GEN" {% if request.GET.discipline == 'GEN' %}selected{% endif %}>عمومی</option>
                         </select>
                     </div>
 
                     <!-- Status -->
                     <div class="mb-3">
-                        <label class="form-label small">Status</label>
+                        <label class="form-label small">وضعیت</label>
                         <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="">All Statuses</option>
-                            <option value="DRAFT" {% if request.GET.status == 'DRAFT' %}selected{% endif %}>Draft</option>
-                            <option value="REVW" {% if request.GET.status == 'REVW' %}selected{% endif %}>Under Review</option>
-                            <option value="APPR" {% if request.GET.status == 'APPR' %}selected{% endif %}>Approved</option>
-                            <option value="IFC" {% if request.GET.status == 'IFC' %}selected{% endif %}>Issued for Construction</option>
-                            <option value="ASBL" {% if request.GET.status == 'ASBL' %}selected{% endif %}>As-Built</option>
-                            <option value="SUPD" {% if request.GET.status == 'SUPD' %}selected{% endif %}>Superseded</option>
+                            <option value="">همه وضعیت‌ها</option>
+                            <option value="DRAFT" {% if request.GET.status == 'DRAFT' %}selected{% endif %}>پیش‌نویس</option>
+                            <option value="REVW" {% if request.GET.status == 'REVW' %}selected{% endif %}>در حال بررسی</option>
+                            <option value="APPR" {% if request.GET.status == 'APPR' %}selected{% endif %}>تأیید شده</option>
+                            <option value="IFC" {% if request.GET.status == 'IFC' %}selected{% endif %}>صادر شده برای ساخت</option>
+                            <option value="ASBL" {% if request.GET.status == 'ASBL' %}selected{% endif %}>ساخته شده</option>
+                            <option value="SUPD" {% if request.GET.status == 'SUPD' %}selected{% endif %}>جایگزین شده</option>
                         </select>
                     </div>
 
                     <!-- Date Range -->
                     <div class="mb-3">
-                        <label class="form-label small">Date From</label>
+                        <label class="form-label small">از تاریخ</label>
                         <input type="date" name="date_from" class="form-control form-control-sm"
                                value="{{ request.GET.date_from|default:'' }}"
                                onchange="this.form.submit()">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small">Date To</label>
+                        <label class="form-label small">تا تاریخ</label>
                         <input type="date" name="date_to" class="form-control form-control-sm"
                                value="{{ request.GET.date_to|default:'' }}"
                                onchange="this.form.submit()">
@@ -274,29 +274,29 @@
                                    {% if request.GET.has_file %}checked{% endif %}
                                    onchange="this.form.submit()">
                             <label class="form-check-label small" for="hasFileFilter">
-                                Documents with files only
+                                فقط مدارک دارای فایل
                             </label>
                         </div>
                     </div>
 
                     <!-- Search -->
                     <div class="mb-3">
-                        <label class="form-label small">Search</label>
+                        <label class="form-label small">جستجو</label>
                         <div class="input-group input-group-sm">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" name="search" class="form-control"
-                                   placeholder="Document number, title, tag..."
+                                   placeholder="شماره مدرک، عنوان، برچسب..."
                                    value="{{ request.GET.search|default:'' }}">
                         </div>
                     </div>
 
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="bi bi-search"></i> Apply Filters
+                            <i class="bi bi-search"></i> اعمال فیلترها
                         </button>
                         {% if request.GET %}
                         <a href="{% url 'documents:document_list' %}" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-x-circle"></i> Clear All Filters
+                            <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها
                         </a>
                         {% endif %}
                     </div>
@@ -311,25 +311,25 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="text-muted small">
                     {% if is_paginated %}
-                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} documents
+                    نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} مدرک
                     {% else %}
-                    {{ documents.count }} document(s) found
+                    {{ documents.count }} مدرک پیدا شد
                     {% endif %}
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <select name="sort" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
-                        <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
-                        <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
-                        <option value="document_number" {% if request.GET.sort == 'document_number' %}selected{% endif %}>Document # (A-Z)</option>
-                        <option value="-document_number" {% if request.GET.sort == '-document_number' %}selected{% endif %}>Document # (Z-A)</option>
-                        <option value="title" {% if request.GET.sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
-                        <option value="-title" {% if request.GET.sort == '-title' %}selected{% endif %}>Title (Z-A)</option>
-                        <option value="-updated_at" {% if request.GET.sort == '-updated_at' %}selected{% endif %}>Recently Updated</option>
+                        <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>جدیدترین اول</option>
+                        <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>قدیمی‌ترین اول</option>
+                        <option value="document_number" {% if request.GET.sort == 'document_number' %}selected{% endif %}>شماره مدرک (الف-ی)</option>
+                        <option value="-document_number" {% if request.GET.sort == '-document_number' %}selected{% endif %}>شماره مدرک (ی-الف)</option>
+                        <option value="title" {% if request.GET.sort == 'title' %}selected{% endif %}>عنوان (الف-ی)</option>
+                        <option value="-title" {% if request.GET.sort == '-title' %}selected{% endif %}>عنوان (ی-الف)</option>
+                        <option value="-updated_at" {% if request.GET.sort == '-updated_at' %}selected{% endif %}>به‌تازگی به‌روز شده</option>
                     </select>
                     <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
-                        <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>20 per page</option>
-                        <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>50 per page</option>
-                        <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>100 per page</option>
+                        <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>۲۰ در هر صفحه</option>
+                        <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>۵۰ در هر صفحه</option>
+                        <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option>
                     </select>
                 </div>
             </div>
@@ -343,16 +343,16 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                         <tr>
-                            <th>Document #</th>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Rev</th>
-                            <th>Status</th>
-                            <th>Project</th>
-                            <th>Linked Tags</th>
-                            <th>Shares</th>
-                            <th>Date</th>
-                            <th>Actions</th>
+                            <th>شماره مدرک</th>
+                            <th>عنوان</th>
+                            <th>نوع</th>
+                            <th>نسخه</th>
+                            <th>وضعیت</th>
+                            <th>پروژه</th>
+                            <th>برچسب‌های متصل</th>
+                            <th>اشتراک‌گذاری</th>
+                            <th>تاریخ</th>
+                            <th>عملیات</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -417,7 +417,7 @@
                                         </span>
                                 {% if doc.unviewed_shares_count > 0 %}
                                 <span class="badge bg-warning text-dark share-indicator ms-1">
-                                                {{ doc.unviewed_shares_count }} new
+                                                {{ doc.unviewed_shares_count }} جدید
                                             </span>
                                 {% endif %}
                                 {% else %}
@@ -432,21 +432,21 @@
                             <td onclick="event.stopPropagation()">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{% url 'documents:document_detail' doc.pk %}"
-                                       class="btn btn-outline-primary" title="View">
+                                       class="btn btn-outline-primary" title="مشاهده">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     {% if doc.file_upload %}
                                     <a href="{% url 'documents:document_download' doc.pk %}"
-                                       class="btn btn-outline-success" title="Download">
+                                       class="btn btn-outline-success" title="دانلود">
                                         <i class="bi bi-download"></i>
                                     </a>
                                     {% endif %}
                                     <a href="#"
-                                       class="btn btn-outline-secondary" title="Edit">
+                                       class="btn btn-outline-secondary" title="ویرایش">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <a href="{% url 'documents:document_share' doc.pk %}"
-                                       class="btn btn-outline-info" title="Share">
+                                       class="btn btn-outline-info" title="اشتراک‌گذاری">
                                         <i class="bi bi-share"></i>
                                     </a>
                                 </div>
@@ -496,11 +496,11 @@
 
                             <div class="row small mb-2">
                                 <div class="col-6">
-                                    <span class="text-muted">Revision:</span>
+                                    <span class="text-muted">نسخه:</span>
                                     <strong>{{ doc.revision }}</strong>
                                 </div>
                                 <div class="col-6">
-                                    <span class="text-muted">Discipline:</span>
+                                    <span class="text-muted">رشته تخصصی:</span>
                                     <strong>{{ doc.get_discipline_display }}</strong>
                                 </div>
                             </div>
@@ -514,17 +514,17 @@
                             <div class="d-flex flex-wrap gap-1 mb-2">
                                 {% if doc.linked_tags_count > 0 %}
                                 <span class="badge bg-light text-dark linked-badge">
-                                    <i class="bi bi-link-45deg"></i> {{ doc.linked_tags_count }} tags
+                                    <i class="bi bi-link-45deg"></i> {{ doc.linked_tags_count }} برچسب
                                 </span>
                                 {% endif %}
                                 {% if doc.shares_count > 0 %}
                                 <span class="badge bg-light text-dark share-indicator">
-                                    <i class="bi bi-share"></i> {{ doc.shares_count }} shares
+                                    <i class="bi bi-share"></i> {{ doc.shares_count }} اشتراک‌گذاری
                                 </span>
                                 {% endif %}
                                 {% if doc.file_upload %}
                                 <span class="badge bg-success">
-                                    <i class="bi bi-paperclip"></i> File
+                                    <i class="bi bi-paperclip"></i> فایل
                                 </span>
                                 {% endif %}
                             </div>
@@ -534,11 +534,11 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <small class="text-muted">
                                     <i class="bi bi-person"></i>
-                                    {{ doc.submitted_by.get_full_name|default:"System"|truncatechars:15 }}
+                                    {{ doc.submitted_by.get_full_name|default:"سیستم"|truncatechars:15 }}
                                 </small>
                                 <div>
                                     <a href="{% url 'documents:document_share' doc.pk %}"
-                                       class="btn btn-sm btn-outline-info" title="Share">
+                                       class="btn btn-sm btn-outline-info" title="اشتراک‌گذاری">
                                         <i class="bi bi-share"></i>
                                     </a>
                                     <small class="text-muted ms-1">
@@ -557,9 +557,9 @@
             {% if is_paginated %}
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <div class="text-muted small">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
                 </div>
-                <nav aria-label="Document pagination">
+                <nav aria-label="صفحه‌بندی مدارک">
                     <ul class="pagination mb-0">
                         {% if page_obj.has_previous %}
                         <li class="page-item">
@@ -607,25 +607,25 @@
                 <div class="card-body">
                     <div class="empty-state">
                         <i class="bi bi-file-earmark-text"></i>
-                        <h3 class="mt-3">No Documents Found</h3>
+                        <h3 class="mt-3">هیچ مدرکی پیدا نشد</h3>
                         <p class="text-muted">
                             {% if request.GET %}
-                            No documents match your search criteria. Try adjusting your filters.
+                            هیچ مدرکی با معیارهای جستجوی شما مطابقت ندارد. لطفاً فیلترهای خود را تنظیم کنید.
                             {% else %}
-                            Get started by uploading your first document.
+                            با بارگذاری اولین مدرک خود شروع کنید.
                             {% endif %}
                         </p>
                         <div class="mt-3">
                             {% if request.GET %}
                             <a href="{% url 'documents:document_list' %}" class="btn btn-outline-secondary me-2">
-                                <i class="bi bi-x-circle"></i> Clear Filters
+                                <i class="bi bi-x-circle"></i> پاک کردن فیلترها
                             </a>
                             {% endif %}
                             <a href="{% url 'documents:document-create' %}" class="btn btn-primary">
-                                <i class="bi bi-plus-lg"></i> Upload Document
+                                <i class="bi bi-plus-lg"></i> بارگذاری مدرک
                             </a>
                             <a href="#" class="btn btn-outline-primary ms-2">
-                                <i class="bi bi-upload"></i> Bulk Upload
+                                <i class="bi bi-upload"></i> بارگذاری گروهی
                             </a>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -75,13 +75,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">Work Packages</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">بسته‌های کاری</a></li>
       {% if work_package %}
       <li class="breadcrumb-item">
         <a href="{% url 'construction:work_package_detail' work_package.pk %}">
@@ -99,17 +99,17 @@
       <h1 class="h2 mb-1">{{ page_title }}</h1>
       {% if work_package %}
       <p class="text-muted mb-0">
-        Work Package: <strong>{{ work_package.code }}</strong> - {{ work_package.name }}
+        بسته کاری: <strong>{{ work_package.code }}</strong> - {{ work_package.name }}
       </p>
       {% endif %}
     </div>
     <div>
       {% if work_package %}
       <a href="{% url 'construction:work_package_detail' work_package.pk %}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Back
+        <i class="bi bi-arrow-left"></i> بازگشت
       </a>
       <a href="#" class="btn btn-outline-primary ms-2">
-        <i class="bi bi-plus-lg"></i> Bulk Add
+        <i class="bi bi-plus-lg"></i> افزودن گروهی
       </a>
       {% endif %}
     </div>
@@ -120,7 +120,7 @@
     <div class="col-lg-5">
       <div class="card">
         <div class="card-header">
-          <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Single Tag</h5>
+          <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>افزودن برچسب تکی</h5>
         </div>
         <div class="card-body">
           <form method="post" novalidate>
@@ -132,7 +132,7 @@
 
             <div class="mb-3">
               <label for="{{ form.equipment_tag.id_for_label }}" class="form-label required-field">
-                Equipment Tag
+                برچسب تجهیزات
               </label>
               {{ form.equipment_tag }}
               {% if form.equipment_tag.errors %}
@@ -143,16 +143,16 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label for="{{ form.sequence_number.id_for_label }}" class="form-label">
-                  Sequence Number
+                  شماره ترتیب
                 </label>
                 {{ form.sequence_number }}
-                <div class="form-text">Installation order</div>
+                <div class="form-text">ترتیب نصب</div>
               </div>
             </div>
 
             <div class="mb-3">
               <label for="{{ form.notes.id_for_label }}" class="form-label">
-                Notes
+                یادداشت‌ها
               </label>
               {{ form.notes }}
             </div>
@@ -160,11 +160,11 @@
             <div class="d-flex justify-content-between">
               {% if work_package %}
               <a href="{% url 'construction:work_package_detail' work_package.pk %}" class="btn btn-outline-secondary">
-                Cancel
+                لغو
               </a>
               {% endif %}
               <button type="submit" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Add Tag
+                <i class="bi bi-plus-circle"></i> افزودن برچسب
               </button>
             </div>
           </form>
@@ -177,21 +177,21 @@
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="mb-0">
-            <i class="bi bi-tag me-2"></i>Available Tags
+            <i class="bi bi-tag me-2"></i>برچسب‌های موجود
             {% if available_tags %}
             <span class="badge bg-primary ms-1">{{ available_tags.count }}</span>
             {% endif %}
           </h5>
           <div>
             <input type="text" id="tagSearchInput" class="form-control form-control-sm"
-                   placeholder="Search tags...">
+                   placeholder="جستجوی برچسب‌ها...">
           </div>
         </div>
         <div class="card-body p-0">
           {% if available_tags %}
           <div class="p-2 bg-light border-bottom">
             <div class="btn-group btn-group-sm" role="group">
-              <button type="button" class="btn btn-outline-secondary active" onclick="filterTags('all')">All</button>
+              <button type="button" class="btn btn-outline-secondary active" onclick="filterTags('all')">همه</button>
               {% for area_code, tags in tags_by_area.items %}
               <button type="button" class="btn btn-outline-secondary" onclick="filterTags('{{ area_code }}')">
                 {{ area_code }} ({{ tags|length }})
@@ -238,8 +238,8 @@
           {% else %}
           <div class="text-center py-4 text-muted">
             <i class="bi bi-tag" style="font-size: 2rem;"></i>
-            <p class="mt-2">No available tags to add.</p>
-            <small>All project tags are already in this work package.</small>
+            <p class="mt-2">هیچ برچسب موجودی برای افزودن وجود ندارد.</p>
+            <small>همه برچسب‌های پروژه قبلاً در این بسته کاری هستند.</small>
           </div>
           {% endif %}
         </div>
@@ -252,11 +252,11 @@
   <div class="card mt-4">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0">
-        <i class="bi bi-list-check me-2"></i>Current Items
+        <i class="bi bi-list-check me-2"></i>آیتم‌های فعلی
         <span class="badge bg-primary">{{ existing_items.count }}</span>
       </h5>
       <a href="#" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-arrow-down-up"></i> Reorder
+        <i class="bi bi-arrow-down-up"></i> مرتب‌سازی مجدد
       </a>
     </div>
     <div class="card-body p-0">
@@ -265,12 +265,12 @@
           <thead class="table-light">
           <tr>
             <th width="50">#</th>
-            <th>Tag Number</th>
-            <th>Description</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Complete</th>
-            <th>Actions</th>
+            <th>شماره برچسب</th>
+            <th>توضیحات</th>
+            <th>نوع</th>
+            <th>وضعیت</th>
+            <th>تکمیل</th>
+            <th>عملیات</th>
           </tr>
           </thead>
           <tbody>
@@ -286,9 +286,9 @@
             <td><span class="badge bg-light text-dark small">{{ item.equipment_tag.get_equipment_type_display }}</span></td>
             <td>
               {% if item.is_complete %}
-              <span class="badge bg-success">Done</span>
+              <span class="badge bg-success">انجام شده</span>
               {% else %}
-              <span class="badge bg-warning text-dark">Pending</span>
+              <span class="badge bg-warning text-dark">در انتظار</span>
               {% endif %}
             </td>
             <td>

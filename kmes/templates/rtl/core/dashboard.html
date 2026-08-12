@@ -1,7 +1,7 @@
 {% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Dashboard - Copper Mine Processing{% endblock %}
+{% block title %}داشبورد - کارخانه فرآوری مس{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -92,15 +92,15 @@
       <div class="col-md-8">
         <h1 class="h3 mb-2">
           <i class="bi bi-speedometer2 me-2"></i>
-          Welcome to the Dashboard
+          خوش آمدید به داشبورد
         </h1>
         <p class="mb-0 opacity-75">
-          Copper Mine Processing Facility - Construction & Assembly Management
+          کارخانه فرآوری مس - مدیریت ساخت و مونتاژ
         </p>
       </div>
       <div class="col-md-4 text-md-end mt-3 mt-md-0">
         <a href="#" class="btn btn-light">
-          <i class="bi bi-plus-lg"></i> New Project
+          <i class="bi bi-plus-lg"></i> پروژه جدید
         </a>
       </div>
     </div>
@@ -114,15 +114,15 @@
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <div class="stat-value text-primary">{{ total_projects }}</div>
-              <div class="stat-label">Total Projects</div>
+              <div class="stat-label">کل پروژه‌ها</div>
             </div>
             <div class="stat-icon bg-primary text-white">
               <i class="bi bi-folder"></i>
             </div>
           </div>
           <div class="mt-2">
-            <small class="text-success">{{ active_projects }} Active</small>
-            <small class="text-muted ms-2">| {{ completed_projects }} Completed</small>
+            <small class="text-success">{{ active_projects }} فعال</small>
+            <small class="text-muted ms-2">| {{ completed_projects }} تکمیل شده</small>
           </div>
         </div>
       </div>
@@ -134,15 +134,15 @@
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <div class="stat-value text-success">{{ total_equipment_tags }}</div>
-              <div class="stat-label">Equipment Tags</div>
+              <div class="stat-label">برچسب‌های تجهیزات</div>
             </div>
             <div class="stat-icon bg-success text-white">
               <i class="bi bi-tag"></i>
             </div>
           </div>
           <div class="mt-2">
-            <small class="text-info">{{ installed_tags }} Installed</small>
-            <small class="text-muted ms-2">| {{ commissioned_tags }} Commissioned</small>
+            <small class="text-info">{{ installed_tags }} نصب شده</small>
+            <small class="text-muted ms-2">| {{ commissioned_tags }} راه‌اندازی شده</small>
           </div>
         </div>
       </div>
@@ -154,14 +154,14 @@
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <div class="stat-value text-warning">{{ active_work_packages }}</div>
-              <div class="stat-label">Active Work Packages</div>
+              <div class="stat-label">بسته‌های کاری فعال</div>
             </div>
             <div class="stat-icon bg-warning text-white">
               <i class="bi bi-clipboard-check"></i>
             </div>
           </div>
           <div class="mt-2">
-            <small class="text-success">{{ completed_work_packages }} Completed</small>
+            <small class="text-success">{{ completed_work_packages }} تکمیل شده</small>
           </div>
         </div>
       </div>
@@ -173,14 +173,14 @@
           <div class="d-flex justify-content-between align-items-start">
             <div>
               <div class="stat-value text-danger">{{ open_punch_items }}</div>
-              <div class="stat-label">Open Punch Items</div>
+              <div class="stat-label">آیتم‌های Punch باز</div>
             </div>
             <div class="stat-icon bg-danger text-white">
               <i class="bi bi-flag"></i>
             </div>
           </div>
           <div class="mt-2">
-            <small class="text-danger fw-bold">{{ critical_punch_items }} Critical</small>
+            <small class="text-danger fw-bold">{{ critical_punch_items }} بحرانی</small>
           </div>
         </div>
       </div>
@@ -194,8 +194,8 @@
         <div class="icon-circle bg-primary bg-opacity-10 text-primary">
           <i class="bi bi-folder"></i>
         </div>
-        <h6 class="mb-1">Projects</h6>
-        <small class="text-muted">Manage projects</small>
+        <h6 class="mb-1">پروژه‌ها</h6>
+        <small class="text-muted">مدیریت پروژه‌ها</small>
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
@@ -203,8 +203,8 @@
         <div class="icon-circle bg-success bg-opacity-10 text-success">
           <i class="bi bi-tag"></i>
         </div>
-        <h6 class="mb-1">Equipment Tags</h6>
-        <small class="text-muted">View all tags</small>
+        <h6 class="mb-1">برچسب‌های تجهیزات</h6>
+        <small class="text-muted">مشاهده همه برچسب‌ها</small>
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
@@ -212,8 +212,8 @@
         <div class="icon-circle bg-info bg-opacity-10 text-info">
           <i class="bi bi-file-earmark-text"></i>
         </div>
-        <h6 class="mb-1">Documents</h6>
-        <small class="text-muted">All documents</small>
+        <h6 class="mb-1">مدارک</h6>
+        <small class="text-muted">همه مدارک</small>
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
@@ -221,8 +221,8 @@
         <div class="icon-circle bg-warning bg-opacity-10 text-warning">
           <i class="bi bi-tools"></i>
         </div>
-        <h6 class="mb-1">Work Packages</h6>
-        <small class="text-muted">Construction</small>
+        <h6 class="mb-1">بسته‌های کاری</h6>
+        <small class="text-muted">ساخت</small>
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
@@ -230,8 +230,8 @@
         <div class="icon-circle bg-danger bg-opacity-10 text-danger">
           <i class="bi bi-flag"></i>
         </div>
-        <h6 class="mb-1">Punch Items</h6>
-        <small class="text-muted">Track issues</small>
+        <h6 class="mb-1">آیتم‌های Punch</h6>
+        <small class="text-muted">پیگیری مشکلات</small>
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg-2">
@@ -239,8 +239,8 @@
         <div class="icon-circle bg-secondary bg-opacity-10 text-secondary">
           <i class="bi bi-people"></i>
         </div>
-        <h6 class="mb-1">Resources</h6>
-        <small class="text-muted">Workforce</small>
+        <h6 class="mb-1">منابع</h6>
+        <small class="text-muted">نیروی کار</small>
       </a>
     </div>
   </div>
@@ -251,8 +251,8 @@
     <div class="col-lg-4 mb-4">
       <div class="card h-100">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Recent Projects</h5>
-          <a href="{% url 'core:project-list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+          <h5 class="mb-0"><i class="bi bi-folder me-2"></i>پروژه‌های اخیر</h5>
+          <a href="{% url 'core:project-list' %}" class="btn btn-sm btn-outline-primary">مشاهده همه</a>
         </div>
         <div class="card-body">
           {% if recent_projects %}
@@ -277,7 +277,7 @@
             {% endfor %}
           </div>
           {% else %}
-          <p class="text-muted text-center py-3">No projects yet.</p>
+          <p class="text-muted text-center py-3">هنوز پروژه‌ای وجود ندارد.</p>
           {% endif %}
         </div>
       </div>
@@ -287,8 +287,8 @@
     <div class="col-lg-4 mb-4">
       <div class="card h-100">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="bi bi-tag me-2"></i>Recent Tags</h5>
-          <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+          <h5 class="mb-0"><i class="bi bi-tag me-2"></i>برچسب‌های اخیر</h5>
+          <a href="{% url 'core:equipment-tag-list' %}" class="btn btn-sm btn-outline-primary">مشاهده همه</a>
         </div>
         <div class="card-body">
           {% if recent_tags %}
@@ -313,7 +313,7 @@
             {% endfor %}
           </div>
           {% else %}
-          <p class="text-muted text-center py-3">No tags yet.</p>
+          <p class="text-muted text-center py-3">هنوز برچسبی وجود ندارد.</p>
           {% endif %}
         </div>
       </div>
@@ -323,8 +323,8 @@
     <div class="col-lg-4 mb-4">
       <div class="card h-100">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Open Punch Items</h5>
-          <a href="#" class="btn btn-sm btn-outline-danger">View All</a>
+          <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>آیتم‌های Punch باز</h5>
+          <a href="#" class="btn btn-sm btn-outline-danger">مشاهده همه</a>
         </div>
         <div class="card-body">
           {% if recent_punch_items %}
@@ -348,7 +348,7 @@
               </div>
               {% if punch.equipment_tag %}
               <small class="text-muted">
-                Tag: {{ punch.equipment_tag.tag_number }}
+                برچسب: {{ punch.equipment_tag.tag_number }}
               </small>
               {% endif %}
             </a>
@@ -357,7 +357,7 @@
           {% else %}
           <div class="text-center py-3">
             <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-            <p class="text-muted mt-2">No open punch items. Great job!</p>
+            <p class="text-muted mt-2">هیچ آیتم Punch باز وجود ندارد. عالی است!</p>
           </div>
           {% endif %}
         </div>
@@ -371,8 +371,8 @@
     <div class="col-lg-6 mb-4">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="bi bi-calendar-x me-2"></i>Overdue Work Packages</h5>
-          <a href="#" class="btn btn-sm btn-outline-warning">View All</a>
+          <h5 class="mb-0"><i class="bi bi-calendar-x me-2"></i>بسته‌های کاری تاریخ‌گذشته</h5>
+          <a href="#" class="btn btn-sm btn-outline-warning">مشاهده همه</a>
         </div>
         <div class="card-body">
           {% if overdue_work_packages %}
@@ -380,10 +380,10 @@
             <table class="table table-sm table-hover">
               <thead class="table-light">
               <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Due Date</th>
-                <th>Days Overdue</th>
+                <th>کد</th>
+                <th>نام</th>
+                <th>تاریخ سررسید</th>
+                <th>روزهای تأخیر</th>
               </tr>
               </thead>
               <tbody>
@@ -405,7 +405,7 @@
           {% else %}
           <p class="text-muted text-center py-3">
             <i class="bi bi-check-circle text-success"></i>
-            No overdue work packages.
+            هیچ بسته کاری تاریخ‌گذشته‌ای وجود ندارد.
           </p>
           {% endif %}
         </div>
@@ -416,8 +416,8 @@
     <div class="col-lg-6 mb-4">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Recent Documents</h5>
-          <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+          <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>مدارک اخیر</h5>
+          <a href="#" class="btn btn-sm btn-outline-primary">مشاهده همه</a>
         </div>
         <div class="card-body">
           {% if recent_documents %}
@@ -443,7 +443,7 @@
             {% endfor %}
           </div>
           {% else %}
-          <p class="text-muted text-center py-3">No documents yet.</p>
+          <p class="text-muted text-center py-3">هنوز مدرکی وجود ندارد.</p>
           {% endif %}
         </div>
       </div>

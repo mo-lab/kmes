@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Share Document - {{ document.document_number }}{% endblock %}
+{% block title %}اشتراک‌گذاری مدرک - {{ document.document_number }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -168,19 +168,19 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'documents:document_list' %}">Documents</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'documents:document_list' %}">مدارک</a></li>
             <li class="breadcrumb-item">
                 <a href="{% url 'documents:document_detail' document.pk %}">
                     {{ document.document_number }}
                 </a>
             </li>
-            <li class="breadcrumb-item active">Share</li>
+            <li class="breadcrumb-item active">اشتراک‌گذاری</li>
         </ol>
     </nav>
 
@@ -189,19 +189,19 @@
         <div class="d-flex justify-content-between align-items-start">
             <div>
                 <h4 class="mb-2">
-                    <i class="bi bi-share me-2"></i>Share Document
+                    <i class="bi bi-share me-2"></i>اشتراک‌گذاری مدرک
                 </h4>
                 <p class="mb-1 opacity-75">
                     <strong>{{ document.document_number }}</strong> - {{ document.title }}
                 </p>
                 <small class="opacity-75">
-                    <i class="bi bi-folder"></i> {{ document.project.name|default:"No Project" }} |
+                    <i class="bi bi-folder"></i> {{ document.project.name|default:"بدون پروژه" }} |
                     <i class="bi bi-file-earmark"></i> {{ document.get_doc_type_display }} |
-                    Rev {{ document.revision }}
+                    نسخه {{ document.revision }}
                 </small>
             </div>
             <a href="{% url 'documents:document_detail' document.pk %}" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-arrow-left"></i> Back to Document
+                <i class="bi bi-arrow-left"></i> بازگشت به مدرک
             </a>
         </div>
     </div>
@@ -210,25 +210,25 @@
     <div class="share-stats">
         <div class="stat-box">
             <div class="stat-value">{{ existing_shares.count }}</div>
-            <div class="stat-label">Total Shares</div>
+            <div class="stat-label">کل اشتراک‌گذاری‌ها</div>
         </div>
         <div class="stat-box">
             <div class="stat-value text-success">
                 {{ existing_shares.filter.is_accessed|length|default:"0" }}
             </div>
-            <div class="stat-label">Viewed</div>
+            <div class="stat-label">مشاهده شده</div>
         </div>
         <div class="stat-box">
             <div class="stat-value text-warning">
                 {{ existing_shares.filter.is_accessed|length|default:"0" }}
             </div>
-            <div class="stat-label">Pending</div>
+            <div class="stat-label">در انتظار</div>
         </div>
         <div class="stat-box">
             <div class="stat-value text-info">
                 {{ existing_shares.filter.can_edit|length|default:"0" }}
             </div>
-            <div class="stat-label">Can Edit</div>
+            <div class="stat-label">قابلیت ویرایش</div>
         </div>
     </div>
 
@@ -238,7 +238,7 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="bi bi-person-plus me-2"></i>Share with Users
+                        <i class="bi bi-person-plus me-2"></i>اشتراک‌گذاری با کاربران
                     </h5>
                 </div>
                 <div class="card-body">
@@ -255,14 +255,14 @@
                         <!-- User Search -->
                         <div class="user-search-card">
                             <label class="form-label fw-semibold">
-                                <i class="bi bi-search me-1"></i>Search Users
+                                <i class="bi bi-search me-1"></i>جستجوی کاربران
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-search"></i></span>
                                 <input type="text"
                                        id="userSearchInput"
                                        class="form-control"
-                                       placeholder="Type name or email to search..."
+                                       placeholder="برای جستجو، نام یا ایمیل را تایپ کنید..."
                                        autocomplete="off">
                                 <span class="input-group-text search-spinner" id="searchSpinner">
                                     <span class="spinner-border spinner-border-sm"></span>
@@ -285,14 +285,14 @@
 
                         <!-- Permissions -->
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Permissions</label>
+                            <label class="form-label fw-semibold">دسترسی‌ها</label>
                             <div class="form-check form-switch">
                                 {{ form.can_edit }}
                                 <label class="form-check-label" for="{{ form.can_edit.id_for_label }}">
-                                    <strong>Allow editing</strong>
+                                    <strong>اجازه ویرایش</strong>
                                     <br>
                                     <small class="text-muted">
-                                        Recipients can edit the document details if enabled
+                                        در صورت فعال بودن، گیرندگان می‌توانند جزئیات مدرک را ویرایش کنند
                                     </small>
                                 </label>
                             </div>
@@ -301,18 +301,18 @@
                         <!-- Message -->
                         <div class="mb-3">
                             <label for="{{ form.message.id_for_label }}" class="form-label fw-semibold">
-                                Message <span class="text-muted">(Optional)</span>
+                                پیام <span class="text-muted">(اختیاری)</span>
                             </label>
                             {{ form.message }}
                             <div class="form-text">
-                                Add a personal message to notify recipients why you're sharing this document.
+                                یک پیام شخصی اضافه کنید تا به گیرندگان اطلاع دهید چرا این مدرک را به اشتراک می‌گذارید.
                             </div>
                         </div>
 
                         <!-- Quick Share Link -->
                         <div class="share-link-box mb-3">
                             <label class="form-label fw-semibold small">
-                                <i class="bi bi-link-45deg"></i> Direct Share Link
+                                <i class="bi bi-link-45deg"></i> لینک مستقیم اشتراک‌گذاری
                             </label>
                             <div class="input-group">
                                 <input type="text"
@@ -321,19 +321,19 @@
                                        id="shareLink"
                                        readonly>
                                 <button class="btn btn-outline-secondary btn-sm" type="button" onclick="copyShareLink()">
-                                    <i class="bi bi-clipboard"></i> Copy
+                                    <i class="bi bi-clipboard"></i> کپی
                                 </button>
                             </div>
-                            <small class="text-muted">Anyone with this link can view the document if they have access.</small>
+                            <small class="text-muted">هر کسی با این لینک می‌تواند مدرک را در صورت داشتن دسترسی مشاهده کند.</small>
                         </div>
 
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-between align-items-center">
                             <a href="{% url 'documents:document_detail' document.pk %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle"></i> Cancel
+                                <i class="bi bi-x-circle"></i> لغو
                             </a>
                             <button type="submit" class="btn btn-primary" id="shareButton" disabled>
-                                <i class="bi bi-share"></i> Share Document
+                                <i class="bi bi-share"></i> اشتراک‌گذاری مدرک
                             </button>
                         </div>
                     </form>
@@ -346,7 +346,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-people me-2"></i>Currently Shared With
+                        <i class="bi bi-people me-2"></i>در حال اشتراک‌گذاری با
                     </h5>
                     <span class="badge bg-primary rounded-pill">{{ existing_shares.count }}</span>
                 </div>
@@ -372,19 +372,19 @@
                                         <div class="btn-group btn-group-sm">
                                             <a href="{% url 'documents:document_share_update' share.pk %}"
                                                class="btn btn-outline-secondary btn-sm"
-                                               title="Edit Permissions"
+                                               title="ویرایش دسترسی‌ها"
                                                data-bs-toggle="tooltip">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <a href="{% url 'documents:document_share_resend' share.pk %}"
                                                class="btn btn-outline-info btn-sm"
-                                               title="Resend Notification"
+                                               title="ارسال مجدد اعلان"
                                                data-bs-toggle="tooltip">
                                                 <i class="bi bi-arrow-repeat"></i>
                                             </a>
                                             <a href="{% url 'documents:document_share_delete' share.pk %}"
                                                class="btn btn-outline-danger btn-sm"
-                                               title="Remove Access"
+                                               title="حذف دسترسی"
                                                data-bs-toggle="tooltip">
                                                 <i class="bi bi-x-lg"></i>
                                             </a>
@@ -396,22 +396,22 @@
                                         <span class="badge permission-badge 
                                             {% if share.can_edit %}bg-warning text-dark{% else %}bg-info{% endif %}">
                                             {% if share.can_edit %}
-                                                <i class="bi bi-pencil"></i> Can Edit
+                                                <i class="bi bi-pencil"></i> قابلیت ویرایش
                                             {% else %}
-                                                <i class="bi bi-eye"></i> View Only
+                                                <i class="bi bi-eye"></i> فقط مشاهده
                                             {% endif %}
                                         </span>
 
                                         {% if share.is_accessed %}
                                         <span class="badge bg-success permission-badge">
-                                                <i class="bi bi-check-circle"></i> Viewed
+                                                <i class="bi bi-check-circle"></i> مشاهده شده
                                             </span>
                                         <small class="text-muted ms-1">
-                                            {{ share.accessed_date|timesince }} ago
+                                            {{ share.accessed_date|timesince }} پیش
                                         </small>
                                         {% else %}
                                         <span class="badge bg-secondary permission-badge">
-                                                <i class="bi bi-clock"></i> Not Viewed
+                                                <i class="bi bi-clock"></i> مشاهده نشده
                                             </span>
                                         {% endif %}
                                     </div>
@@ -426,8 +426,8 @@
 
                                     <!-- Share Info -->
                                     <small class="text-muted d-block mt-2">
-                                        Shared by {{ share.shared_by.get_full_name|default:"System" }}
-                                        {{ share.shared_date|timesince }} ago
+                                        اشتراک‌گذاری توسط {{ share.shared_by.get_full_name|default:"سیستم" }}
+                                        {{ share.shared_date|timesince }} پیش
                                     </small>
                                 </div>
                             </div>
@@ -437,9 +437,9 @@
                     {% else %}
                     <div class="empty-state">
                         <i class="bi bi-share"></i>
-                        <h6 class="mt-2">Not Shared Yet</h6>
+                        <h6 class="mt-2">هنوز به اشتراک گذاشته نشده</h6>
                         <p class="small text-muted">
-                            Use the form to share this document with team members.
+                            از فرم برای اشتراک‌گذاری این مدرک با اعضای تیم استفاده کنید.
                         </p>
                     </div>
                     {% endif %}
@@ -450,7 +450,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">
                             <i class="bi bi-info-circle"></i>
-                            Users with view access can download the document.
+                            کاربران با دسترسی مشاهده می‌توانند مدرک را دانلود کنند.
                         </small>
                     </div>
                 </div>
@@ -460,21 +460,21 @@
             <!-- Quick Tips -->
             <div class="card mt-3">
                 <div class="card-header bg-light">
-                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Sharing Tips</h6>
+                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>نکات اشتراک‌گذاری</h6>
                 </div>
                 <div class="card-body small">
                     <ul class="mb-0">
                         <li class="mb-2">
-                            <strong>View Only:</strong> Recipients can view and download the document.
+                            <strong>فقط مشاهده:</strong> گیرندگان می‌توانند مدرک را مشاهده و دانلود کنند.
                         </li>
                         <li class="mb-2">
-                            <strong>Can Edit:</strong> Recipients can update document details and upload new revisions.
+                            <strong>قابلیت ویرایش:</strong> گیرندگان می‌توانند جزئیات مدرک را به‌روز کنند و نسخه‌های جدید را بارگذاری کنند.
                         </li>
                         <li class="mb-2">
-                            <strong>Revoke Access:</strong> You can remove sharing at any time.
+                            <strong>لغو دسترسی:</strong> شما می‌توانید در هر زمان اشتراک‌گذاری را لغو کنید.
                         </li>
                         <li>
-                            <strong>Notifications:</strong> Recipients will see the document in their "Shared With Me" section.
+                            <strong>اعلان‌ها:</strong> گیرندگان مدرک را در بخش "به اشتراک گذاشته شده با من" خود مشاهده خواهند کرد.
                         </li>
                     </ul>
                 </div>
@@ -488,16 +488,16 @@
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title">Remove Access</h6>
+                <h6 class="modal-title">حذف دسترسی</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to remove access for this user?</p>
-                <p class="small text-muted">They will no longer be able to view or edit this document.</p>
+                <p>آیا مطمئن هستید که می‌خواهید دسترسی این کاربر را حذف کنید؟</p>
+                <p class="small text-muted">آنها دیگر نمی‌توانند این مدرک را مشاهده یا ویرایش کنند.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="#" class="btn btn-sm btn-danger" id="confirmRemoveBtn">Remove Access</a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">لغو</button>
+                <a href="#" class="btn btn-sm btn-danger" id="confirmRemoveBtn">حذف دسترسی</a>
             </div>
         </div>
     </div>
@@ -553,7 +553,7 @@
         if (users.length === 0) {
             searchResults.innerHTML = `
                 <div class="text-center py-3 text-muted small">
-                    <i class="bi bi-person-x"></i> No users found
+                    <i class="bi bi-person-x"></i> کاربری یافت نشد
                 </div>
             `;
         } else {
@@ -605,7 +605,7 @@
 
         if (selectedUsers.size === 0) {
             selectedUsersContainer.innerHTML = `
-                <small class="text-muted">No users selected. Search and select users above.</small>
+                <small class="text-muted">هیچ کاربری انتخاب نشده است. کاربران را جستجو و انتخاب کنید.</small>
             `;
         } else {
             selectedUsers.forEach((user, id) => {
@@ -617,7 +617,7 @@
                 badge.innerHTML = `
                     <div class="user-avatar small">${initials}</div>
                     <span>${user.full_name || user.username}</span>
-                    <span class="remove-btn" onclick="removeUser(${id})" title="Remove">
+                    <span class="remove-btn" onclick="removeUser(${id})" title="حذف">
                         <i class="bi bi-x-circle-fill"></i>
                     </span>
                 `;
@@ -653,7 +653,7 @@
             // Show brief feedback
             const btn = event.target;
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> کپی شد!';
             btn.classList.add('btn-success');
             btn.classList.remove('btn-outline-secondary');
 

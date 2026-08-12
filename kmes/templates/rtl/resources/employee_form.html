@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
@@ -59,13 +59,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="#">Employees</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+      <li class="breadcrumb-item"><a href="#">کارمندان</a></li>
       <li class="breadcrumb-item active">{{ page_title }}</li>
     </ol>
   </nav>
@@ -76,15 +76,15 @@
       <h1 class="h2 mb-1">{{ page_title }}</h1>
       <p class="text-muted mb-0">
         {% if is_create %}
-        Register a new employee in the system
+        ثبت کارمند جدید در سیستم
         {% else %}
-        Update employee information
+        به‌روزرسانی اطلاعات کارمند
         {% endif %}
       </p>
     </div>
     <div>
       <a href="#" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Back to List
+        <i class="bi bi-arrow-left"></i> بازگشت به لیست
       </a>
     </div>
   </div>
@@ -106,17 +106,17 @@
         <!-- Personal Information -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-person me-2"></i>Personal Information
+            <i class="bi bi-person me-2"></i>اطلاعات شخصی
           </div>
 
           <div class="row g-3">
             <!-- Employee ID -->
             <div class="col-md-4">
               <label for="{{ form.employee_id.id_for_label }}" class="form-label">
-                Employee ID
+                شناسه کارمند
               </label>
               {{ form.employee_id }}
-              <div class="form-text">Auto-generated if left blank</div>
+              <div class="form-text">در صورت خالی بودن به‌طور خودکار تولید می‌شود</div>
               {% if form.employee_id.errors %}
               <div class="invalid-feedback d-block">{{ form.employee_id.errors.0 }}</div>
               {% endif %}
@@ -125,7 +125,7 @@
             <!-- First Name -->
             <div class="col-md-4">
               <label for="{{ form.first_name.id_for_label }}" class="form-label required-field">
-                First Name
+                نام
               </label>
               {{ form.first_name }}
               {% if form.first_name.errors %}
@@ -136,7 +136,7 @@
             <!-- Last Name -->
             <div class="col-md-4">
               <label for="{{ form.last_name.id_for_label }}" class="form-label required-field">
-                Last Name
+                نام خانوادگی
               </label>
               {{ form.last_name }}
               {% if form.last_name.errors %}
@@ -147,10 +147,10 @@
             <!-- User Account -->
             <div class="col-md-6">
               <label for="{{ form.user.id_for_label }}" class="form-label">
-                Link to User Account
+                پیوند به حساب کاربری
               </label>
               {{ form.user }}
-              <div class="form-text">Link to an existing system user account</div>
+              <div class="form-text">پیوند به یک حساب کاربری موجود در سیستم</div>
               {% if form.user.errors %}
               <div class="invalid-feedback d-block">{{ form.user.errors.0 }}</div>
               {% endif %}
@@ -159,7 +159,7 @@
             <!-- Email -->
             <div class="col-md-6">
               <label for="{{ form.email.id_for_label }}" class="form-label">
-                Email
+                ایمیل
               </label>
               {{ form.email }}
               {% if form.email.errors %}
@@ -170,7 +170,7 @@
             <!-- Phone -->
             <div class="col-md-6">
               <label for="{{ form.phone.id_for_label }}" class="form-label">
-                Phone
+                تلفن
               </label>
               {{ form.phone }}
               {% if form.phone.errors %}
@@ -183,18 +183,18 @@
         <!-- Employment Details -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-briefcase me-2"></i>Employment Details
+            <i class="bi bi-briefcase me-2"></i>جزئیات شغلی
           </div>
 
           <div class="row g-3">
             <!-- Company -->
             <div class="col-md-6">
               <label for="{{ form.company.id_for_label }}" class="form-label required-field">
-                Company / Contractor
+                شرکت / پیمانکار
               </label>
               {{ form.company }}
               <div class="mt-1">
-                <small class="text-muted">Quick select:</small>
+                <small class="text-muted">انتخاب سریع:</small>
                 <div class="d-flex flex-wrap gap-1 mt-1">
                   {% for company in companies|slice:":8" %}
                   <span class="badge bg-light text-dark company-badge"
@@ -212,7 +212,7 @@
             <!-- Trade -->
             <div class="col-md-6">
               <label for="{{ form.trade.id_for_label }}" class="form-label required-field">
-                Trade / Role
+                تخصص / نقش
               </label>
               {{ form.trade }}
               {% if form.trade.errors %}
@@ -223,7 +223,7 @@
             <!-- Hire Date -->
             <div class="col-md-4">
               <label for="{{ form.hire_date.id_for_label }}" class="form-label">
-                Hire Date
+                تاریخ استخدام
               </label>
               {{ form.hire_date }}
               {% if form.hire_date.errors %}
@@ -234,7 +234,7 @@
             <!-- Termination Date -->
             <div class="col-md-4">
               <label for="{{ form.termination_date.id_for_label }}" class="form-label">
-                Termination Date
+                تاریخ اخراج
               </label>
               {{ form.termination_date }}
               {% if form.termination_date.errors %}
@@ -247,7 +247,7 @@
               <div class="form-check mb-3">
                 {{ form.is_active }}
                 <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
-                  <strong>Active Employee</strong>
+                  <strong>کارمند فعال</strong>
                 </label>
               </div>
             </div>
@@ -257,7 +257,7 @@
         <!-- Notes -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-sticky me-2"></i>Notes
+            <i class="bi bi-sticky me-2"></i>یادداشت‌ها
           </div>
           {{ form.notes }}
           {% if form.notes.errors %}
@@ -274,11 +274,11 @@
         <div class="card mb-3">
           <div class="card-body text-center">
             <div class="employee-avatar-preview mb-2" id="avatarPreview">
-              <span id="avatarInitials">?</span>
+              <span id="avatarInitials">؟</span>
             </div>
-            <h5 id="previewName" class="mb-1">New Employee</h5>
-            <p id="previewCompany" class="text-muted small mb-0">Company</p>
-            <p id="previewTrade" class="text-muted small mb-0">Trade</p>
+            <h5 id="previewName" class="mb-1">کارمند جدید</h5>
+            <p id="previewCompany" class="text-muted small mb-0">شرکت</p>
+            <p id="previewTrade" class="text-muted small mb-0">تخصص</p>
           </div>
         </div>
 
@@ -286,7 +286,7 @@
         {% if trade_stats %}
         <div class="card mb-3">
           <div class="card-header">
-            <h6 class="mb-0"><i class="bi bi-people me-2"></i>Workforce by Trade</h6>
+            <h6 class="mb-0"><i class="bi bi-people me-2"></i>نیروی کار بر اساس تخصص</h6>
           </div>
           <div class="card-body p-0">
             <div class="list-group list-group-flush">
@@ -305,7 +305,7 @@
         {% if recent_employees %}
         <div class="card mb-3">
           <div class="card-header">
-            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recently Added</h6>
+            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>افزوده‌شده‌های اخیر</h6>
           </div>
           <div class="card-body p-0">
             <div class="list-group list-group-flush">
@@ -324,14 +324,14 @@
         <!-- Tips Card -->
         <div class="card">
           <div class="card-header bg-info bg-opacity-10">
-            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>نکات</h6>
           </div>
           <div class="card-body small">
             <ul class="mb-0">
-              <li class="mb-2">Link to user account for system access</li>
-              <li class="mb-2">Employee ID is auto-generated if left blank</li>
-              <li class="mb-2">Add certifications after creating employee</li>
-              <li>Use termination date for employees who have left</li>
+              <li class="mb-2">برای دسترسی به سیستم، به حساب کاربری پیوند دهید</li>
+              <li class="mb-2">شناسه کارمند در صورت خالی بودن به‌طور خودکار تولید می‌شود</li>
+              <li class="mb-2">پس از ایجاد کارمند، گواهینامه‌ها را اضافه کنید</li>
+              <li>از تاریخ اخراج برای کارمندانی که ترک کرده‌اند استفاده کنید</li>
             </ul>
           </div>
         </div>
@@ -343,16 +343,16 @@
     <div class="d-flex justify-content-between align-items-center mt-4">
       <div>
         <a href="#" class="btn btn-outline-secondary">
-          <i class="bi bi-x-circle"></i> Cancel
+          <i class="bi bi-x-circle"></i> لغو
         </a>
       </div>
       <div>
         <button type="submit" name="save_add_another" class="btn btn-outline-primary">
-          <i class="bi bi-plus-circle"></i> Save & Add Another
+          <i class="bi bi-plus-circle"></i> ذخیره و افزودن دیگری
         </button>
         <button type="submit" class="btn btn-primary ms-2">
           <i class="bi bi-check-circle"></i>
-          {% if is_create %}Create Employee{% else %}Save Changes{% endif %}
+          {% if is_create %}ایجاد کارمند{% else %}ذخیره تغییرات{% endif %}
         </button>
       </div>
     </div>
@@ -378,7 +378,7 @@
     // Update name preview
     const previewName = document.getElementById('previewName');
     if (previewName) {
-      previewName.textContent = `${firstName} ${lastName}`.trim() || 'New Employee';
+      previewName.textContent = `${firstName} ${lastName}`.trim() || 'کارمند جدید';
     }
 
     // Update avatar initials
@@ -386,19 +386,19 @@
     if (avatarInitials) {
       const initial1 = firstName.charAt(0) || '';
       const initial2 = lastName.charAt(0) || '';
-      avatarInitials.textContent = (initial1 + initial2).toUpperCase() || '?';
+      avatarInitials.textContent = (initial1 + initial2).toUpperCase() || '؟';
     }
 
     // Update company preview
     const previewCompany = document.getElementById('previewCompany');
     if (previewCompany) {
-      previewCompany.textContent = company || 'Company';
+      previewCompany.textContent = company || 'شرکت';
     }
 
     // Update trade preview
     const previewTrade = document.getElementById('previewTrade');
     if (previewTrade) {
-      previewTrade.textContent = tradeText || 'Trade';
+      previewTrade.textContent = tradeText || 'تخصص';
     }
   }
 
@@ -423,7 +423,7 @@
   window.addEventListener('beforeunload', function(e) {
     if (formChanged) {
       e.preventDefault();
-      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      e.returnValue = 'تغییرات ذخیره‌نشده‌ای دارید. آیا مطمئن هستید که می‌خواهید خارج شوید؟';
     }
   });
 

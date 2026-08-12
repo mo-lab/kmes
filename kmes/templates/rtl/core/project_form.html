@@ -92,8 +92,8 @@
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'core:project-list' %}">Projects</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'core:project-list' %}">پروژه‌ها</a></li>
       <li class="breadcrumb-item active">{{ page_title }}</li>
     </ol>
   </nav>
@@ -104,15 +104,15 @@
       <h1 class="h2 mb-1">{{ page_title }}</h1>
       <p class="text-muted mb-0">
         {% if is_create %}
-        Create a new project to manage construction and assembly activities
+        ایجاد یک پروژه جدید برای مدیریت فعالیت‌های ساخت و مونتاژ
         {% else %}
-        Update project information
+        به‌روزرسانی اطلاعات پروژه
         {% endif %}
       </p>
     </div>
     <div>
       <a href="{% url 'core:project-list' %}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Back to List
+        <i class="bi bi-arrow-left"></i> بازگشت به لیست
       </a>
     </div>
   </div>
@@ -134,17 +134,17 @@
         <!-- Basic Information -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-info-circle me-2"></i>Basic Information
+            <i class="bi bi-info-circle me-2"></i>اطلاعات پایه
           </div>
 
           <div class="row g-3">
             <!-- Project Name -->
             <div class="col-md-8">
               <label for="{{ form.name.id_for_label }}" class="form-label required-field">
-                Project Name
+                نام پروژه
               </label>
               {{ form.name }}
-              <div class="form-text">Use a clear, descriptive name for the project</div>
+              <div class="form-text">از یک نام واضح و توصیفی برای پروژه استفاده کنید</div>
               {% if form.name.errors %}
               <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
               {% endif %}
@@ -153,11 +153,11 @@
             <!-- Project Code -->
             <div class="col-md-4">
               <label for="{{ form.code.id_for_label }}" class="form-label required-field">
-                Project Code
+                کد پروژه
               </label>
               {{ form.code }}
               <div class="form-text">
-                Auto-generated:
+                تولید خودکار:
                 <span class="code-preview" id="codePreview">{{ form.code.value|default:'PRJ-XX-XXX' }}</span>
               </div>
               {% if form.code.errors %}
@@ -168,12 +168,12 @@
             <!-- Location -->
             <div class="col-md-6">
               <label for="{{ form.location.id_for_label }}" class="form-label required-field">
-                Location
+                موقعیت
               </label>
               {{ form.location }}
               {% if location_suggestions %}
               <div class="mt-1">
-                <small class="text-muted">Suggestions:</small>
+                <small class="text-muted">پیشنهادها:</small>
                 <div class="d-flex flex-wrap gap-1 mt-1">
                   {% for loc in location_suggestions|slice:":5" %}
                   <span class="badge bg-light text-dark location-suggestion"
@@ -191,46 +191,46 @@
 
             <!-- Status -->
             <div class="col-md-6">
-              <label class="form-label required-field">Project Status</label>
+              <label class="form-label required-field">وضعیت پروژه</label>
               <div class="row g-2">
                 <div class="col-4">
                   <div class="status-option {% if form.status.value == 'INIT' %}selected{% endif %}"
                        onclick="selectStatus('INIT', this)">
                     <div class="status-icon">🚀</div>
-                    <div class="status-label">Initiation</div>
-                    <div class="status-desc">Project setup</div>
+                    <div class="status-label">آغاز</div>
+                    <div class="status-desc">راه‌اندازی پروژه</div>
                   </div>
                 </div>
                 <div class="col-4">
                   <div class="status-option {% if form.status.value == 'PLAN' %}selected{% endif %}"
                        onclick="selectStatus('PLAN', this)">
                     <div class="status-icon">📋</div>
-                    <div class="status-label">Planning</div>
-                    <div class="status-desc">Design phase</div>
+                    <div class="status-label">برنامه‌ریزی</div>
+                    <div class="status-desc">مرحله طراحی</div>
                   </div>
                 </div>
                 <div class="col-4">
                   <div class="status-option {% if form.status.value == 'EXEC' %}selected{% endif %}"
                        onclick="selectStatus('EXEC', this)">
                     <div class="status-icon">🔧</div>
-                    <div class="status-label">Execution</div>
-                    <div class="status-desc">Construction</div>
+                    <div class="status-label">اجرا</div>
+                    <div class="status-desc">ساخت</div>
                   </div>
                 </div>
                 <div class="col-4">
                   <div class="status-option {% if form.status.value == 'COMM' %}selected{% endif %}"
                        onclick="selectStatus('COMM', this)">
                     <div class="status-icon">✅</div>
-                    <div class="status-label">Commissioning</div>
-                    <div class="status-desc">Testing phase</div>
+                    <div class="status-label">راه‌اندازی</div>
+                    <div class="status-desc">مرحله تست</div>
                   </div>
                 </div>
                 <div class="col-4">
                   <div class="status-option {% if form.status.value == 'CLSD' %}selected{% endif %}"
                        onclick="selectStatus('CLSD', this)">
                     <div class="status-icon">🏁</div>
-                    <div class="status-label">Closed</div>
-                    <div class="status-desc">Completed</div>
+                    <div class="status-label">بسته شده</div>
+                    <div class="status-desc">تکمیل شده</div>
                   </div>
                 </div>
               </div>
@@ -245,14 +245,14 @@
         <!-- Schedule -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-calendar me-2"></i>Schedule
+            <i class="bi bi-calendar me-2"></i>برنامه‌زمانی
           </div>
 
           <div class="row g-3">
             <!-- Start Date -->
             <div class="col-md-4">
               <label for="{{ form.start_date.id_for_label }}" class="form-label required-field">
-                Start Date
+                تاریخ شروع
               </label>
               {{ form.start_date }}
               {% if form.start_date.errors %}
@@ -263,10 +263,10 @@
             <!-- Target Completion -->
             <div class="col-md-4">
               <label for="{{ form.target_completion_date.id_for_label }}" class="form-label required-field">
-                Target Completion Date
+                تاریخ هدف تکمیل
               </label>
               {{ form.target_completion_date }}
-              <div class="form-text">Estimated project end date</div>
+              <div class="form-text">تاریخ تخمینی پایان پروژه</div>
               {% if form.target_completion_date.errors %}
               <div class="invalid-feedback d-block">{{ form.target_completion_date.errors.0 }}</div>
               {% endif %}
@@ -275,10 +275,10 @@
             <!-- Actual Completion -->
             <div class="col-md-4">
               <label for="{{ form.actual_completion_date.id_for_label }}" class="form-label">
-                Actual Completion Date
+                تاریخ تکمیل واقعی
               </label>
               {{ form.actual_completion_date }}
-              <div class="form-text">Set when project is closed</div>
+              <div class="form-text">زمانی که پروژه بسته می‌شود تنظیم کنید</div>
               {% if form.actual_completion_date.errors %}
               <div class="invalid-feedback d-block">{{ form.actual_completion_date.errors.0 }}</div>
               {% endif %}
@@ -289,11 +289,11 @@
         <!-- Description -->
         <div class="form-section">
           <div class="form-section-title">
-            <i class="bi bi-file-text me-2"></i>Description
+            <i class="bi bi-file-text me-2"></i>توضیحات
           </div>
           {{ form.description }}
           <div class="form-text">
-            Provide a detailed description of the project scope, objectives, and key deliverables.
+            توضیحات دقیقی از محدوده پروژه، اهداف و خروجی‌های کلیدی ارائه دهید.
           </div>
           {% if form.description.errors %}
           <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
@@ -307,16 +307,16 @@
 
         <!-- Project Preview -->
         <div class="project-preview-card mb-4">
-          <h6 class="opacity-75 mb-2">Project Preview</h6>
+          <h6 class="opacity-75 mb-2">پیش‌نمایش پروژه</h6>
           <div class="preview-code" id="previewCode">{{ form.code.value|default:'PRJ-XX-XXX' }}</div>
-          <h4 class="mt-2" id="previewName">{{ form.name.value|default:'Project Name' }}</h4>
-          <p class="opacity-75 mb-0" id="previewLocation">{{ form.location.value|default:'Location' }}</p>
+          <h4 class="mt-2" id="previewName">{{ form.name.value|default:'نام پروژه' }}</h4>
+          <p class="opacity-75 mb-0" id="previewLocation">{{ form.location.value|default:'موقعیت' }}</p>
           <div class="mt-2">
-            <span class="badge bg-light text-dark" id="previewStatus">{{ form.get_status_display|default:'Initiation' }}</span>
+            <span class="badge bg-light text-dark" id="previewStatus">{{ form.get_status_display|default:'آغاز' }}</span>
           </div>
           <div class="mt-2 small opacity-75">
                         <span id="previewDates">
-                            {{ form.start_date.value|default:'Start Date' }} - {{ form.target_completion_date.value|default:'End Date' }}
+                            {{ form.start_date.value|default:'تاریخ شروع' }} - {{ form.target_completion_date.value|default:'تاریخ پایان' }}
                         </span>
           </div>
         </div>
@@ -325,32 +325,32 @@
         {% if not is_create %}
         <div class="card mb-3">
           <div class="card-header">
-            <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Project Statistics</h6>
+            <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>آمار پروژه</h6>
           </div>
           <div class="card-body">
             <div class="row text-center g-2">
               <div class="col-6">
                 <div class="border rounded p-2">
                   <div class="fs-4 fw-bold text-primary">{{ project_areas_count }}</div>
-                  <small class="text-muted">Areas</small>
+                  <small class="text-muted">مناطق</small>
                 </div>
               </div>
               <div class="col-6">
                 <div class="border rounded p-2">
                   <div class="fs-4 fw-bold text-success">{{ project_systems_count }}</div>
-                  <small class="text-muted">Systems</small>
+                  <small class="text-muted">سیستم‌ها</small>
                 </div>
               </div>
               <div class="col-6">
                 <div class="border rounded p-2">
                   <div class="fs-4 fw-bold text-info">{{ project_equipment_count }}</div>
-                  <small class="text-muted">Equipment</small>
+                  <small class="text-muted">تجهیزات</small>
                 </div>
               </div>
               <div class="col-6">
                 <div class="border rounded p-2">
                   <div class="fs-4 fw-bold text-warning">{{ project_documents_count }}</div>
-                  <small class="text-muted">Documents</small>
+                  <small class="text-muted">مدارک</small>
                 </div>
               </div>
             </div>
@@ -362,7 +362,7 @@
         {% if recent_projects %}
         <div class="card mb-3">
           <div class="card-header">
-            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Projects</h6>
+            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>پروژه‌های اخیر</h6>
           </div>
           <div class="card-body p-0">
             <div class="list-group list-group-flush">
@@ -389,15 +389,15 @@
         <!-- Tips Card -->
         <div class="card">
           <div class="card-header bg-info bg-opacity-10">
-            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips</h6>
+            <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>نکات</h6>
           </div>
           <div class="card-body small">
             <ul class="mb-0">
-              <li class="mb-2">Use a descriptive project name for easy identification</li>
-              <li class="mb-2">Project code is auto-generated but can be customized</li>
-              <li class="mb-2">Set realistic target dates for proper planning</li>
-              <li class="mb-2">Update status as the project progresses</li>
-              <li>Add areas and systems after creating the project</li>
+              <li class="mb-2">برای شناسایی آسان از یک نام توصیفی برای پروژه استفاده کنید</li>
+              <li class="mb-2">کد پروژه به‌طور خودکار تولید می‌شود اما قابل سفارشی‌سازی است</li>
+              <li class="mb-2">برای برنامه‌ریزی مناسب، تاریخ‌های هدف واقع‌بینانه تعیین کنید</li>
+              <li class="mb-2">با پیشرفت پروژه، وضعیت را به‌روز کنید</li>
+              <li>پس از ایجاد پروژه، مناطق و سیستم‌ها را اضافه کنید</li>
             </ul>
           </div>
         </div>
@@ -409,16 +409,16 @@
     <div class="d-flex justify-content-between align-items-center mt-4">
       <div>
         <a href="{% url 'core:project-list' %}" class="btn btn-outline-secondary">
-          <i class="bi bi-x-circle"></i> Cancel
+          <i class="bi bi-x-circle"></i> لغو
         </a>
       </div>
       <div>
         <button type="submit" name="save_add_another" class="btn btn-outline-primary">
-          <i class="bi bi-plus-circle"></i> Save & Add Another
+          <i class="bi bi-plus-circle"></i> ذخیره و افزودن دیگری
         </button>
         <button type="submit" class="btn btn-primary ms-2">
           <i class="bi bi-check-circle"></i>
-          {% if is_create %}Create Project{% else %}Save Changes{% endif %}
+          {% if is_create %}ایجاد پروژه{% else %}ذخیره تغییرات{% endif %}
         </button>
       </div>
     </div>
@@ -460,17 +460,17 @@
 
     // Update name preview
     const previewName = document.getElementById('previewName');
-    if (previewName && nameInput) previewName.textContent = nameInput.value || 'Project Name';
+    if (previewName && nameInput) previewName.textContent = nameInput.value || 'نام پروژه';
 
     // Update location preview
     const previewLocation = document.getElementById('previewLocation');
-    if (previewLocation && locationInput) previewLocation.textContent = locationInput.value || 'Location';
+    if (previewLocation && locationInput) previewLocation.textContent = locationInput.value || 'موقعیت';
 
     // Update dates preview
     const previewDates = document.getElementById('previewDates');
     if (previewDates) {
-      const start = startDateInput?.value || 'Start Date';
-      const end = endDateInput?.value || 'End Date';
+      const start = startDateInput?.value || 'تاریخ شروع';
+      const end = endDateInput?.value || 'تاریخ پایان';
       previewDates.textContent = `${start} - ${end}`;
     }
 
@@ -478,13 +478,13 @@
     const previewStatus = document.getElementById('previewStatus');
     if (previewStatus && statusInput) {
       const statusLabels = {
-        'INIT': 'Initiation',
-        'PLAN': 'Planning',
-        'EXEC': 'Execution',
-        'COMM': 'Commissioning',
-        'CLSD': 'Closed'
+        'INIT': 'آغاز',
+        'PLAN': 'برنامه‌ریزی',
+        'EXEC': 'اجرا',
+        'COMM': 'راه‌اندازی',
+        'CLSD': 'بسته شده'
       };
-      previewStatus.textContent = statusLabels[statusInput.value] || 'Initiation';
+      previewStatus.textContent = statusLabels[statusInput.value] || 'آغاز';
     }
   }
 
@@ -509,7 +509,7 @@
   window.addEventListener('beforeunload', function(e) {
     if (formChanged) {
       e.preventDefault();
-      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      e.returnValue = 'تغییرات ذخیره‌نشده‌ای دارید. آیا مطمئن هستید که می‌خواهید خارج شوید؟';
     }
   });
 

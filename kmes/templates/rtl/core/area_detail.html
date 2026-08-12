@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}{{ area.code }} - Area Details{% endblock %}
+{% block title %}{{ area.code }} - جزئیات منطقه{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -107,13 +107,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'core:area_list' %}">Areas</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:area_list' %}">مناطق</a></li>
             {% if area.project %}
             <li class="breadcrumb-item"><a href="{% url 'core:project-detail' area.project.pk %}">{{ area.project.name }}</a></li>
             {% endif %}
@@ -127,7 +127,7 @@
             <div class="col-lg-8">
                 <div class="d-flex align-items-center mb-2">
                     <div class="area-code me-3">{{ area.code }}</div>
-                    <span class="badge bg-light text-dark fs-6">{{ area.project.name|default:"No Project" }}</span>
+                    <span class="badge bg-light text-dark fs-6">{{ area.project.name|default:"بدون پروژه" }}</span>
                 </div>
                 <h4 class="mb-1">{{ area.name }}</h4>
                 {% if area.description %}
@@ -136,10 +136,10 @@
             </div>
             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
                 <a href="#" class="btn btn-light">
-                    <i class="bi bi-pencil"></i> Edit Area
+                    <i class="bi bi-pencil"></i> ویرایش منطقه
                 </a>
                 <a href="#" class="btn btn-outline-light">
-                    <i class="bi bi-plus-lg"></i> Add Equipment
+                    <i class="bi bi-plus-lg"></i> افزودن تجهیزات
                 </a>
             </div>
         </div>
@@ -152,7 +152,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-tag fs-3 text-primary"></i>
                     <div class="fs-4 fw-bold text-primary">{{ total_equipment }}</div>
-                    <small class="text-muted">Equipment Tags</small>
+                    <small class="text-muted">برچسب‌های تجهیزات</small>
                 </div>
             </div>
         </div>
@@ -161,7 +161,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-check-circle fs-3 text-success"></i>
                     <div class="fs-4 fw-bold text-success">{{ equipment_stats.installed }}</div>
-                    <small class="text-muted">Installed</small>
+                    <small class="text-muted">نصب شده</small>
                 </div>
             </div>
         </div>
@@ -170,7 +170,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-clipboard-check fs-3 text-warning"></i>
                     <div class="fs-4 fw-bold text-warning">{{ total_work_packages }}</div>
-                    <small class="text-muted">Work Packages</small>
+                    <small class="text-muted">بسته‌های کاری</small>
                 </div>
             </div>
         </div>
@@ -179,7 +179,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-clock fs-3 text-info"></i>
                     <div class="fs-4 fw-bold text-info">{{ timesheet_stats.total_hours|floatformat:0|default:"0" }}</div>
-                    <small class="text-muted">Total Hours</small>
+                    <small class="text-muted">کل ساعت‌ها</small>
                 </div>
             </div>
         </div>
@@ -188,7 +188,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-flag fs-3 text-danger"></i>
                     <div class="fs-4 fw-bold text-danger">{{ open_punch_items }}</div>
-                    <small class="text-muted">Open Punch Items</small>
+                    <small class="text-muted">آیتم‌های Punch باز</small>
                 </div>
             </div>
         </div>
@@ -197,7 +197,7 @@
                 <div class="card-body text-center py-3">
                     <i class="bi bi-geo-alt fs-3 text-secondary"></i>
                     <div class="fs-4 fw-bold text-secondary">{{ total_locations }}</div>
-                    <small class="text-muted">Locations</small>
+                    <small class="text-muted">موقعیت‌ها</small>
                 </div>
             </div>
         </div>
@@ -207,7 +207,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between mb-2">
-                <span class="fw-semibold">Equipment Installation Progress</span>
+                <span class="fw-semibold">پیشرفت نصب تجهیزات</span>
                 <span class="fw-bold">{{ installation_progress }}%</span>
             </div>
             <div class="progress progress-thick">
@@ -239,37 +239,32 @@
             <ul class="nav nav-pills" id="areaTabs" role="tablist">
                 <li class="nav-item">
                     <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#equipment">
-                        <i class="bi bi-tag"></i> Equipment Tags
+                        <i class="bi bi-tag"></i> برچسب‌های تجهیزات
                         <span class="badge bg-primary ms-1">{{ total_equipment }}</span>
                     </button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#work-packages">
-                        <i class="bi bi-clipboard-check"></i> Work Packages
+                        <i class="bi bi-clipboard-check"></i> بسته‌های کاری
                         <span class="badge bg-primary ms-1">{{ total_work_packages }}</span>
                     </button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#timesheets">
-                        <i class="bi bi-clock"></i> Timesheets
+                        <i class="bi bi-clock"></i> برگه‌های زمانی
                         <span class="badge bg-primary ms-1">{{ total_timesheets }}</span>
                     </button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#locations">
-                        <i class="bi bi-geo-alt"></i> Locations
+                        <i class="bi bi-geo-alt"></i> موقعیت‌ها
                         <span class="badge bg-primary ms-1">{{ total_locations }}</span>
                     </button>
                 </li>
-                <li class="nav-item">
-                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#punch-items">
-                        <i class="bi bi-flag"></i> Punch Items
-                        <span class="badge bg-danger ms-1">{{ open_punch_items }}</span>
-                    </button>
-                </li>
+
                 <li class="nav-item">
                     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#activity">
-                        <i class="bi bi-activity"></i> Activity
+                        <i class="bi bi-activity"></i> فعالیت‌ها
                     </button>
                 </li>
             </ul>
@@ -281,9 +276,9 @@
                 <!-- Equipment Tags Tab -->
                 <div class="tab-pane fade show active" id="equipment">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Equipment Tags</h5>
-                        <a href="#" class="btn btn-primary btn-sm">
-                            <i class="bi bi-plus-lg"></i> Add Tag
+                        <h5 class="mb-0">برچسب‌های تجهیزات</h5>
+                        <a href="{% url 'core:equipment_tag_create' %}?area={{ area.pk }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> افزودن برچسب
                         </a>
                     </div>
 
@@ -292,20 +287,20 @@
                         <table class="table table-hover table-sm">
                             <thead class="table-light">
                             <tr>
-                                <th>Tag Number</th>
-                                <th>Description</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>System</th>
-                                <th>Documents</th>
-                                <th>Children</th>
-                                <th>Updated</th>
-                                <th>Actions</th>
+                                <th>شماره برچسب</th>
+                                <th>توضیحات</th>
+                                <th>نوع</th>
+                                <th>وضعیت</th>
+                                <th>سیستم</th>
+                                <th>مدارک</th>
+                                <th>فرزندان</th>
+                                <th>به‌روزرسانی</th>
+                                <th>عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
                             {% for tag in equipment_tags %}
-                            <tr class="equipment-row" onclick="window.location='#'">
+                            <tr class="equipment-row" onclick="window.location='{% url 'core:equipment-tag-detail' tag.pk %}'">
                                 <td><strong class="text-primary">{{ tag.tag_number }}</strong></td>
                                 <td>{{ tag.description|truncatechars:50 }}</td>
                                 <td><span class="badge bg-light text-dark small">{{ tag.get_equipment_type_display }}</span></td>
@@ -317,7 +312,7 @@
                                 <td>{{ tag.system.code|default:"-" }}</td>
                                 <td>{% if tag.document_count > 0 %}<span class="badge bg-info">{{ tag.document_count }}</span>{% else %}-{% endif %}</td>
                                 <td>{% if tag.child_count > 0 %}<span class="badge bg-light text-dark">{{ tag.child_count }}</span>{% else %}-{% endif %}</td>
-                                <td><small class="text-muted">{{ tag.updated_at|timesince }} ago</small></td>
+                                <td><small class="text-muted">{{ tag.updated_at|timesince }} پیش</small></td>
                                 <td onclick="event.stopPropagation()">
                                     <a href="#" class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-pencil"></i>
@@ -331,9 +326,9 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-tag"></i>
-                        <p>No equipment tags in this area.</p>
-                        <a href="#" class="btn btn-primary">
-                            <i class="bi bi-plus-lg"></i> Add Equipment Tag
+                        <p>هیچ برچسب تجهیزاتی در این منطقه وجود ندارد.</p>
+                        <a href="% url 'core:equipment_tag_create' %}?area={{ area.pk }}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> افزودن برچسب تجهیزات
                         </a>
                     </div>
                     {% endif %}
@@ -342,9 +337,9 @@
                 <!-- Work Packages Tab -->
                 <div class="tab-pane fade" id="work-packages">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Work Packages</h5>
+                        <h5 class="mb-0">بسته‌های کاری</h5>
                         <a href="{% url 'construction:work_package_create' %}?area={{ area.pk }}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-plus-lg"></i> Create Work Package
+                            <i class="bi bi-plus-lg"></i> ایجاد بسته کاری
                         </a>
                     </div>
 
@@ -353,15 +348,15 @@
                         <table class="table table-hover table-sm">
                             <thead class="table-light">
                             <tr>
-                                <th>Code</th>
-                                <th>Name</th>
-                                <th>Status</th>
-                                <th>Progress</th>
-                                <th>Items</th>
-                                <th>Hours</th>
-                                <th>Reports</th>
-                                <th>Dates</th>
-                                <th>Actions</th>
+                                <th>کد</th>
+                                <th>نام</th>
+                                <th>وضعیت</th>
+                                <th>پیشرفت</th>
+                                <th>آیتم‌ها</th>
+                                <th>ساعت‌ها</th>
+                                <th>گزارش‌ها</th>
+                                <th>تاریخ‌ها</th>
+                                <th>عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -382,7 +377,7 @@
                                     <small>{{ wp.percent_complete }}%</small>
                                 </td>
                                 <td><span class="badge bg-light text-dark">{{ wp.item_count }}</span></td>
-                                <td><span class="badge bg-info">{{ wp.total_hours|floatformat:1|default:"0" }}h</span></td>
+                                <td><span class="badge bg-info">{{ wp.total_hours|floatformat:1|default:"0" }} ساعت</span></td>
                                 <td><span class="badge bg-light text-dark">{{ wp.report_count }}</span></td>
                                 <td><small>{{ wp.planned_start|date:"M d" }} - {{ wp.planned_finish|date:"M d, Y" }}</small></td>
                                 <td onclick="event.stopPropagation()">
@@ -398,7 +393,7 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-clipboard-check"></i>
-                        <p>No work packages in this area.</p>
+                        <p>هیچ بسته کاری در این منطقه وجود ندارد.</p>
                     </div>
                     {% endif %}
                 </div>
@@ -406,11 +401,11 @@
                 <!-- Timesheets Tab -->
                 <div class="tab-pane fade" id="timesheets">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Timesheets</h5>
+                        <h5 class="mb-0">برگه‌های زمانی</h5>
                         <span class="text-muted small">
-                            {{ timesheet_stats.total_hours|floatformat:1|default:"0" }}h total | 
-                            {{ timesheet_stats.total_overtime|floatformat:1|default:"0" }}h OT |
-                            {{ timesheet_stats.total_employees }} workers
+                            {{ timesheet_stats.total_hours|floatformat:1|default:"0" }} ساعت کل | 
+                            {{ timesheet_stats.total_overtime|floatformat:1|default:"0" }} ساعت اضافه‌کاری |
+                            {{ timesheet_stats.total_employees }} کارگر
                         </span>
                     </div>
 
@@ -419,13 +414,13 @@
                         <table class="table table-hover table-sm">
                             <thead class="table-light">
                             <tr>
-                                <th>Date</th>
-                                <th>Employee</th>
-                                <th>Work Package</th>
-                                <th>Regular</th>
-                                <th>Overtime</th>
-                                <th>Total</th>
-                                <th>Status</th>
+                                <th>تاریخ</th>
+                                <th>کارمند</th>
+                                <th>بسته کاری</th>
+                                <th>عادی</th>
+                                <th>اضافه‌کاری</th>
+                                <th>کل</th>
+                                <th>وضعیت</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -434,10 +429,10 @@
                                 <td>{{ ts.date|date:"M d, Y" }}</td>
                                 <td>{{ ts.employee.full_name }}</td>
                                 <td><a href="{% url 'construction:work_package_detail' ts.work_package.pk %}">{{ ts.work_package.code }}</a></td>
-                                <td><span class="badge bg-primary">{{ ts.hours_worked }}h</span></td>
-                                <td>{% if ts.overtime_hours > 0 %}<span class="badge bg-warning text-dark">{{ ts.overtime_hours }}h</span>{% else %}-{% endif %}</td>
-                                <td><strong>{{ ts.hours_worked|add:ts.overtime_hours }}h</strong></td>
-                                <td>{% if ts.is_approved %}<span class="badge bg-success small">Approved</span>{% else %}<span class="badge bg-warning text-dark small">Pending</span>{% endif %}</td>
+                                <td><span class="badge bg-primary">{{ ts.hours_worked }} ساعت</span></td>
+                                <td>{% if ts.overtime_hours > 0 %}<span class="badge bg-warning text-dark">{{ ts.overtime_hours }} ساعت</span>{% else %}-{% endif %}</td>
+                                <td><strong>{{ ts.hours_worked|add:ts.overtime_hours }} ساعت</strong></td>
+                                <td>{% if ts.is_approved %}<span class="badge bg-success small">تأیید شده</span>{% else %}<span class="badge bg-warning text-dark small">در انتظار</span>{% endif %}</td>
                             </tr>
                             {% endfor %}
                             </tbody>
@@ -446,14 +441,14 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-clock"></i>
-                        <p>No timesheets recorded for this area.</p>
+                        <p>هیچ برگه‌ی زمانی برای این منطقه ثبت نشده است.</p>
                     </div>
                     {% endif %}
                 </div>
 
                 <!-- Locations Tab -->
                 <div class="tab-pane fade" id="locations">
-                    <h5 class="mb-3">Equipment Locations</h5>
+                    <h5 class="mb-3">موقعیت‌های تجهیزات</h5>
 
                     {% if locations %}
                     <div class="row g-3">
@@ -468,14 +463,14 @@
                                             <small class="text-muted">{{ loc.get_location_type_display }}</small>
                                         </div>
                                         {% if loc.is_current %}
-                                        <span class="badge bg-success">Current</span>
+                                        <span class="badge bg-success">جاری</span>
                                         {% endif %}
                                     </div>
                                     <div class="mt-2 small">
-                                        <div>Lat: {{ loc.latitude }}</div>
-                                        <div>Lng: {{ loc.longitude }}</div>
-                                        {% if loc.elevation %}<div>Elev: {{ loc.elevation }}m</div>{% endif %}
-                                        {% if loc.accuracy %}<div>Accuracy: {{ loc.accuracy }}m</div>{% endif %}
+                                        <div>عرض جغرافیایی: {{ loc.latitude }}</div>
+                                        <div>طول جغرافیایی: {{ loc.longitude }}</div>
+                                        {% if loc.elevation %}<div>ارتفاع: {{ loc.elevation }} متر</div>{% endif %}
+                                        {% if loc.accuracy %}<div>دقت: {{ loc.accuracy }} متر</div>{% endif %}
                                     </div>
                                     <div class="mt-1">
                                         <small class="text-muted">{{ loc.arrival_date|date:"M d, Y H:i" }}</small>
@@ -488,64 +483,14 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-geo-alt"></i>
-                        <p>No location records for this area.</p>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Punch Items Tab -->
-                <div class="tab-pane fade" id="punch-items">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Punch Items</h5>
-                        {% if critical_punch_items > 0 %}
-                        <span class="badge bg-danger">{{ critical_punch_items }} Critical</span>
-                        {% endif %}
-                    </div>
-
-                    {% if punch_items %}
-                    <div class="table-responsive">
-                        <table class="table table-hover table-sm">
-                            <thead class="table-light">
-                            <tr>
-                                <th>Punch #</th>
-                                <th>Description</th>
-                                <th>Category</th>
-                                <th>Status</th>
-                                <th>Tag</th>
-                                <th>Raised</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for punch in punch_items %}
-                            <tr class="{% if punch.status in 'OPEN,IPRO' and punch.category == 'A' %}table-danger{% endif %}">
-                                <td><strong>{{ punch.punch_number }}</strong></td>
-                                <td>{{ punch.description|truncatechars:60 }}</td>
-                                <td><span class="badge {% if punch.category == 'A' %}bg-danger{% elif punch.category == 'B' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ punch.get_category_display }}</span></td>
-                                <td><span class="badge {% if punch.status == 'CLSD' %}bg-success{% elif punch.status == 'OPEN' %}bg-danger{% elif punch.status == 'IPRO' %}bg-info{% else %}bg-secondary{% endif %}">{{ punch.get_status_display }}</span></td>
-                                <td>{{ punch.equipment_tag.tag_number|default:"-" }}</td>
-                                <td><small>{{ punch.raised_date|date:"M d, Y" }}</small></td>
-                                <td>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="empty-tab">
-                        <i class="bi bi-flag"></i>
-                        <p>No punch items for this area.</p>
+                        <p>هیچ رکورد موقعیتی برای این منطقه وجود ندارد.</p>
                     </div>
                     {% endif %}
                 </div>
 
                 <!-- Activity Tab -->
                 <div class="tab-pane fade" id="activity">
-                    <h5 class="mb-3">Recent Activity</h5>
+                    <h5 class="mb-3">فعالیت‌های اخیر</h5>
 
                     {% if activities %}
                     <div class="activity-timeline">
@@ -557,7 +502,7 @@
                                 </div>
                                 <div>
                                     <div>{{ activity.description }}</div>
-                                    <small class="text-muted">{{ activity.date|timesince }} ago</small>
+                                    <small class="text-muted">{{ activity.date|timesince }} پیش</small>
                                 </div>
                             </div>
                         </div>
@@ -566,7 +511,7 @@
                     {% else %}
                     <div class="empty-tab">
                         <i class="bi bi-activity"></i>
-                        <p>No recent activity.</p>
+                        <p>هیچ فعالیت اخیری وجود ندارد.</p>
                     </div>
                     {% endif %}
                 </div>

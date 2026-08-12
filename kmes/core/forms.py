@@ -4,8 +4,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from .models import Project, Area, System, EquipmentTag
 
-
-DATE_INPUT = forms.DateInput(attrs={'class': 'form-control','type': 'date'})
+DATE_INPUT = forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
 
 
 class ProjectForm(forms.ModelForm):
@@ -19,40 +18,54 @@ class ProjectForm(forms.ModelForm):
 				'status'
 				]
 		widgets = {
-				'name': forms.TextInput(attrs={
-						'class': 'form-control',
-						'placeholder': 'e.g., Copper Mine Phase 2 Expansion',
-						'required': 'required'
-						}),
-				'code': forms.TextInput(attrs={
-						'class': 'form-control',
-						'placeholder': 'Auto-generated if left blank',
-						}),
-				'location': forms.TextInput(attrs={
-						'class': 'form-control',
-						'placeholder': 'e.g., Site A, Antofagasta, Chile',
-						'required': 'required'
-						}),
-				'description': forms.Textarea(attrs={
-						'class': 'form-control',
-						'rows': 4,
-						'placeholder': 'Brief description of the project scope, objectives, and key deliverables...'
-						}),
-				'start_date': forms.DateInput(attrs={
-						'class': 'form-control',
-						'type': 'date',
-						'required': 'required'
-						}),
-				'target_completion_date': forms.DateInput(attrs={
-						'class': 'form-control',
-						'type': 'date',
-						'required': 'required'
-						}),
-				'actual_completion_date': forms.DateInput(attrs={
-						'class': 'form-control',
-						'type': 'date'
-						}),
-				'status': forms.HiddenInput(),
+				'name':                   forms.TextInput(
+						attrs={
+								'class':       'form-control',
+								'placeholder': 'e.g., Copper Mine Phase 2 Expansion',
+								'required':    'required'
+								}
+						),
+				'code':                   forms.TextInput(
+						attrs={
+								'class':       'form-control',
+								'placeholder': 'Auto-generated if left blank',
+								}
+						),
+				'location':               forms.TextInput(
+						attrs={
+								'class':       'form-control',
+								'placeholder': 'e.g., Site A, Antofagasta, Chile',
+								'required':    'required'
+								}
+						),
+				'description':            forms.Textarea(
+						attrs={
+								'class':       'form-control',
+								'rows':        4,
+								'placeholder': 'Brief description of the project scope, objectives, and key deliverables...'
+								}
+						),
+				'start_date':             forms.DateInput(
+						attrs={
+								'class':    'form-control',
+								'type':     'date',
+								'required': 'required'
+								}
+						),
+				'target_completion_date': forms.DateInput(
+						attrs={
+								'class':    'form-control',
+								'type':     'date',
+								'required': 'required'
+								}
+						),
+				'actual_completion_date': forms.DateInput(
+						attrs={
+								'class': 'form-control',
+								'type':  'date'
+								}
+						),
+				'status':                 forms.HiddenInput(),
 				}
 	
 	def __init__(self, *args, **kwargs):
@@ -84,6 +97,7 @@ class ProjectForm(forms.ModelForm):
 				raise forms.ValidationError('A project with this code already exists.')
 		return code
 
+
 class AreaForm(forms.ModelForm):
 	class Meta:
 		model = Area
@@ -102,9 +116,11 @@ class AreaForm(forms.ModelForm):
 			if self.instance.pk:
 				qs = qs.exclude(pk=self.instance.pk)
 			if qs.exists():
-				raise ValidationError({
-						'code': _("An area with this code already exists for the selected project.")
-						})
+				raise ValidationError(
+						{
+								'code': _("An area with this code already exists for the selected project.")
+								}
+						)
 		return cleaned
 
 
@@ -115,24 +131,32 @@ class SystemForm(forms.ModelForm):
 		model = System
 		fields = ['project', 'code', 'name', 'description']
 		widgets = {
-				'project': forms.Select(attrs={
-						'class': 'form-select',
-						'required': 'required'
-						}),
-				'code': forms.TextInput(attrs={
-						'class': 'form-control',
-						'placeholder': 'Auto-generated if left blank',
-						}),
-				'name': forms.TextInput(attrs={
-						'class': 'form-control',
-						'placeholder': 'e.g., High-Pressure Grinding Roll Lubrication System',
-						'required': 'required'
-						}),
-				'description': forms.Textarea(attrs={
-						'class': 'form-control',
-						'rows': 3,
-						'placeholder': 'Describe the function and scope of this system...'
-						}),
+				'project':     forms.Select(
+						attrs={
+								'class':    'form-select',
+								'required': 'required'
+								}
+						),
+				'code':        forms.TextInput(
+						attrs={
+								'class':       'form-control',
+								'placeholder': 'Auto-generated if left blank',
+								}
+						),
+				'name':        forms.TextInput(
+						attrs={
+								'class':       'form-control',
+								'placeholder': 'e.g., High-Pressure Grinding Roll Lubrication System',
+								'required':    'required'
+								}
+						),
+				'description': forms.Textarea(
+						attrs={
+								'class':       'form-control',
+								'rows':        3,
+								'placeholder': 'Describe the function and scope of this system...'
+								}
+						),
 				}
 	
 	def __init__(self, *args, **kwargs):
@@ -157,6 +181,7 @@ class SystemForm(forms.ModelForm):
 		
 		return code
 
+
 class EquipmentTagForm(forms.ModelForm):
 	class Meta:
 		model = EquipmentTag
@@ -168,18 +193,34 @@ class EquipmentTagForm(forms.ModelForm):
 				'installation_date', 'weight_kg', 'dimensions', 'notes',
 				]
 		widgets = {
-				'description': forms.Textarea(attrs={'rows': 3}),
-				'notes': forms.Textarea(attrs={'rows': 4}),
-				'equipment_type': forms.Select(),
-				'discipline': forms.Select(),
-				'criticality': forms.Select(),
-				'status': forms.Select(),
+				'description':       forms.Textarea(attrs={'rows': 3}),
+				'notes':             forms.Textarea(attrs={'rows': 4}),
+				'equipment_type':    forms.Select(),
+				'discipline':        forms.Select(),
+				'criticality':       forms.Select(),
+				'status':            forms.Select(),
 				'installation_date': DATE_INPUT,
-				'weight_kg': forms.NumberInput(attrs={'step': '0.01'}),
+				'weight_kg':         forms.NumberInput(attrs={'step': '0.01'}),
 				}
 		help_texts = {
 				'dimensions': _("LxWxH in mm, e.g., '3000x2000x1500'"),
 				}
+	
+	def __init__(self, *args, **kwargs):
+		project_id = kwargs.pop('project_id', None)  # دریافت project_id از kwargs
+		area_id = kwargs.pop('area_id', None)  # دریافت project_id از kwargs
+		super().__init__(*args, **kwargs)
+		
+		if project_id:
+			# فیلتر کردن انتخاب‌ها بر اساس project_id
+			self.fields['area'].queryset = Area.objects.filter(project_id=project_id)
+			self.fields['system'].queryset = System.objects.filter(project_id=project_id)
+			# اگر نیاز به فیلتر کردن parent_tag دارید
+			self.fields['parent_tag'].queryset = EquipmentTag.objects.filter(project_id=project_id)
+			
+		if area_id:
+			print(area_id)
+			self.fields['area'].queryset = Area.objects.filter(pk=area_id)
 	
 	def clean_parent_tag(self):
 		parent = self.cleaned_data.get('parent_tag')
@@ -246,7 +287,8 @@ class EquipmentTagForm(forms.ModelForm):
 				raise ValidationError({'tag_number': _("An equipment tag with this tag number already exists in the project.")})
 		
 		return cleaned
-	
+
+
 class EquipmentTagFilterForm(forms.Form):
 	"""Form for filtering equipment tags in lists."""
 	
@@ -287,10 +329,12 @@ class EquipmentTagFilterForm(forms.Form):
 			)
 	search = forms.CharField(
 			required=False,
-			widget=forms.TextInput(attrs={
-					'class': 'form-control form-control-sm',
-					'placeholder': 'Search tags...'
-					})
+			widget=forms.TextInput(
+					attrs={
+							'class':       'form-control form-control-sm',
+							'placeholder': 'Search tags...'
+							}
+					)
 			)
 	parent_tag_only = forms.ChoiceField(
 			choices=[('', 'All'), ('true', 'Top Level Only'), ('false', 'Children Only')],
@@ -314,6 +358,7 @@ class EquipmentTagFilterForm(forms.Form):
 			self.fields['area'].queryset = Area.objects.filter(project_id=project_id)
 			self.fields['system'].queryset = System.objects.filter(project_id=project_id)
 
+
 from django import forms
 from .models import EquipmentLocation, EquipmentLocationImage
 
@@ -331,44 +376,54 @@ class EquipmentLocationForm(forms.ModelForm):
 				'notes'
 				]
 		widgets = {
-				'equipment_tag': forms.Select(attrs={'class': 'form-select'}),
-				'location_type': forms.Select(attrs={'class': 'form-select'}),
-				'latitude': forms.NumberInput(attrs={
-						'class': 'form-control',
-						'step': '0.000001',
-						'placeholder': 'e.g., -23.550520'
-						}),
-				'longitude': forms.NumberInput(attrs={
-						'class': 'form-control',
-						'step': '0.000001',
-						'placeholder': 'e.g., -46.633308'
-						}),
-				'elevation': forms.NumberInput(attrs={
-						'class': 'form-control',
-						'step': '0.01',
-						'placeholder': 'Meters above sea level'
-						}),
-				'accuracy': forms.NumberInput(attrs={
-						'class': 'form-control',
-						'step': '0.01',
-						'placeholder': 'GPS accuracy in meters'
-						}),
-				'area': forms.Select(attrs={'class': 'form-select'}),
-				'building': forms.TextInput(attrs={'class': 'form-control'}),
-				'floor': forms.TextInput(attrs={'class': 'form-control'}),
-				'room': forms.TextInput(attrs={'class': 'form-control'}),
+				'equipment_tag':  forms.Select(attrs={'class': 'form-select'}),
+				'location_type':  forms.Select(attrs={'class': 'form-select'}),
+				'latitude':       forms.NumberInput(
+						attrs={
+								'class':       'form-control',
+								'step':        '0.000001',
+								'placeholder': 'e.g., -23.550520'
+								}
+						),
+				'longitude':      forms.NumberInput(
+						attrs={
+								'class':       'form-control',
+								'step':        '0.000001',
+								'placeholder': 'e.g., -46.633308'
+								}
+						),
+				'elevation':      forms.NumberInput(
+						attrs={
+								'class':       'form-control',
+								'step':        '0.01',
+								'placeholder': 'Meters above sea level'
+								}
+						),
+				'accuracy':       forms.NumberInput(
+						attrs={
+								'class':       'form-control',
+								'step':        '0.01',
+								'placeholder': 'GPS accuracy in meters'
+								}
+						),
+				'area':           forms.Select(attrs={'class': 'form-select'}),
+				'building':       forms.TextInput(attrs={'class': 'form-control'}),
+				'floor':          forms.TextInput(attrs={'class': 'form-control'}),
+				'room':           forms.TextInput(attrs={'class': 'form-control'}),
 				'grid_reference': forms.TextInput(attrs={'class': 'form-control'}),
-				'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-				'city': forms.TextInput(attrs={'class': 'form-control'}),
-				'state': forms.TextInput(attrs={'class': 'form-control'}),
-				'country': forms.TextInput(attrs={'class': 'form-control'}),
-				'postal_code': forms.TextInput(attrs={'class': 'form-control'}),
-				'is_current': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-				'arrival_date': forms.DateTimeInput(attrs={
-						'class': 'form-control',
-						'type': 'datetime-local'
-						}),
-				'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+				'address':        forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+				'city':           forms.TextInput(attrs={'class': 'form-control'}),
+				'state':          forms.TextInput(attrs={'class': 'form-control'}),
+				'country':        forms.TextInput(attrs={'class': 'form-control'}),
+				'postal_code':    forms.TextInput(attrs={'class': 'form-control'}),
+				'is_current':     forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+				'arrival_date':   forms.DateTimeInput(
+						attrs={
+								'class': 'form-control',
+								'type':  'datetime-local'
+								}
+						),
+				'notes':          forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
 				}
 	
 	def __init__(self, *args, **kwargs):
@@ -404,24 +459,30 @@ class EquipmentLocationImageForm(forms.ModelForm):
 				'taken_date', 'direction', 'is_primary'
 				]
 		widgets = {
-				'image': forms.FileInput(attrs={
-						'class': 'form-control',
-						'accept': 'image/*'
-						}),
-				'title': forms.TextInput(attrs={'class': 'form-control'}),
+				'image':       forms.FileInput(
+						attrs={
+								'class':  'form-control',
+								'accept': 'image/*'
+								}
+						),
+				'title':       forms.TextInput(attrs={'class': 'form-control'}),
 				'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-				'image_type': forms.Select(attrs={'class': 'form-select'}),
-				'taken_date': forms.DateTimeInput(attrs={
-						'class': 'form-control',
-						'type': 'datetime-local'
-						}),
-				'direction': forms.NumberInput(attrs={
-						'class': 'form-control',
-						'min': '0',
-						'max': '360',
-						'step': '0.1'
-						}),
-				'is_primary': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+				'image_type':  forms.Select(attrs={'class': 'form-select'}),
+				'taken_date':  forms.DateTimeInput(
+						attrs={
+								'class': 'form-control',
+								'type':  'datetime-local'
+								}
+						),
+				'direction':   forms.NumberInput(
+						attrs={
+								'class': 'form-control',
+								'min':   '0',
+								'max':   '360',
+								'step':  '0.1'
+								}
+						),
+				'is_primary':  forms.CheckboxInput(attrs={'class': 'form-check-input'}),
 				}
 
 
@@ -430,10 +491,12 @@ class EquipmentLocationSearchForm(forms.Form):
 	
 	equipment_tag = forms.CharField(
 			required=False,
-			widget=forms.TextInput(attrs={
-					'class': 'form-control',
-					'placeholder': 'Search by tag number...'
-					})
+			widget=forms.TextInput(
+					attrs={
+							'class':       'form-control',
+							'placeholder': 'Search by tag number...'
+							}
+					)
 			)
 	location_type = forms.ChoiceField(
 			choices=[('', 'All Types')] + list(EquipmentLocation.LocationType.choices),
@@ -447,17 +510,21 @@ class EquipmentLocationSearchForm(forms.Form):
 			)
 	date_from = forms.DateField(
 			required=False,
-			widget=forms.DateInput(attrs={
-					'class': 'form-control',
-					'type': 'date'
-					})
+			widget=forms.DateInput(
+					attrs={
+							'class': 'form-control',
+							'type':  'date'
+							}
+					)
 			)
 	date_to = forms.DateField(
 			required=False,
-			widget=forms.DateInput(attrs={
-					'class': 'form-control',
-					'type': 'date'
-					})
+			widget=forms.DateInput(
+					attrs={
+							'class': 'form-control',
+							'type':  'date'
+							}
+					)
 			)
 
 
@@ -466,27 +533,33 @@ class SystemSearchForm(forms.Form):
 	
 	project = forms.CharField(
 			required=False,
-			widget=forms.Select(attrs={
-					'class': 'form-select form-select-sm',
-					'onchange': 'this.form.submit()'
-					})
+			widget=forms.Select(
+					attrs={
+							'class':    'form-select form-select-sm',
+							'onchange': 'this.form.submit()'
+							}
+					)
 			)
 	
 	search = forms.CharField(
 			required=False,
-			widget=forms.TextInput(attrs={
-					'class': 'form-control form-control-sm',
-					'placeholder': 'Search by code, name, description...'
-					})
+			widget=forms.TextInput(
+					attrs={
+							'class':       'form-control form-control-sm',
+							'placeholder': 'Search by code, name, description...'
+							}
+					)
 			)
 	
 	has_commissioning = forms.ChoiceField(
 			choices=[('', 'All'), ('true', 'In Commissioning Only')],
 			required=False,
-			widget=forms.Select(attrs={
-					'class': 'form-select form-select-sm',
-					'onchange': 'this.form.submit()'
-					})
+			widget=forms.Select(
+					attrs={
+							'class':    'form-select form-select-sm',
+							'onchange': 'this.form.submit()'
+							}
+					)
 			)
 	
 	commissioning_status = forms.ChoiceField(
@@ -500,17 +573,21 @@ class SystemSearchForm(forms.Form):
 					('HNDO', 'Handed Over'),
 					],
 			required=False,
-			widget=forms.Select(attrs={
-					'class': 'form-select form-select-sm',
-					'onchange': 'this.form.submit()'
-					})
+			widget=forms.Select(
+					attrs={
+							'class':    'form-select form-select-sm',
+							'onchange': 'this.form.submit()'
+							}
+					)
 			)
 	
 	has_defects = forms.ChoiceField(
 			choices=[('', 'All'), ('true', 'Has Defects Only')],
 			required=False,
-			widget=forms.Select(attrs={
-					'class': 'form-select form-select-sm',
-					'onchange': 'this.form.submit()'
-					})
+			widget=forms.Select(
+					attrs={
+							'class':    'form-select form-select-sm',
+							'onchange': 'this.form.submit()'
+							}
+					)
 			)

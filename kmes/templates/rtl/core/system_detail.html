@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}{{ system.code }} - System Details{% endblock %}
+{% block title %}{{ system.code }} - جزئیات سیستم{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -104,13 +104,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'core:system_list' %}">Systems</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'core:system_list' %}">سیستم‌ها</a></li>
       <li class="breadcrumb-item"><a href="{% url 'core:project-detail' system.project.pk %}">{{ system.project.name }}</a></li>
       <li class="breadcrumb-item active">{{ system.code }}</li>
     </ol>
@@ -132,7 +132,7 @@
                             {{ commissioning.get_status_display }}
                         </span>
           {% else %}
-          <span class="badge bg-secondary fs-6">No Commissioning</span>
+          <span class="badge bg-secondary fs-6">بدون راه‌اندازی</span>
           {% endif %}
         </div>
         <h5 class="mb-2">{{ system.name }}</h5>
@@ -142,10 +142,10 @@
       </div>
       <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
         <a href="#" class="btn btn-light">
-          <i class="bi bi-pencil"></i> Edit
+          <i class="bi bi-pencil"></i> ویرایش
         </a>
         <a href="#" class="btn btn-outline-light">
-          <i class="bi bi-trash"></i> Delete
+          <i class="bi bi-trash"></i> حذف
         </a>
       </div>
     </div>
@@ -158,7 +158,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-tag fs-3 text-primary"></i>
           <div class="fs-4 fw-bold text-primary">{{ total_equipment }}</div>
-          <small class="text-muted">Equipment Tags</small>
+          <small class="text-muted">برچسب‌های تجهیزات</small>
         </div>
       </div>
     </div>
@@ -167,7 +167,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-check-circle fs-3 text-success"></i>
           <div class="fs-4 fw-bold text-success">{{ installed_equipment }}</div>
-          <small class="text-muted">Installed</small>
+          <small class="text-muted">نصب شده</small>
         </div>
       </div>
     </div>
@@ -176,7 +176,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-graph-up fs-3 text-info"></i>
           <div class="fs-4 fw-bold text-info">{{ commissioned_equipment }}</div>
-          <small class="text-muted">Commissioned</small>
+          <small class="text-muted">راه‌اندازی شده</small>
         </div>
       </div>
     </div>
@@ -185,7 +185,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
           <div class="fs-4 fw-bold text-danger">{{ defective_equipment }}</div>
-          <small class="text-muted">Defective</small>
+          <small class="text-muted">معیوب</small>
         </div>
       </div>
     </div>
@@ -194,7 +194,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-flag fs-3 text-warning"></i>
           <div class="fs-4 fw-bold text-warning">{{ open_punch_items }}</div>
-          <small class="text-muted">Open Punch Items</small>
+          <small class="text-muted">آیتم‌های Punch باز</small>
         </div>
       </div>
     </div>
@@ -203,7 +203,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-clipboard-check fs-3 text-secondary"></i>
           <div class="fs-4 fw-bold text-secondary">{{ total_test_procedures|default:0 }}</div>
-          <small class="text-muted">Test Procedures</small>
+          <small class="text-muted">روش‌های تست</small>
         </div>
       </div>
     </div>
@@ -215,30 +215,30 @@
       <ul class="nav nav-pills" id="systemTabs" role="tablist">
         <li class="nav-item">
           <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
-            <i class="bi bi-info-circle"></i> Overview
+            <i class="bi bi-info-circle"></i> نمای کلی
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#equipment">
-            <i class="bi bi-tag"></i> Equipment
+            <i class="bi bi-tag"></i> تجهیزات
             <span class="badge bg-primary ms-1">{{ total_equipment }}</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#commissioning-tab">
-            <i class="bi bi-graph-up"></i> Commissioning
+            <i class="bi bi-graph-up"></i> راه‌اندازی
             {% if commissioning %}<span class="badge bg-primary ms-1">{{ total_test_procedures }}</span>{% endif %}
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#punch-items">
-            <i class="bi bi-flag"></i> Punch Items
+            <i class="bi bi-flag"></i> آیتم‌های Punch
             <span class="badge bg-{% if open_punch_items > 0 %}danger{% else %}primary{% endif %} ms-1">{{ total_punch_items }}</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#work-packages">
-            <i class="bi bi-clipboard-check"></i> Work Packages
+            <i class="bi bi-clipboard-check"></i> بسته‌های کاری
             <span class="badge bg-primary ms-1">{{ total_work_packages }}</span>
           </button>
         </li>
@@ -253,30 +253,30 @@
           <div class="row">
             <div class="col-lg-8">
               {% if system.description %}
-              <h5 class="mb-3">Description</h5>
+              <h5 class="mb-3">توضیحات</h5>
               <p class="text-muted">{{ system.description|linebreaks }}</p>
               {% endif %}
 
               <!-- System Status Timeline -->
-              <h5 class="mb-3">Status Timeline</h5>
+              <h5 class="mb-3">جدول زمانی وضعیت</h5>
               <div class="status-timeline">
                 {% for item in status_timeline %}
                 <div class="timeline-item {{ item.status }}">
                   <h6>{{ item.stage }}</h6>
                   <small class="text-muted">{{ item.description }}</small>
                   {% if item.status == 'completed' %}
-                  <span class="badge bg-success ms-2">Completed</span>
+                  <span class="badge bg-success ms-2">تکمیل شده</span>
                   {% elif item.status == 'in_progress' %}
-                  <span class="badge bg-warning text-dark ms-2">In Progress</span>
+                  <span class="badge bg-warning text-dark ms-2">در حال انجام</span>
                   {% else %}
-                  <span class="badge bg-secondary ms-2">Pending</span>
+                  <span class="badge bg-secondary ms-2">در انتظار</span>
                   {% endif %}
                 </div>
                 {% endfor %}
               </div>
 
               <!-- Equipment Distribution -->
-              <h5 class="mt-4 mb-3">Equipment by Type</h5>
+              <h5 class="mt-4 mb-3">تجهیزات بر اساس نوع</h5>
               {% if equipment_by_type %}
               <div class="row g-2">
                 {% for type_stat in equipment_by_type %}
@@ -303,13 +303,13 @@
               {% if equipment_by_area %}
               <div class="card mb-3">
                 <div class="card-header">
-                  <h6 class="mb-0">Equipment by Area</h6>
+                  <h6 class="mb-0">تجهیزات بر اساس منطقه</h6>
                 </div>
                 <div class="card-body p-0">
                   <div class="list-group list-group-flush">
                     {% for area_stat in equipment_by_area %}
                     <div class="list-group-item small d-flex justify-content-between">
-                      <span>{{ area_stat.area__code|default:"No Area" }}</span>
+                      <span>{{ area_stat.area__code|default:"بدون منطقه" }}</span>
                       <span class="badge bg-primary">{{ area_stat.count }}</span>
                     </div>
                     {% endfor %}
@@ -321,7 +321,7 @@
               <!-- Recent Activities -->
               <div class="card">
                 <div class="card-header">
-                  <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Recent Activity</h6>
+                  <h6 class="mb-0"><i class="bi bi-activity me-2"></i>فعالیت‌های اخیر</h6>
                 </div>
                 <div class="card-body p-0">
                   {% if activities %}
@@ -336,7 +336,7 @@
                     {% endfor %}
                   </div>
                   {% else %}
-                  <p class="text-muted text-center py-3">No recent activity.</p>
+                  <p class="text-muted text-center py-3">هیچ فعالیت اخیری وجود ندارد.</p>
                   {% endif %}
                 </div>
               </div>
@@ -347,10 +347,10 @@
         <!-- Equipment Tab -->
         <div class="tab-pane fade" id="equipment">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Equipment Tags</h5>
+            <h5 class="mb-0">برچسب‌های تجهیزات</h5>
             <a href=""
                class="btn btn-primary btn-sm">
-              <i class="bi bi-plus-lg"></i> Add Tag
+              <i class="bi bi-plus-lg"></i> افزودن برچسب
             </a>
           </div>
 
@@ -359,14 +359,14 @@
             <table class="table table-hover">
               <thead class="table-light">
               <tr>
-                <th>Tag Number</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Area</th>
-                <th>Documents</th>
-                <th>Punch Items</th>
-                <th>Actions</th>
+                <th>شماره برچسب</th>
+                <th>توضیحات</th>
+                <th>نوع</th>
+                <th>وضعیت</th>
+                <th>منطقه</th>
+                <th>مدارک</th>
+                <th>آیتم‌های Punch</th>
+                <th>عملیات</th>
               </tr>
               </thead>
               <tbody>
@@ -403,24 +403,24 @@
                   {% if tag.document_count > 0 %}
                   <span class="badge bg-info">{{ tag.document_count }}</span>
                   {% else %}
-                  <span class="text-muted">0</span>
+                  <span class="text-muted">۰</span>
                   {% endif %}
                 </td>
                 <td>
                   {% if tag.open_punch_count > 0 %}
-                  <span class="badge bg-danger">{{ tag.open_punch_count }} open</span>
+                  <span class="badge bg-danger">{{ tag.open_punch_count }} باز</span>
                   {% else %}
-                  <span class="text-muted">0</span>
+                  <span class="text-muted">۰</span>
                   {% endif %}
                 </td>
                 <td onclick="event.stopPropagation()">
                   <div class="btn-group btn-group-sm">
                     <a href="{% url 'core:equipment-tag-detail' tag.pk %}"
-                       class="btn btn-outline-primary" title="View">
+                       class="btn btn-outline-primary" title="مشاهده">
                       <i class="bi bi-eye"></i>
                     </a>
                     <a href="#"
-                       class="btn btn-outline-secondary" title="Edit">
+                       class="btn btn-outline-secondary" title="ویرایش">
                       <i class="bi bi-pencil"></i>
                     </a>
                   </div>
@@ -433,11 +433,11 @@
           {% else %}
           <div class="empty-state">
             <i class="bi bi-tag"></i>
-            <h5>No Equipment Tags</h5>
-            <p>No equipment tags are linked to this system yet.</p>
+            <h5>هیچ برچسب تجهیزاتی وجود ندارد</h5>
+            <p>هنوز هیچ برچسب تجهیزاتی به این سیستم متصل نشده است.</p>
             <a href="{% url 'core:equipmenttag-create' %}?system={{ system.pk }}&project={{ system.project.pk }}"
                class="btn btn-primary">
-              <i class="bi bi-plus-lg"></i> Add First Tag
+              <i class="bi bi-plus-lg"></i> افزودن اولین برچسب
             </a>
           </div>
           {% endif %}
@@ -448,10 +448,10 @@
           {% if commissioning %}
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <h5 class="mb-0">Commissioning Status</h5>
+              <h5 class="mb-0">وضعیت راه‌اندازی</h5>
               <small class="text-muted">
                 {{ commissioning.get_status_display }} |
-                {{ commissioning_progress }}% complete
+                {{ commissioning_progress }}% تکمیل شده
               </small>
             </div>
             <span class="badge fs-6
@@ -477,36 +477,36 @@
             <div class="col-md-4">
               <div class="border rounded p-3 text-center">
                 <div class="fs-4 fw-bold">{{ total_test_procedures }}</div>
-                <small class="text-muted">Test Procedures</small>
+                <small class="text-muted">روش‌های تست</small>
               </div>
             </div>
             <div class="col-md-4">
               <div class="border rounded p-3 text-center">
                 <div class="fs-4 fw-bold text-success">{{ test_stats.passed_tests|default:0 }}</div>
-                <small class="text-muted">Passed</small>
+                <small class="text-muted">قبول شده</small>
               </div>
             </div>
             <div class="col-md-4">
               <div class="border rounded p-3 text-center">
                 <div class="fs-4 fw-bold text-danger">{{ test_stats.failed_tests|default:0 }}</div>
-                <small class="text-muted">Failed</small>
+                <small class="text-muted">رد شده</small>
               </div>
             </div>
           </div>
 
           <!-- Test Procedures -->
           {% if test_procedures %}
-          <h6 class="mb-3">Test Procedures</h6>
+          <h6 class="mb-3">روش‌های تست</h6>
           <div class="table-responsive">
             <table class="table table-hover table-sm">
               <thead class="table-light">
               <tr>
-                <th>Code</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Records</th>
-                <th>Latest Result</th>
-                <th>Actions</th>
+                <th>کد</th>
+                <th>توضیحات</th>
+                <th>نوع</th>
+                <th>رکوردها</th>
+                <th>نتیجه آخرین</th>
+                <th>عملیات</th>
               </tr>
               </thead>
               <tbody>
@@ -528,14 +528,14 @@
                                                     {{ latest.get_result_display }}
                                                 </span>
                   {% else %}
-                  <span class="badge bg-secondary">Not Tested</span>
+                  <span class="badge bg-secondary">تست نشده</span>
                   {% endif %}
                   {% endwith %}
                 </td>
                 <td>
                   <a href="#"
                      class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-play-circle"></i> Record Test
+                    <i class="bi bi-play-circle"></i> ثبت تست
                   </a>
                 </td>
               </tr>
@@ -548,8 +548,8 @@
           {% else %}
           <div class="empty-state">
             <i class="bi bi-graph-up"></i>
-            <h5>No Commissioning Setup</h5>
-            <p>Commissioning has not been set up for this system yet.</p>
+            <h5>هیچ راه‌اندازی تنظیم نشده است</h5>
+            <p>راه‌اندازی هنوز برای این سیستم تنظیم نشده است.</p>
           </div>
           {% endif %}
         </div>
@@ -557,9 +557,9 @@
         <!-- Punch Items Tab -->
         <div class="tab-pane fade" id="punch-items">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Punch Items</h5>
+            <h5 class="mb-0">آیتم‌های Punch</h5>
             <span class="text-muted small">
-                            {{ open_punch_items }} open | {{ critical_punch_items }} critical
+                            {{ open_punch_items }} باز | {{ critical_punch_items }} بحرانی
                         </span>
           </div>
 
@@ -568,13 +568,13 @@
             <table class="table table-hover table-sm">
               <thead class="table-light">
               <tr>
-                <th>Punch #</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Equipment</th>
-                <th>Raised</th>
-                <th>Actions</th>
+                <th>شماره Punch</th>
+                <th>توضیحات</th>
+                <th>دسته‌بندی</th>
+                <th>وضعیت</th>
+                <th>تجهیزات</th>
+                <th>تاریخ ثبت</th>
+                <th>عملیات</th>
               </tr>
               </thead>
               <tbody>
@@ -625,28 +625,28 @@
           {% else %}
           <div class="empty-state">
             <i class="bi bi-flag"></i>
-            <h5>No Punch Items</h5>
-            <p>No punch items have been raised for this system.</p>
+            <h5>هیچ آیتم Punch وجود ندارد</h5>
+            <p>هیچ آیتم Punch برای این سیستم ثبت نشده است.</p>
           </div>
           {% endif %}
         </div>
 
         <!-- Work Packages Tab -->
         <div class="tab-pane fade" id="work-packages">
-          <h5 class="mb-3">Work Packages</h5>
+          <h5 class="mb-3">بسته‌های کاری</h5>
 
           {% if work_packages %}
           <div class="table-responsive">
             <table class="table table-hover">
               <thead class="table-light">
               <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Area</th>
-                <th>Status</th>
-                <th>Progress</th>
-                <th>Items</th>
-                <th>Dates</th>
+                <th>کد</th>
+                <th>نام</th>
+                <th>منطقه</th>
+                <th>وضعیت</th>
+                <th>پیشرفت</th>
+                <th>آیتم‌ها</th>
+                <th>تاریخ‌ها</th>
               </tr>
               </thead>
               <tbody>
@@ -685,8 +685,8 @@
           {% else %}
           <div class="empty-state">
             <i class="bi bi-clipboard-check"></i>
-            <h5>No Work Packages</h5>
-            <p>No work packages are associated with this system.</p>
+            <h5>هیچ بسته کاری وجود ندارد</h5>
+            <p>هیچ بسته کاری با این سیستم مرتبط نیست.</p>
           </div>
           {% endif %}
         </div>

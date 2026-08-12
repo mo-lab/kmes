@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Projects - Copper Mine Processing{% endblock %}
+{% block title %}پروژه‌ها - کارخانه فرآوری مس{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -62,26 +62,26 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h1 class="h2 mb-1">Projects</h1>
+      <h1 class="h2 mb-1">پروژه‌ها</h1>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
-          <li class="breadcrumb-item active">Projects</li>
+          <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+          <li class="breadcrumb-item active">پروژه‌ها</li>
         </ol>
       </nav>
     </div>
     <div>
       <a href="{% url 'core:project-create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> New Project
+        <i class="bi bi-plus-lg"></i> پروژه جدید
       </a>
       {% if projects %}
       <button type="button" class="btn btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#exportModal">
-        <i class="bi bi-download"></i> Export
+        <i class="bi bi-download"></i> خروجی
       </button>
       {% endif %}
     </div>
@@ -95,7 +95,7 @@
         <div class="card-body">
           <div class="stat-item">
             <div class="stat-value">{{ total_count }}</div>
-            <div class="stat-label">Total Projects</div>
+            <div class="stat-label">کل پروژه‌ها</div>
           </div>
         </div>
       </div>
@@ -105,7 +105,7 @@
         <div class="card-body">
           <div class="stat-item">
             <div class="stat-value text-warning">{{ in_progress_count }}</div>
-            <div class="stat-label">In Progress</div>
+            <div class="stat-label">در حال اجرا</div>
           </div>
         </div>
       </div>
@@ -115,7 +115,7 @@
         <div class="card-body">
           <div class="stat-item">
             <div class="stat-value text-success">{{ completed_count }}</div>
-            <div class="stat-label">Completed</div>
+            <div class="stat-label">تکمیل شده</div>
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@
         <div class="card-body">
           <div class="stat-item">
             <div class="stat-value text-info">{{ planning_count }}</div>
-            <div class="stat-label">In Planning</div>
+            <div class="stat-label">در حال برنامه‌ریزی</div>
           </div>
         </div>
       </div>
@@ -137,60 +137,60 @@
   <div class="filter-section">
     <form method="get" class="row g-2 align-items-end">
       <div class="col-md-4">
-        <label for="search" class="form-label small">Search</label>
+        <label for="search" class="form-label small">جستجو</label>
         <div class="input-group">
           <span class="input-group-text"><i class="bi bi-search"></i></span>
           <input type="text"
                  name="search"
                  id="search"
                  class="form-control"
-                 placeholder="Search by name, code, or location..."
+                 placeholder="جستجو بر اساس نام، کد یا موقعیت..."
                  value="{{ request.GET.search|default:'' }}">
         </div>
       </div>
 
       <div class="col-md-2">
-        <label for="status_filter" class="form-label small">Status</label>
+        <label for="status_filter" class="form-label small">وضعیت</label>
         <select name="status" id="status_filter" class="form-select">
-          <option value="">All Statuses</option>
-          <option value="INIT" {% if request.GET.status == 'INIT' %}selected{% endif %}>Initiation</option>
-          <option value="PLAN" {% if request.GET.status == 'PLAN' %}selected{% endif %}>Planning</option>
-          <option value="EXEC" {% if request.GET.status == 'EXEC' %}selected{% endif %}>Execution</option>
-          <option value="COMM" {% if request.GET.status == 'COMM' %}selected{% endif %}>Commissioning</option>
-          <option value="CLSD" {% if request.GET.status == 'CLSD' %}selected{% endif %}>Closed</option>
+          <option value="">همه وضعیت‌ها</option>
+          <option value="INIT" {% if request.GET.status == 'INIT' %}selected{% endif %}>آغاز</option>
+          <option value="PLAN" {% if request.GET.status == 'PLAN' %}selected{% endif %}>برنامه‌ریزی</option>
+          <option value="EXEC" {% if request.GET.status == 'EXEC' %}selected{% endif %}>اجرا</option>
+          <option value="COMM" {% if request.GET.status == 'COMM' %}selected{% endif %}>راه‌اندازی</option>
+          <option value="CLSD" {% if request.GET.status == 'CLSD' %}selected{% endif %}>بسته شده</option>
         </select>
       </div>
 
       <div class="col-md-2">
-        <label for="sort_by" class="form-label small">Sort By</label>
+        <label for="sort_by" class="form-label small">مرتب‌سازی</label>
         <select name="sort" id="sort_by" class="form-select">
-          <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
-          <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
-          <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
-          <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>Name (Z-A)</option>
-          <option value="target_completion_date" {% if request.GET.sort == 'target_completion_date' %}selected{% endif %}>Due Date (Earliest)</option>
-          <option value="-target_completion_date" {% if request.GET.sort == '-target_completion_date' %}selected{% endif %}>Due Date (Latest)</option>
+          <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>جدیدترین اول</option>
+          <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>قدیمی‌ترین اول</option>
+          <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>نام (الف-ی)</option>
+          <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>نام (ی-الف)</option>
+          <option value="target_completion_date" {% if request.GET.sort == 'target_completion_date' %}selected{% endif %}>تاریخ سررسید (نزدیک‌ترین)</option>
+          <option value="-target_completion_date" {% if request.GET.sort == '-target_completion_date' %}selected{% endif %}>تاریخ سررسید (دورترین)</option>
         </select>
       </div>
 
       <div class="col-md-2">
-        <label for="per_page" class="form-label small">Show</label>
+        <label for="per_page" class="form-label small">تعداد نمایش</label>
         <select name="per_page" id="per_page" class="form-select">
-          <option value="12" {% if request.GET.per_page == '12' %}selected{% endif %}>12 per page</option>
-          <option value="24" {% if request.GET.per_page == '24' %}selected{% endif %}>24 per page</option>
-          <option value="48" {% if request.GET.per_page == '48' %}selected{% endif %}>48 per page</option>
-          <option value="96" {% if request.GET.per_page == '96' %}selected{% endif %}>96 per page</option>
+          <option value="12" {% if request.GET.per_page == '12' %}selected{% endif %}>۱۲ در هر صفحه</option>
+          <option value="24" {% if request.GET.per_page == '24' %}selected{% endif %}>۲۴ در هر صفحه</option>
+          <option value="48" {% if request.GET.per_page == '48' %}selected{% endif %}>۴۸ در هر صفحه</option>
+          <option value="96" {% if request.GET.per_page == '96' %}selected{% endif %}>۹۶ در هر صفحه</option>
         </select>
       </div>
 
       <div class="col-md-2">
         <div class="d-grid gap-2">
           <button type="submit" class="btn btn-primary">
-            <i class="bi bi-funnel"></i> Apply Filters
+            <i class="bi bi-funnel"></i> اعمال فیلترها
           </button>
           {% if request.GET %}
           <a href="{% url 'core:project-list' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-x-circle"></i> Clear
+            <i class="bi bi-x-circle"></i> پاک کردن
           </a>
           {% endif %}
         </div>
@@ -240,13 +240,13 @@
           <!-- Timeline Progress -->
           <div class="mb-3">
             <div class="d-flex justify-content-between small text-muted mb-1">
-              <span>Progress</span>
+              <span>پیشرفت</span>
               <span>
-                                {% if project.status == 'INIT' %}5%
-                                {% elif project.status == 'PLAN' %}20%
-                                {% elif project.status == 'EXEC' %}60%
-                                {% elif project.status == 'COMM' %}85%
-                                {% elif project.status == 'CLSD' %}100%
+                                {% if project.status == 'INIT' %}۵%
+                                {% elif project.status == 'PLAN' %}۲۰%
+                                {% elif project.status == 'EXEC' %}۶۰%
+                                {% elif project.status == 'COMM' %}۸۵%
+                                {% elif project.status == 'CLSD' %}۱۰۰%
                                 {% endif %}
                             </span>
             </div>
@@ -259,18 +259,18 @@
                                 {% elif project.status == 'CLSD' %}bg-success
                                 {% endif %}"
                    role="progressbar"
-                   style="width:{% if project.status == 'INIT' %}5%
-                                    {% elif project.status == 'PLAN' %}20%
-                                    {% elif project.status == 'EXEC' %}60%
-                                    {% elif project.status == 'COMM' %}85%
-                                    {% elif project.status == 'CLSD' %}100%
+                   style="width:{% if project.status == 'INIT' %}۵%
+                                    {% elif project.status == 'PLAN' %}۲۰%
+                                    {% elif project.status == 'EXEC' %}۶۰%
+                                    {% elif project.status == 'COMM' %}۸۵%
+                                    {% elif project.status == 'CLSD' %}۱۰۰%
                                     {% endif %}"
                    aria-valuenow="
-                                    {% if project.status == 'INIT' %}5
-                                    {% elif project.status == 'PLAN' %}20
-                                    {% elif project.status == 'EXEC' %}60
-                                    {% elif project.status == 'COMM' %}85
-                                    {% elif project.status == 'CLSD' %}100
+                                    {% if project.status == 'INIT' %}۵
+                                    {% elif project.status == 'PLAN' %}۲۰
+                                    {% elif project.status == 'EXEC' %}۶۰
+                                    {% elif project.status == 'COMM' %}۸۵
+                                    {% elif project.status == 'CLSD' %}۱۰۰
                                     {% endif %}"
                    aria-valuemin="0"
                    aria-valuemax="100">
@@ -282,11 +282,11 @@
           <div class="row small text-muted mb-3">
             <div class="col-6">
               <i class="bi bi-calendar-check"></i>
-              Start: {{ project.start_date|date:"M d, Y" }}
+              شروع: {{ project.start_date|date:"M d, Y" }}
             </div>
             <div class="col-6">
               <i class="bi bi-calendar-event"></i>
-              Target: {{ project.target_completion_date|date:"M d, Y" }}
+              هدف: {{ project.target_completion_date|date:"M d, Y" }}
             </div>
           </div>
 
@@ -294,15 +294,15 @@
           <div class="row small border-top pt-2">
             <div class="col-4 text-center">
               <div class="fw-bold">{{ project.areas.count }}</div>
-              <div class="text-muted">Areas</div>
+              <div class="text-muted">مناطق</div>
             </div>
             <div class="col-4 text-center">
               <div class="fw-bold">{{ project.systems.count }}</div>
-              <div class="text-muted">Systems</div>
+              <div class="text-muted">سیستم‌ها</div>
             </div>
             <div class="col-4 text-center">
               <div class="fw-bold">{{ project.equipment_tags.count }}</div>
-              <div class="text-muted">Tags</div>
+              <div class="text-muted">برچسب‌ها</div>
             </div>
           </div>
         </div>
@@ -311,16 +311,16 @@
         <div class="card-footer bg-transparent border-top">
           <div class="d-flex justify-content-between align-items-center">
             <small class="text-muted">
-              Updated {{ project.updated_at|timesince }} ago
+              به‌روزرسانی {{ project.updated_at|timesince }} پیش
             </small>
             <div class="btn-group btn-group-sm">
-              <a href="#" class="btn btn-outline-primary" title="View Details">
+              <a href="#" class="btn btn-outline-primary" title="مشاهده جزئیات">
                 <i class="bi bi-eye"></i>
               </a>
-              <a href="#" class="btn btn-outline-secondary" title="Edit">
+              <a href="#" class="btn btn-outline-secondary" title="ویرایش">
                 <i class="bi bi-pencil"></i>
               </a>
-              <a href="#" class="btn btn-outline-danger" title="Delete">
+              <a href="#" class="btn btn-outline-danger" title="حذف">
                 <i class="bi bi-trash"></i>
               </a>
             </div>
@@ -335,18 +335,18 @@
   {% if is_paginated %}
   <div class="d-flex justify-content-between align-items-center mt-4">
     <div class="text-muted small">
-      Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} projects
+      نمایش {{ page_obj.start_index }} تا {{ page_obj.end_index }} از {{ page_obj.paginator.count }} پروژه
     </div>
-    <nav aria-label="Project pagination">
+    <nav aria-label="صفحه‌بندی پروژه‌ها">
       <ul class="pagination mb-0">
         {% if page_obj.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+          <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="اول">
             <i class="bi bi-chevron-double-left"></i>
           </a>
         </li>
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="قبلی">
             <i class="bi bi-chevron-left"></i>
           </a>
         </li>
@@ -366,12 +366,12 @@
 
         {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="بعدی">
             <i class="bi bi-chevron-right"></i>
           </a>
         </li>
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="آخر">
             <i class="bi bi-chevron-double-right"></i>
           </a>
         </li>
@@ -385,22 +385,22 @@
   <!-- Empty State -->
   <div class="empty-state">
     <i class="bi bi-folder2-open"></i>
-    <h3 class="mt-3">No Projects Found</h3>
+    <h3 class="mt-3">هیچ پروژه‌ای پیدا نشد</h3>
     <p class="text-muted">
       {% if request.GET %}
-      No projects match your search criteria. Try adjusting your filters.
+      هیچ پروژه‌ای با معیارهای جستجوی شما مطابقت ندارد. لطفاً فیلترهای خود را تنظیم کنید.
       {% else %}
-      Get started by creating your first project.
+      با ایجاد اولین پروژه خود شروع کنید.
       {% endif %}
     </p>
     <div class="mt-3">
       {% if request.GET %}
       <a href="#" class="btn btn-outline-secondary me-2">
-        <i class="bi bi-x-circle"></i> Clear Filters
+        <i class="bi bi-x-circle"></i> پاک کردن فیلترها
       </a>
       {% endif %}
       <a href="#" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Create Project
+        <i class="bi bi-plus-lg"></i> ایجاد پروژه
       </a>
     </div>
   </div>
@@ -414,20 +414,20 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exportModalLabel">Export Projects</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title" id="exportModalLabel">خروجی پروژه‌ها</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
       </div>
       <div class="modal-body">
-        <p>Select export format:</p>
+        <p>فرمت خروجی را انتخاب کنید:</p>
         <div class="d-grid gap-2">
           <a href="{% url 'core:project-list' %}?export=csv{% for key, value in request.GET.items %}{% if key != 'export' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline-primary">
-            <i class="bi bi-filetype-csv"></i> Export as CSV
+            <i class="bi bi-filetype-csv"></i> خروجی CSV
           </a>
           <a href="{% url 'core:project-list' %}?export=excel{% for key, value in request.GET.items %}{% if key != 'export' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline-success">
-            <i class="bi bi-filetype-xlsx"></i> Export as Excel
+            <i class="bi bi-filetype-xlsx"></i> خروجی Excel
           </a>
           <a href="{% url 'core:project-list' %}?export=pdf{% for key, value in request.GET.items %}{% if key != 'export' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-outline-danger">
-            <i class="bi bi-filetype-pdf"></i> Export as PDF
+            <i class="bi bi-filetype-pdf"></i> خروجی PDF
           </a>
         </div>
       </div>

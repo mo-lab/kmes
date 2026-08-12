@@ -103,7 +103,7 @@ class DocumentCreateView(LoginRequiredMixin, generic.CreateView):
 
 class DocumentListView(LoginRequiredMixin, generic.ListView):
 	model = Document
-	template_name = 'documents/document_list.html'
+	template_name = 'rtl/documents/document_list.html'
 	context_object_name = 'documents'
 	paginate_by = 20
 	
@@ -238,7 +238,7 @@ class DocumentListView(LoginRequiredMixin, generic.ListView):
 class DocumentUpdateView(LoginRequiredMixin, generic.UpdateView):
 	model = Document
 	form_class = DocumentForm
-	template_name = 'documents/document_form.html'
+	template_name = 'rtl/documents/document_form.html'
 	success_message = "Document '%(document_number)s' was updated successfully."
 	
 	def get_success_url(self):
@@ -464,7 +464,7 @@ def document_share_view(request, pk):
 			).select_related('shared_with', 'shared_by')
 	
 	return render(
-		request, 'documents/document_share.html', {
+		request, 'rtl/documents/document_share.html', {
 					'document':        document,
 					'form':            form,
 					'existing_shares': existing_shares
@@ -491,7 +491,7 @@ def document_share_update_view(request, pk):
 		form = DocumentShareUpdateForm(instance=share)
 	
 	return render(
-		request, 'documents/document_share_update.html', {
+		request, 'rtl/documents/document_share_update.html', {
 					'share':    share,
 					'form':     form,
 					'document': share.document
@@ -516,7 +516,7 @@ def document_share_delete_view(request, pk):
 		return redirect('documents:document_share', pk=document_pk)
 	
 	return render(
-		request, 'documents/document_share_delete.html', {
+		request, 'rtl/documents/document_share_delete.html', {
 					'share':    share,
 					'document': share.document
 					}
@@ -583,7 +583,7 @@ def shared_with_me_view(request):
 			'page_title': 'Documents Shared With Me',
 			}
 	
-	return render(request, 'documents/shared_with_me.html', context)
+	return render(request, 'rtl/documents/shared_with_me.html', context)
 
 
 def mark_document_as_seen(request, pk):
@@ -711,7 +711,7 @@ def shared_by_me_view(request):
 	pending_count = shares.filter(is_accessed=False).count()
 	
 	return render(
-		request, 'documents/shared_by_me.html', {
+		request, 'rtl/documents/shared_by_me.html', {
 					'shares':        shares,
 					'total_shared':  total_shared,
 					'viewed_count':  viewed_count,
@@ -769,7 +769,7 @@ def document_bulk_share_view(request):
 	users = User.objects.filter(is_active=True)
 	
 	return render(
-		request, 'documents/document_bulk_share.html', {
+		request, 'rtl/documents/document_bulk_share.html', {
 					'documents': documents,
 					'users':     users,
 					}
@@ -817,7 +817,7 @@ class TagDocumentCreateView(LoginRequiredMixin, generic.CreateView):
 	"""
 	model = TagDocument
 	form_class = TagDocumentForm
-	template_name = 'documents/tag_document_form.html'
+	template_name = 'rtl/documents/tag_document_form.html'
 	success_message = "Document linked to equipment tag successfully."
 	
 	def get_success_url(self):
@@ -932,7 +932,7 @@ class TagDocumentCreateView(LoginRequiredMixin, generic.CreateView):
 class TagDocumentDeleteView(LoginRequiredMixin, generic.DeleteView):
 	"""Remove the link between a document and an equipment tag."""
 	model = TagDocument
-	template_name = 'documents/tag_document_confirm_delete.html'
+	template_name = 'rtl/documents/tag_document_confirm_delete.html'
 	success_message = "Document link removed successfully."
 	
 	def get_success_url(self):
@@ -1014,7 +1014,7 @@ def tag_document_bulk_link_view(request):
 		form = TagDocumentBulkForm()
 	
 	return render(
-		request, 'documents/tag_document_bulk_form.html', {
+		request, 'rtl/documents/tag_document_bulk_form.html', {
 					'form':       form,
 					'page_title': 'Bulk Link Documents & Tags'
 					}
@@ -1120,7 +1120,7 @@ def tag_document_list_view(request):
 				)
 	
 	return render(
-		request, 'documents/tag_document_list.html', {
+		request, 'rtl/documents/tag_document_list.html', {
 					'links':      links,
 					'page_title': 'Document-Tag Relationships',
 					}

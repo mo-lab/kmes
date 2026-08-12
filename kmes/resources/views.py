@@ -22,7 +22,7 @@ class EmployeeCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new employee record."""
 	model = Employee
 	form_class = EmployeeForm
-	template_name = 'resources/employee_form.html'
+	template_name = 'rtl/resources/employee_form.html'
 	success_message = "Employee '%(first_name)s %(last_name)s' was created successfully."
 	
 	def get_success_url(self):
@@ -131,7 +131,7 @@ class EmployeeUpdateView(LoginRequiredMixin, generic.UpdateView):
 	"""Update an existing employee record."""
 	model = Employee
 	form_class = EmployeeForm
-	template_name = 'resources/employee_form.html'
+	template_name = 'rtl/resources/employee_form.html'
 	success_message = "Employee '%(first_name)s %(last_name)s' was updated successfully."
 	
 	def get_success_url(self):
@@ -177,7 +177,7 @@ class EmployeeUpdateView(LoginRequiredMixin, generic.UpdateView):
 class EmployeeDeleteView(LoginRequiredMixin, generic.DeleteView):
 	"""Delete an employee record."""
 	model = Employee
-	template_name = 'resources/employee_confirm_delete.html'
+	template_name = 'rtl/resources/employee_confirm_delete.html'
 	success_url = reverse_lazy('resources:employee_list')
 	success_message = "Employee was deleted successfully."
 	
@@ -199,7 +199,7 @@ class EmployeeDeleteView(LoginRequiredMixin, generic.DeleteView):
 
 class EmployeeListView(LoginRequiredMixin, generic.ListView):
 	model = Employee
-	template_name = 'resources/employee_list.html'
+	template_name = 'rtl/resources/employee_list.html'
 	context_object_name = 'employees'
 	paginate_by = 30
 	
@@ -352,7 +352,7 @@ class EmployeeListView(LoginRequiredMixin, generic.ListView):
 class EmployeeDetailView(LoginRequiredMixin, generic.DetailView):
 	"""View employee details."""
 	model = Employee
-	template_name = 'resources/employee_detail.html'
+	template_name = 'rtl/resources/employee_detail.html'
 	context_object_name = 'employee'
 	
 	def get_queryset(self):
@@ -406,7 +406,7 @@ class EmployeeDetailView(LoginRequiredMixin, generic.DetailView):
 class EmployeeDetailView(LoginRequiredMixin, generic.DetailView):
 	"""View employee details with certifications, timesheets, and work history."""
 	model = Employee
-	template_name = 'resources/employee_detail.html'
+	template_name = 'rtl/resources/employee_detail.html'
 	context_object_name = 'employee'
 	
 	def get_queryset(self):
@@ -536,7 +536,7 @@ class EmployeeDetailView(LoginRequiredMixin, generic.DetailView):
 class EmployeeDetailView(LoginRequiredMixin, generic.DetailView):
 	"""View employee details with certifications, timesheets, and work history."""
 	model = Employee
-	template_name = 'resources/employee_detail.html'
+	template_name = 'rtl/resources/employee_detail.html'
 	context_object_name = 'employee'
 	
 	def get_queryset(self):
@@ -690,7 +690,7 @@ class EmployeeDetailView(LoginRequiredMixin, generic.DetailView):
 
 class TimesheetListView(LoginRequiredMixin, generic.ListView):
 	model = Timesheet
-	template_name = 'resources/timesheet_list.html'
+	template_name = 'rtl/resources/timesheet_list.html'
 	context_object_name = 'timesheets'
 	paginate_by = 50
 	
@@ -883,7 +883,7 @@ class TimesheetCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new timesheet entry."""
 	model = Timesheet
 	form_class = TimesheetForm
-	template_name = 'resources/timesheet_form.html'
+	template_name = 'rtl/resources/timesheet_form.html'
 	success_message = "Timesheet entry was created successfully."
 	
 	def get_success_url(self):
@@ -1003,7 +1003,7 @@ class TimesheetUpdateView(LoginRequiredMixin, generic.UpdateView):
 	"""Update an existing timesheet entry."""
 	model = Timesheet
 	form_class = TimesheetForm
-	template_name = 'resources/timesheet_form.html'
+	template_name = 'rtl/resources/timesheet_form.html'
 	success_message = "Timesheet entry was updated successfully."
 	
 	def get_success_url(self):
@@ -1103,7 +1103,7 @@ def timesheet_bulk_create_view(request):
 					).distinct().order_by('company'),
 			}
 	
-	return render(request, 'resources/timesheet_bulk_form.html', context)
+	return render(request, 'rtl/resources/timesheet_bulk_form.html', context)
 
 
 def timesheet_approve_view(request, pk):

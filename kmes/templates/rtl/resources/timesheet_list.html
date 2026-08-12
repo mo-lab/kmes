@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}Timesheets - Resource Management{% endblock %}
+{% block title %}برگه‌های زمانی - مدیریت منابع{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -132,16 +132,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h1 class="h2 mb-1">Timesheets</h1>
+      <h1 class="h2 mb-1">برگه‌های زمانی</h1>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-          <li class="breadcrumb-item active">Timesheets</li>
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+          <li class="breadcrumb-item active">برگه‌های زمانی</li>
         </ol>
       </nav>
     </div>
@@ -157,10 +157,10 @@
         </a>
       </div>
       <a href="{% url 'resources:timesheet_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Add Timesheet
+        <i class="bi bi-plus-lg"></i> افزودن برگه زمانی
       </a>
       <a href="#" class="btn btn-outline-primary">
-        <i class="bi bi-plus-lg"></i> Bulk Add
+        <i class="bi bi-plus-lg"></i> افزودن گروهی
       </a>
     </div>
   </div>
@@ -171,37 +171,37 @@
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_entries }}</div>
-          <div class="stat-label">Total Entries</div>
+          <div class="stat-label">کل ورودی‌ها</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_hours|floatformat:1 }}</div>
-          <div class="stat-label">Total Hours</div>
+          <div class="stat-label">کل ساعت‌ها</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_overtime|floatformat:1 }}</div>
-          <div class="stat-label">Overtime Hours</div>
+          <div class="stat-label">ساعت اضافه‌کاری</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ total_employees }}</div>
-          <div class="stat-label">Employees</div>
+          <div class="stat-label">کارمندان</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value">{{ week_hours|floatformat:1 }}</div>
-          <div class="stat-label">This Week</div>
+          <div class="stat-label">این هفته</div>
         </div>
       </div>
       <div class="col">
         <div class="stat-item">
           <div class="stat-value text-warning">{{ pending_approval }}</div>
-          <div class="stat-label">Pending Approval</div>
+          <div class="stat-label">در انتظار تأیید</div>
         </div>
       </div>
     </div>
@@ -212,15 +212,15 @@
     <div class="col-lg-3 mb-4">
       <div class="filter-sidebar">
         <h5 class="mb-3">
-          <i class="bi bi-funnel"></i> Filters
+          <i class="bi bi-funnel"></i> فیلترها
         </h5>
 
         <form method="get" id="filterForm">
           <!-- Employee -->
           <div class="mb-3">
-            <label class="form-label small">Employee</label>
+            <label class="form-label small">کارمند</label>
             <select name="employee" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All Employees</option>
+              <option value="">همه کارمندان</option>
               {% for emp in employees %}
               <option value="{{ emp.pk }}" {% if request.GET.employee == emp.pk|stringformat:"s" %}selected{% endif %}>
               {{ emp.full_name }}
@@ -231,9 +231,9 @@
 
           <!-- Work Package -->
           <div class="mb-3">
-            <label class="form-label small">Work Package</label>
+            <label class="form-label small">بسته کاری</label>
             <select name="work_package" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All Work Packages</option>
+              <option value="">همه بسته‌های کاری</option>
               {% for wp in work_packages %}
               <option value="{{ wp.pk }}" {% if request.GET.work_package == wp.pk|stringformat:"s" %}selected{% endif %}>
               {{ wp.code }}
@@ -244,50 +244,50 @@
 
           <!-- Company -->
           <div class="mb-3">
-            <label class="form-label small">Company</label>
+            <label class="form-label small">شرکت</label>
             <input type="text" name="company" class="form-control form-control-sm"
-                   placeholder="Filter by company..."
+                   placeholder="فیلتر بر اساس شرکت..."
                    value="{{ request.GET.company|default:'' }}">
           </div>
 
           <!-- Trade -->
           <div class="mb-3">
-            <label class="form-label small">Trade</label>
+            <label class="form-label small">تخصص</label>
             <select name="trade" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All Trades</option>
-              <option value="MLWR" {% if request.GET.trade == 'MLWR' %}selected{% endif %}>Millwright</option>
-              <option value="ELEC" {% if request.GET.trade == 'ELEC' %}selected{% endif %}>Electrician</option>
-              <option value="WELD" {% if request.GET.trade == 'WELD' %}selected{% endif %}>Welder</option>
-              <option value="PIPE" {% if request.GET.trade == 'PIPE' %}selected{% endif %}>Pipe Fitter</option>
-              <option value="INST" {% if request.GET.trade == 'INST' %}selected{% endif %}>Instrument Tech</option>
-              <option value="RIGG" {% if request.GET.trade == 'RIGG' %}selected{% endif %}>Rigger</option>
-              <option value="SUPV" {% if request.GET.trade == 'SUPV' %}selected{% endif %}>Supervisor</option>
-              <option value="ENGR" {% if request.GET.trade == 'ENGR' %}selected{% endif %}>Engineer</option>
-              <option value="LAB" {% if request.GET.trade == 'LAB' %}selected{% endif %}>Laborer</option>
-              <option value="OPER" {% if request.GET.trade == 'OPER' %}selected{% endif %}>Operator</option>
+              <option value="">همه تخصص‌ها</option>
+              <option value="MLWR" {% if request.GET.trade == 'MLWR' %}selected{% endif %}>مکانیک صنعتی</option>
+              <option value="ELEC" {% if request.GET.trade == 'ELEC' %}selected{% endif %}>برق‌کار</option>
+              <option value="WELD" {% if request.GET.trade == 'WELD' %}selected{% endif %}>جوشکار</option>
+              <option value="PIPE" {% if request.GET.trade == 'PIPE' %}selected{% endif %}>لوله‌کش</option>
+              <option value="INST" {% if request.GET.trade == 'INST' %}selected{% endif %}>تکنسین ابزار دقیق</option>
+              <option value="RIGG" {% if request.GET.trade == 'RIGG' %}selected{% endif %}>تکنسین بالابری</option>
+              <option value="SUPV" {% if request.GET.trade == 'SUPV' %}selected{% endif %}>ناظر</option>
+              <option value="ENGR" {% if request.GET.trade == 'ENGR' %}selected{% endif %}>مهندس</option>
+              <option value="LAB" {% if request.GET.trade == 'LAB' %}selected{% endif %}>کارگر</option>
+              <option value="OPER" {% if request.GET.trade == 'OPER' %}selected{% endif %}>اپراتور</option>
             </select>
           </div>
 
           <!-- Approval Status -->
           <div class="mb-3">
-            <label class="form-label small">Approval Status</label>
+            <label class="form-label small">وضعیت تأیید</label>
             <select name="is_approved" class="form-select form-select-sm" onchange="this.form.submit()">
-              <option value="">All</option>
-              <option value="true" {% if request.GET.is_approved == 'true' %}selected{% endif %}>Approved</option>
-              <option value="false" {% if request.GET.is_approved == 'false' %}selected{% endif %}>Pending</option>
+              <option value="">همه</option>
+              <option value="true" {% if request.GET.is_approved == 'true' %}selected{% endif %}>تأیید شده</option>
+              <option value="false" {% if request.GET.is_approved == 'false' %}selected{% endif %}>در انتظار</option>
             </select>
           </div>
 
           <!-- Date Range -->
           <div class="mb-3">
-            <label class="form-label small">Date From</label>
+            <label class="form-label small">از تاریخ</label>
             <input type="date" name="date_from" class="form-control form-control-sm"
                    value="{{ request.GET.date_from|default:'' }}"
                    onchange="this.form.submit()">
           </div>
 
           <div class="mb-3">
-            <label class="form-label small">Date To</label>
+            <label class="form-label small">تا تاریخ</label>
             <input type="date" name="date_to" class="form-control form-control-sm"
                    value="{{ request.GET.date_to|default:'' }}"
                    onchange="this.form.submit()">
@@ -295,33 +295,33 @@
 
           <!-- Quick Date Filters -->
           <div class="mb-3">
-            <label class="form-label small">Quick Filter</label>
+            <label class="form-label small">فیلتر سریع</label>
             <div class="d-grid gap-1">
-              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Today</a>
-              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">Yesterday</a>
-              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">This Week</a>
-              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">This Month</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">امروز</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">دیروز</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">این هفته</a>
+              <a href="?date_from={% now 'Y-m-d' %}&date_to={% now 'Y-m-d' %}" class="btn btn-outline-secondary btn-sm">این ماه</a>
             </div>
           </div>
 
           <!-- Search -->
           <div class="mb-3">
-            <label class="form-label small">Search</label>
+            <label class="form-label small">جستجو</label>
             <div class="input-group input-group-sm">
               <span class="input-group-text"><i class="bi bi-search"></i></span>
               <input type="text" name="search" class="form-control"
-                     placeholder="Employee, WP code..."
+                     placeholder="کارمند، کد بسته کاری..."
                      value="{{ request.GET.search|default:'' }}">
             </div>
           </div>
 
           <div class="d-grid gap-2">
             <button type="submit" class="btn btn-primary btn-sm">
-              <i class="bi bi-search"></i> Apply Filters
+              <i class="bi bi-search"></i> اعمال فیلترها
             </button>
             {% if request.GET %}
             <a href="{% url 'resources:timesheet_list' %}" class="btn btn-outline-secondary btn-sm">
-              <i class="bi bi-x-circle"></i> Clear All Filters
+              <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها
             </a>
             {% endif %}
           </div>
@@ -335,7 +335,7 @@
       <!-- Daily Hours Chart -->
       <div class="card mb-4">
         <div class="card-header">
-          <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Daily Hours (Last 7 Days)</h6>
+          <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>ساعت‌های روزانه (۷ روز اخیر)</h6>
         </div>
         <div class="card-body">
           <div class="chart-bar">
@@ -354,23 +354,23 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="pagination-info">
           {% if is_paginated %}
-          Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+          نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} ورودی
           {% else %}
-          {{ timesheets.count }} entries found
+          {{ timesheets.count }} ورودی پیدا شد
           {% endif %}
         </div>
         <div class="d-flex align-items-center gap-2">
           <select name="sort" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
-            <option value="-date" {% if request.GET.sort == '-date' %}selected{% endif %}>Newest First</option>
-            <option value="date" {% if request.GET.sort == 'date' %}selected{% endif %}>Oldest First</option>
-            <option value="employee__last_name" {% if request.GET.sort == 'employee__last_name' %}selected{% endif %}>Employee (A-Z)</option>
-            <option value="-hours_worked" {% if request.GET.sort == '-hours_worked' %}selected{% endif %}>Most Hours</option>
-            <option value="work_package__code" {% if request.GET.sort == 'work_package__code' %}selected{% endif %}>Work Package</option>
+            <option value="-date" {% if request.GET.sort == '-date' %}selected{% endif %}>جدیدترین اول</option>
+            <option value="date" {% if request.GET.sort == 'date' %}selected{% endif %}>قدیمی‌ترین اول</option>
+            <option value="employee__last_name" {% if request.GET.sort == 'employee__last_name' %}selected{% endif %}>کارمند (الف-ی)</option>
+            <option value="-hours_worked" {% if request.GET.sort == '-hours_worked' %}selected{% endif %}>بیشترین ساعت</option>
+            <option value="work_package__code" {% if request.GET.sort == 'work_package__code' %}selected{% endif %}>بسته کاری</option>
           </select>
           <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
-            <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>50 per page</option>
-            <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>100 per page</option>
-            <option value="200" {% if request.GET.per_page == '200' %}selected{% endif %}>200 per page</option>
+            <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>۵۰ در هر صفحه</option>
+            <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option>
+            <option value="200" {% if request.GET.per_page == '200' %}selected{% endif %}>۲۰۰ در هر صفحه</option>
           </select>
         </div>
       </div>
@@ -384,15 +384,15 @@
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
             <tr>
-              <th>Date</th>
-              <th>Employee</th>
-              <th>Company</th>
-              <th>Work Package</th>
-              <th>Regular Hours</th>
-              <th>Overtime</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>تاریخ</th>
+              <th>کارمند</th>
+              <th>شرکت</th>
+              <th>بسته کاری</th>
+              <th>ساعت عادی</th>
+              <th>اضافه‌کاری</th>
+              <th>کل</th>
+              <th>وضعیت</th>
+              <th>عملیات</th>
             </tr>
             </thead>
             <tbody>
@@ -426,22 +426,22 @@
                 <small class="text-muted">{{ ts.work_package.name|truncatechars:30 }}</small>
               </td>
               <td>
-                <span class="badge bg-primary hours-badge">{{ ts.hours_worked }}h</span>
+                <span class="badge bg-primary hours-badge">{{ ts.hours_worked }} ساعت</span>
               </td>
               <td>
                 {% if ts.overtime_hours > 0 %}
-                <span class="badge bg-warning text-dark overtime-badge">{{ ts.overtime_hours }}h</span>
+                <span class="badge bg-warning text-dark overtime-badge">{{ ts.overtime_hours }} ساعت</span>
                 {% else %}
                 <span class="text-muted">-</span>
                 {% endif %}
               </td>
               <td>
-                <strong>{{ ts.hours_worked|add:ts.overtime_hours }}h</strong>
+                <strong>{{ ts.hours_worked|add:ts.overtime_hours }} ساعت</strong>
               </td>
               <td>
                 {% if ts.is_approved %}
                 <span class="badge bg-success">
-                                            <i class="bi bi-check-circle"></i> Approved
+                                            <i class="bi bi-check-circle"></i> تأیید شده
                                         </span>
                 {% if ts.approved_by %}
                 <br><small class="text-muted">{{ ts.approved_by.get_full_name|truncatechars:15 }}</small>
@@ -449,18 +449,18 @@
                 {% else %}
                 <span class="badge bg-warning text-dark approval-status"
                       onclick="event.stopPropagation(); approveTimesheet({{ ts.pk }})">
-                                            <i class="bi bi-clock"></i> Pending
+                                            <i class="bi bi-clock"></i> در انتظار
                                         </span>
                 {% endif %}
               </td>
               <td>
                 <div class="btn-group btn-group-sm">
                   <a href="#"
-                     class="btn btn-outline-secondary" title="Edit">
+                     class="btn btn-outline-secondary" title="ویرایش">
                     <i class="bi bi-pencil"></i>
                   </a>
                   <a href="#"
-                     class="btn btn-outline-danger" title="Delete">
+                     class="btn btn-outline-danger" title="حذف">
                     <i class="bi bi-trash"></i>
                   </a>
                 </div>
@@ -498,14 +498,14 @@
               </div>
 
               <div class="text-center my-2">
-                <div class="fs-4 fw-bold">{{ ts.hours_worked|add:ts.overtime_hours }}h</div>
+                <div class="fs-4 fw-bold">{{ ts.hours_worked|add:ts.overtime_hours }} ساعت</div>
                 <small class="text-muted">{{ ts.date|date:"M d, Y" }}</small>
               </div>
 
               <div class="d-flex justify-content-center gap-2 mb-2">
-                <span class="badge bg-primary">{{ ts.hours_worked }}h regular</span>
+                <span class="badge bg-primary">{{ ts.hours_worked }} ساعت عادی</span>
                 {% if ts.overtime_hours > 0 %}
-                <span class="badge bg-warning text-dark">{{ ts.overtime_hours }}h OT</span>
+                <span class="badge bg-warning text-dark">{{ ts.overtime_hours }} ساعت اضافه‌کاری</span>
                 {% endif %}
               </div>
 
@@ -535,9 +535,9 @@
       {% if is_paginated %}
       <div class="d-flex justify-content-between align-items-center mt-4">
         <div class="pagination-info">
-          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+          صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
         </div>
-        <nav aria-label="Timesheet pagination">
+        <nav aria-label="صفحه‌بندی برگه‌های زمانی">
           <ul class="pagination mb-0">
             {% if page_obj.has_previous %}
             <li class="page-item">
@@ -585,25 +585,25 @@
         <div class="card-body">
           <div class="empty-state">
             <i class="bi bi-clock"></i>
-            <h3 class="mt-3">No Timesheets Found</h3>
+            <h3 class="mt-3">هیچ برگه زمانی پیدا نشد</h3>
             <p class="text-muted">
               {% if request.GET %}
-              No timesheets match your search criteria. Try adjusting your filters.
+              هیچ برگه زمانی با معیارهای جستجوی شما مطابقت ندارد. لطفاً فیلترهای خود را تنظیم کنید.
               {% else %}
-              Get started by adding timesheet entries for your team.
+              با افزودن ورودی‌های برگه زمانی برای تیم خود شروع کنید.
               {% endif %}
             </p>
             <div class="mt-3">
               {% if request.GET %}
               <a href="{% url 'resources:timesheet_list' %}" class="btn btn-outline-secondary me-2">
-                <i class="bi bi-x-circle"></i> Clear Filters
+                <i class="bi bi-x-circle"></i> پاک کردن فیلترها
               </a>
               {% endif %}
               <a href="#" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Add Timesheet
+                <i class="bi bi-plus-lg"></i> افزودن برگه زمانی
               </a>
               <a href="#" class="btn btn-outline-primary ms-2">
-                <i class="bi bi-plus-lg"></i> Bulk Add
+                <i class="bi bi-plus-lg"></i> افزودن گروهی
               </a>
             </div>
           </div>
@@ -632,7 +632,7 @@
   }
 
   function approveTimesheet(timesheetId) {
-    if (confirm('Approve this timesheet entry?')) {
+    if (confirm('آیا این ورودی برگه زمانی تأیید شود؟')) {
       fetch(`/resources/timesheets/${timesheetId}/approve/`, {
         method: 'POST',
         headers: {
@@ -644,7 +644,7 @@
                 if (response.ok) {
                   location.reload();
                 } else {
-                  alert('Error approving timesheet.');
+                  alert('خطا در تأیید برگه زمانی.');
                 }
               });
     }

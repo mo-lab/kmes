@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
-{% block title %}{{ work_package.code }} - Work Package Details{% endblock %}
+{% block title %}{{ work_package.code }} - جزئیات بسته کاری{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -147,13 +147,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" dir="rtl">
 
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">Work Packages</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'construction:work_package_list' %}">بسته‌های کاری</a></li>
       <li class="breadcrumb-item active">{{ work_package.code }}</li>
     </ol>
   </nav>
@@ -175,7 +175,7 @@
                     </span>
           {% if is_overdue %}
           <span class="badge bg-danger ms-2 overdue-alert">
-                        <i class="bi bi-exclamation-triangle"></i> Overdue
+                        <i class="bi bi-exclamation-triangle"></i> تاریخ گذشته
                     </span>
           {% endif %}
         </div>
@@ -207,7 +207,7 @@
           <div class="me-4">
             <small class="opacity-75">
               <i class="bi bi-person"></i>
-              {{ work_package.supervisor.get_full_name|default:"Unassigned" }}
+              {{ work_package.supervisor.get_full_name|default:"اختصاص داده نشده" }}
             </small>
           </div>
           <div>
@@ -223,15 +223,15 @@
         <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
           <a href="{% url 'construction:daily_report_create' %}?work_package={{ work_package.pk }}"
              class="btn btn-light">
-            <i class="bi bi-journal-plus"></i> Daily Report
+            <i class="bi bi-journal-plus"></i> گزارش روزانه
           </a>
           <a href="#"
              class="btn btn-outline-light">
-            <i class="bi bi-pencil"></i> Edit
+            <i class="bi bi-pencil"></i> ویرایش
           </a>
           <a href="#"
              class="btn btn-outline-light">
-            <i class="bi bi-trash"></i> Delete
+            <i class="bi bi-trash"></i> حذف
           </a>
         </div>
       </div>
@@ -240,7 +240,7 @@
     <!-- Progress Section -->
     <div class="mt-3">
       <div class="d-flex justify-content-between small mb-1">
-        <span>Overall Progress</span>
+        <span>پیشرفت کلی</span>
         <span>{{ work_package.percent_complete }}%</span>
       </div>
       <div class="progress progress-thick bg-white bg-opacity-25">
@@ -258,7 +258,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-tag fs-3 text-primary"></i>
           <div class="fs-4 fw-bold text-primary">{{ total_items }}</div>
-          <small class="text-muted">Equipment Tags</small>
+          <small class="text-muted">برچسب‌های تجهیزات</small>
         </div>
       </div>
     </div>
@@ -267,7 +267,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-check-circle fs-3 text-success"></i>
           <div class="fs-4 fw-bold text-success">{{ completed_items }}</div>
-          <small class="text-muted">Completed</small>
+          <small class="text-muted">تکمیل شده</small>
         </div>
       </div>
     </div>
@@ -276,7 +276,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-journal-text fs-3 text-info"></i>
           <div class="fs-4 fw-bold text-info">{{ total_reports }}</div>
-          <small class="text-muted">Daily Reports</small>
+          <small class="text-muted">گزارش‌های روزانه</small>
         </div>
       </div>
     </div>
@@ -285,7 +285,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-clock fs-3 text-warning"></i>
           <div class="fs-4 fw-bold text-warning">{{ timesheet_total_hours|floatformat:0 }}</div>
-          <small class="text-muted">Total Hours</small>
+          <small class="text-muted">کل ساعت‌ها</small>
         </div>
       </div>
     </div>
@@ -294,7 +294,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-exclamation-triangle fs-3 text-danger"></i>
           <div class="fs-4 fw-bold text-danger">{{ reports_with_issues }}</div>
-          <small class="text-muted">Issues Reported</small>
+          <small class="text-muted">مشکلات گزارش شده</small>
         </div>
       </div>
     </div>
@@ -303,7 +303,7 @@
         <div class="card-body text-center py-3">
           <i class="bi bi-tools fs-3 text-secondary"></i>
           <div class="fs-4 fw-bold text-secondary">{{ tool_assignments.count }}</div>
-          <small class="text-muted">Tools Assigned</small>
+          <small class="text-muted">ابزارهای تخصیص داده شده</small>
         </div>
       </div>
     </div>
@@ -315,30 +315,30 @@
       <ul class="nav nav-pills" id="wpTabs" role="tablist">
         <li class="nav-item">
           <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview">
-            <i class="bi bi-info-circle"></i> Overview
+            <i class="bi bi-info-circle"></i> نمای کلی
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#daily-reports">
-            <i class="bi bi-journal-text"></i> Daily Reports
+            <i class="bi bi-journal-text"></i> گزارش‌های روزانه
             <span class="badge bg-primary ms-1">{{ total_reports }}</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#equipment">
-            <i class="bi bi-tag"></i> Equipment Tags
+            <i class="bi bi-tag"></i> برچسب‌های تجهیزات
             <span class="badge bg-primary ms-1">{{ total_items }}</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#timesheets">
-            <i class="bi bi-clock"></i> Timesheets
+            <i class="bi bi-clock"></i> برگه‌های زمانی
             <span class="badge bg-primary ms-1">{{ total_timesheets }}</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tools">
-            <i class="bi bi-tools"></i> Tools
+            <i class="bi bi-tools"></i> ابزارها
           </button>
         </li>
       </ul>
@@ -353,34 +353,34 @@
             <div class="col-md-8">
               <!-- Description -->
               {% if work_package.description %}
-              <h6>Scope of Work</h6>
+              <h6>حوزه فعالیت</h6>
               <p class="text-muted">{{ work_package.description|linebreaks }}</p>
               {% endif %}
 
               <!-- Progress Update Form -->
               <div class="card mb-3">
                 <div class="card-header">
-                  <h6 class="mb-0">Quick Progress Update</h6>
+                  <h6 class="mb-0">به‌روزرسانی سریع پیشرفت</h6>
                 </div>
                 <div class="card-body">
                   <form method="post" action="#">
                     {% csrf_token %}
                     <div class="row g-2 align-items-end">
                       <div class="col-md-3">
-                        <label class="form-label small">Status</label>
+                        <label class="form-label small">وضعیت</label>
                         {{ progress_form.status }}
                       </div>
                       <div class="col-md-3">
-                        <label class="form-label small">Progress %</label>
+                        <label class="form-label small">درصد پیشرفت</label>
                         {{ progress_form.percent_complete }}
                       </div>
                       <div class="col-md-3">
-                        <label class="form-label small">Actual Start</label>
+                        <label class="form-label small">شروع واقعی</label>
                         {{ progress_form.actual_start }}
                       </div>
                       <div class="col-md-2">
                         <button type="submit" class="btn btn-primary btn-sm">
-                          <i class="bi bi-check-lg"></i> Update
+                          <i class="bi bi-check-lg"></i> به‌روزرسانی
                         </button>
                       </div>
                     </div>
@@ -389,7 +389,7 @@
               </div>
 
               <!-- Recent Activities -->
-              <h6>Recent Activities</h6>
+              <h6>فعالیت‌های اخیر</h6>
               {% if activities %}
               <div class="activity-timeline">
                 {% for activity in activities %}
@@ -408,7 +408,7 @@
                 {% endfor %}
               </div>
               {% else %}
-              <p class="text-muted">No activities recorded yet.</p>
+              <p class="text-muted">هیچ فعالیتی ثبت نشده است.</p>
               {% endif %}
             </div>
 
@@ -416,27 +416,27 @@
               <!-- Schedule Info -->
               <div class="card mb-3">
                 <div class="card-header">
-                  <h6 class="mb-0"><i class="bi bi-calendar me-2"></i>Schedule</h6>
+                  <h6 class="mb-0"><i class="bi bi-calendar me-2"></i>برنامه‌زمانی</h6>
                 </div>
                 <div class="card-body">
                   <table class="table table-sm">
                     <tr>
-                      <th class="text-muted">Planned Start:</th>
+                      <th class="text-muted">شروع برنامه‌ریزی شده:</th>
                       <td>{{ work_package.planned_start|date:"F d, Y" }}</td>
                     </tr>
                     <tr>
-                      <th class="text-muted">Planned Finish:</th>
+                      <th class="text-muted">پایان برنامه‌ریزی شده:</th>
                       <td>{{ work_package.planned_finish|date:"F d, Y" }}</td>
                     </tr>
                     {% if work_package.actual_start %}
                     <tr>
-                      <th class="text-muted">Actual Start:</th>
+                      <th class="text-muted">شروع واقعی:</th>
                       <td>{{ work_package.actual_start|date:"F d, Y" }}</td>
                     </tr>
                     {% endif %}
                     {% if work_package.actual_finish %}
                     <tr>
-                      <th class="text-muted">Actual Finish:</th>
+                      <th class="text-muted">پایان واقعی:</th>
                       <td>{{ work_package.actual_finish|date:"F d, Y" }}</td>
                     </tr>
                     {% endif %}
@@ -448,13 +448,13 @@
               {% if weather_summary %}
               <div class="card mb-3">
                 <div class="card-header">
-                  <h6 class="mb-0"><i class="bi bi-cloud-sun me-2"></i>Weather Summary</h6>
+                  <h6 class="mb-0"><i class="bi bi-cloud-sun me-2"></i>خلاصه آب و هوا</h6>
                 </div>
                 <div class="card-body">
                   {% for weather, count in weather_summary.items %}
                   <div class="d-flex justify-content-between small mb-1">
                     <span>{{ weather }}</span>
-                    <span class="badge bg-light text-dark">{{ count }} day(s)</span>
+                    <span class="badge bg-light text-dark">{{ count }} روز</span>
                   </div>
                   {% endfor %}
                 </div>
@@ -464,7 +464,7 @@
               {% if work_package.notes %}
               <div class="card">
                 <div class="card-header">
-                  <h6 class="mb-0"><i class="bi bi-sticky me-2"></i>Notes</h6>
+                  <h6 class="mb-0"><i class="bi bi-sticky me-2"></i>یادداشت‌ها</h6>
                 </div>
                 <div class="card-body">
                   <p class="small text-muted mb-0">{{ work_package.notes|linebreaks }}</p>
@@ -478,10 +478,10 @@
         <!-- Daily Reports Tab -->
         <div class="tab-pane fade" id="daily-reports">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Daily Progress Reports</h5>
+            <h5 class="mb-0">گزارش‌های پیشرفت روزانه</h5>
             <a href="{% url 'construction:daily_report_create' %}?work_package={{ work_package.pk }}"
                class="btn btn-primary btn-sm">
-              <i class="bi bi-plus-lg"></i> Add Daily Report
+              <i class="bi bi-plus-lg"></i> افزودن گزارش روزانه
             </a>
           </div>
 
@@ -490,25 +490,25 @@
             <div class="col-md-3">
               <div class="border rounded p-2 text-center">
                 <div class="fs-5 fw-bold">{{ total_reports }}</div>
-                <small class="text-muted">Total Reports</small>
+                <small class="text-muted">کل گزارش‌ها</small>
               </div>
             </div>
             <div class="col-md-3">
               <div class="border rounded p-2 text-center">
                 <div class="fs-5 fw-bold">{{ report_stats.total_manpower|default:0 }}</div>
-                <small class="text-muted">Total Manpower</small>
+                <small class="text-muted">کل نیروی انسانی</small>
               </div>
             </div>
             <div class="col-md-3">
               <div class="border rounded p-2 text-center">
                 <div class="fs-5 fw-bold">{{ report_stats.total_hours|default:0 }}</div>
-                <small class="text-muted">Total Hours</small>
+                <small class="text-muted">کل ساعت‌ها</small>
               </div>
             </div>
             <div class="col-md-3">
               <div class="border rounded p-2 text-center">
                 <div class="fs-5 fw-bold">{{ reports_with_issues }}</div>
-                <small class="text-muted">With Issues</small>
+                <small class="text-muted">با مشکل</small>
               </div>
             </div>
           </div>
@@ -518,14 +518,14 @@
             <table class="table table-hover">
               <thead class="table-light">
               <tr>
-                <th>Date</th>
-                <th>Weather</th>
-                <th>Work Performed</th>
-                <th>Manpower</th>
-                <th>Hours</th>
-                <th>Issues</th>
-                <th>Reported By</th>
-                <th>Actions</th>
+                <th>تاریخ</th>
+                <th>آب و هوا</th>
+                <th>کار انجام شده</th>
+                <th>نیروی انسانی</th>
+                <th>ساعت</th>
+                <th>مشکلات</th>
+                <th>گزارش‌دهنده</th>
+                <th>عملیات</th>
               </tr>
               </thead>
               <tbody>
@@ -549,7 +549,7 @@
                                             {% else %}
                                                 <i class="bi bi-cloud"></i>
                                             {% endif %}
-                                            {{ report.weather_conditions|default:"N/A" }}
+                                            {{ report.weather_conditions|default:"نامشخص" }}
                                         </span>
                   {% if report.temperature_celsius %}
                   <br>
@@ -573,22 +573,19 @@
                   {% if report.issues_encountered %}
                   <i class="bi bi-exclamation-triangle text-warning"
                      title="{{ report.issues_encountered|truncatechars:100 }}"></i>
-                  <span class="badge bg-warning text-dark">Yes</span>
+                  <span class="badge bg-warning text-dark">بله</span>
                   {% else %}
                   <span class="text-success"><i class="bi bi-check-circle"></i></span>
                   {% endif %}
                 </td>
                 <td>
-                  <small>{{ report.reported_by.get_full_name|default:"System" }}</small>
+                  <small>{{ report.reported_by.get_full_name|default:"سیستم" }}</small>
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
-                    <a href="#"
-                       class="btn btn-outline-secondary" title="Edit">
-                      <i class="bi bi-pencil"></i>
-                    </a>
+                
                     <button type="button" class="btn btn-outline-info"
-                            title="View Details"
+                            title="مشاهده جزئیات"
                             data-bs-toggle="modal"
                             data-bs-target="#reportModal{{ report.pk }}">
                       <i class="bi bi-eye"></i>
@@ -601,27 +598,27 @@
                       <div class="modal-content">
                         <div class="modal-header">
                           <h6 class="modal-title">
-                            Daily Report - {{ report.report_date|date:"F d, Y" }}
+                            گزارش روزانه - {{ report.report_date|date:"F d, Y" }}
                           </h6>
                           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                          <p><strong>Weather:</strong> {{ report.weather_conditions|default:"N/A" }}
+                          <p><strong>آب و هوا:</strong> {{ report.weather_conditions|default:"نامشخص" }}
                             {% if report.temperature_celsius %} | {{ report.temperature_celsius }}°C{% endif %}</p>
-                          <p><strong>Manpower:</strong> {{ report.manpower_count }} workers |
-                            {{ report.hours_worked|default:"0" }} hours</p>
+                          <p><strong>نیروی انسانی:</strong> {{ report.manpower_count }} کارگر |
+                            {{ report.hours_worked|default:"0" }} ساعت</p>
                           <hr>
-                          <h6>Work Performed:</h6>
+                          <h6>کار انجام شده:</h6>
                           <p>{{ report.work_performed_description|linebreaks }}</p>
                           {% if report.issues_encountered %}
                           <hr>
-                          <h6 class="text-warning">Issues Encountered:</h6>
+                          <h6 class="text-warning">مشکلات پیش آمده:</h6>
                           <p>{{ report.issues_encountered|linebreaks }}</p>
                           {% endif %}
                           <hr>
                           <small class="text-muted">
-                            Reported by: {{ report.reported_by.get_full_name|default:"System" }}<br>
-                            Submitted: {{ report.created_at|date:"F d, Y H:i" }}
+                            گزارش‌دهنده: {{ report.reported_by.get_full_name|default:"سیستم" }}<br>
+                            ثبت: {{ report.created_at|date:"F d, Y H:i" }}
                           </small>
                         </div>
                       </div>
@@ -636,10 +633,10 @@
           {% else %}
           <div class="text-center py-4 text-muted">
             <i class="bi bi-journal-text" style="font-size: 3rem;"></i>
-            <p class="mt-2">No daily reports submitted yet.</p>
+            <p class="mt-2">هنوز هیچ گزارش روزانه‌ای ثبت نشده است.</p>
             <a href="{% url 'construction:daily_report_create' %}?work_package={{ work_package.pk }}"
                class="btn btn-primary">
-              <i class="bi bi-plus-lg"></i> Create First Daily Report
+              <i class="bi bi-plus-lg"></i> ایجاد اولین گزارش روزانه
             </a>
           </div>
           {% endif %}
@@ -649,19 +646,19 @@
         <div class="tab-pane fade" id="equipment">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <h5 class="mb-0">Equipment Tags</h5>
+              <h5 class="mb-0">برچسب‌های تجهیزات</h5>
               <small class="text-muted">
-                {{ completed_items }} of {{ total_items }} tags completed
+                {{ completed_items }} از {{ total_items }} برچسب تکمیل شده
               </small>
             </div>
             <div class="d-flex gap-2">
               <a href="{% url 'construction:work_package_item_bulk_add' work_package.pk %}"
                  class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-plus-lg"></i> Bulk Add
+                <i class="bi bi-plus-lg"></i> افزودن گروهی
               </a>
               <a href="{% url 'construction:work_package_item_create' work_package.pk %}"
                  class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg"></i> Add Tag
+                <i class="bi bi-plus-lg"></i> افزودن برچسب
               </a>
             </div>
           </div>
@@ -672,7 +669,7 @@
               <div class="card bg-primary bg-opacity-10 border-primary">
                 <div class="card-body text-center py-3">
                   <div class="fs-4 fw-bold text-primary">{{ total_items }}</div>
-                  <small class="text-muted">Total Tags</small>
+                  <small class="text-muted">کل برچسب‌ها</small>
                 </div>
               </div>
             </div>
@@ -680,7 +677,7 @@
               <div class="card bg-success bg-opacity-10 border-success">
                 <div class="card-body text-center py-3">
                   <div class="fs-4 fw-bold text-success">{{ completed_items }}</div>
-                  <small class="text-muted">Completed</small>
+                  <small class="text-muted">تکمیل شده</small>
                 </div>
               </div>
             </div>
@@ -688,7 +685,7 @@
               <div class="card bg-warning bg-opacity-10 border-warning">
                 <div class="card-body text-center py-3">
                   <div class="fs-4 fw-bold text-warning">{{ pending_items }}</div>
-                  <small class="text-muted">Pending</small>
+                  <small class="text-muted">در انتظار</small>
                 </div>
               </div>
             </div>
@@ -696,7 +693,7 @@
               <div class="card bg-info bg-opacity-10 border-info">
                 <div class="card-body text-center py-3">
                   <div class="fs-4 fw-bold text-info">{{ item_progress }}%</div>
-                  <small class="text-muted">Completion</small>
+                  <small class="text-muted">تکمیل</small>
                 </div>
               </div>
             </div>
@@ -705,7 +702,7 @@
           <!-- Progress Bar -->
           <div class="mb-4">
             <div class="d-flex justify-content-between small mb-1">
-              <span>Installation Progress</span>
+              <span>پیشرفت نصب</span>
               <strong>{{ item_progress }}%</strong>
             </div>
             <div class="progress" style="height: 10px;">
@@ -727,19 +724,19 @@
               <div class="input-group input-group-sm">
                 <span class="input-group-text"><i class="bi bi-search"></i></span>
                 <input type="text" id="equipmentSearchInput" class="form-control"
-                       placeholder="Search by tag number or description...">
+                       placeholder="جستجو بر اساس شماره برچسب یا توضیحات...">
               </div>
             </div>
             <div class="col-md-2">
               <select id="statusFilter" class="form-select form-select-sm" onchange="filterEquipmentTags()">
-                <option value="all">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="pending">Pending</option>
+                <option value="all">همه وضعیت‌ها</option>
+                <option value="completed">تکمیل شده</option>
+                <option value="pending">در انتظار</option>
               </select>
             </div>
             <div class="col-md-2">
               <select id="typeFilter" class="form-select form-select-sm" onchange="filterEquipmentTags()">
-                <option value="all">All Types</option>
+                <option value="all">همه انواع</option>
                 {% for value, label in work_package_items.0.equipment_tag.EquipmentType.choices %}
                 <option value="{{ value }}">{{ label }}</option>
                 {% endfor %}
@@ -748,13 +745,13 @@
             <div class="col-md-2">
               <button type="button" class="btn btn-outline-success btn-sm w-100"
                       onclick="markAllComplete()">
-                <i class="bi bi-check-all"></i> Mark All Complete
+                <i class="bi bi-check-all"></i> علامت‌گذاری همه به‌عنوان تکمیل
               </button>
             </div>
             <div class="col-md-2">
               <a href="#"
                  class="btn btn-outline-secondary btn-sm w-100">
-                <i class="bi bi-arrow-down-up"></i> Reorder
+                <i class="bi bi-arrow-down-up"></i> مرتب‌سازی مجدد
               </a>
             </div>
           </div>
@@ -769,15 +766,15 @@
                          onchange="toggleSelectAllTags(this)">
                 </th>
                 <th width="60">#</th>
-                <th>Tag Number</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Area</th>
-                <th>Status</th>
-                <th>Installation Date</th>
-                <th>Documents</th>
-                <th>Complete</th>
-                <th>Actions</th>
+                <th>شماره برچسب</th>
+                <th>توضیحات</th>
+                <th>نوع</th>
+                <th>منطقه</th>
+                <th>وضعیت</th>
+                <th>تاریخ نصب</th>
+                <th>مدارک</th>
+                <th>تکمیل</th>
+                <th>عملیات</th>
               </tr>
               </thead>
               <tbody>
@@ -801,7 +798,7 @@
                     {{ item.equipment_tag.tag_number }}
                   </a>
                   {% if item.equipment_tag.criticality == 'HIGH' %}
-                  <span class="badge bg-danger ms-1" title="High Criticality">!</span>
+                  <span class="badge bg-danger ms-1" title="اولویت بالا">!</span>
                   {% endif %}
                   {% if item.notes %}
                   <i class="bi bi-sticky text-warning ms-1"
@@ -849,9 +846,9 @@
                   {% if item.equipment_tag.installation_date %}
                   <small>{{ item.equipment_tag.installation_date|date:"M d, Y" }}</small>
                   {% elif item.is_complete %}
-                  <small class="text-muted">Not recorded</small>
+                  <small class="text-muted">ثبت نشده</small>
                   {% else %}
-                  <small class="text-muted">Pending</small>
+                  <small class="text-muted">در انتظار</small>
                   {% endif %}
                 </td>
                 <td>
@@ -862,7 +859,7 @@
                     <i class="bi bi-file-earmark-text"></i> {{ doc_count }}
                   </a>
                   {% else %}
-                  <span class="text-muted small">0</span>
+                  <span class="text-muted small">۰</span>
                   {% endif %}
                   {% endwith %}
                 </td>
@@ -879,46 +876,35 @@
                   <div class="btn-group btn-group-sm">
                     <a href="{% url 'core:equipment-tag-detail' item.equipment_tag.pk %}"
                        class="btn btn-outline-primary"
-                       title="View Tag Details"
+                       title="مشاهده جزئیات برچسب"
                        data-bs-toggle="tooltip">
                       <i class="bi bi-eye"></i>
                     </a>
-                    <a href="#"
-                       class="btn btn-outline-secondary"
-                       title="Edit Tag"
-                       data-bs-toggle="tooltip">
-                      <i class="bi bi-pencil"></i>
-                    </a>
+       
                     <button type="button"
                             class="btn btn-outline-info"
-                            title="Quick Actions"
+                            title="عملیات سریع"
                             data-bs-toggle="dropdown">
                       <i class="bi bi-three-dots-vertical"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                       <li>
                         <a class="dropdown-item small"
-                           href="#">
-                          <i class="bi bi-check-circle"></i> Installation Check
+                           href="{% url 'construction:installed_item_check_create' %}?tag_id={{ item.equipment_tag.pk }}">
+                          <i class="bi bi-check-circle"></i> بررسی نصب
                         </a>
                       </li>
                       <li>
                         <a class="dropdown-item small"
-                           href="#">
-                          <i class="bi bi-flag"></i> Raise Punch Item
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item small"
-                           href="#">
-                          <i class="bi bi-paperclip"></i> Link Document
+                           href="{% url 'documents:tag_document_create' %}?tag={{ item.equipment_tag.pk }}">
+                          <i class="bi bi-paperclip"></i> پیوند مدرک
                         </a>
                       </li>
                       <li><hr class="dropdown-divider"></li>
                       <li>
                         <a class="dropdown-item small text-danger"
-                           href="#">
-                          <i class="bi bi-trash"></i> Remove from Work Package
+                           href="{% url 'construction:work_package_item_delete' item.pk %}">
+                          <i class="bi bi-trash"></i> حذف از بسته کاری
                         </a>
                       </li>
                     </ul>
@@ -933,19 +919,19 @@
           <!-- Bulk Actions Bar -->
           <div id="bulkActionsBar" class="alert alert-warning d-none mt-3">
             <div class="d-flex justify-content-between align-items-center">
-              <span id="selectedCount">0 tags selected</span>
+              <span id="selectedCount">۰ برچسب انتخاب شده</span>
               <div class="d-flex gap-2">
                 <button type="button" class="btn btn-success btn-sm" onclick="bulkMarkComplete()">
-                  <i class="bi bi-check-all"></i> Mark Complete
+                  <i class="bi bi-check-all"></i> علامت‌گذاری به‌عنوان تکمیل
                 </button>
                 <button type="button" class="btn btn-warning btn-sm" onclick="bulkMarkPending()">
-                  <i class="bi bi-arrow-counterclockwise"></i> Mark Pending
+                  <i class="bi bi-arrow-counterclockwise"></i> علامت‌گذاری به‌عنوان در انتظار
                 </button>
                 <button type="button" class="btn btn-danger btn-sm" onclick="bulkRemove()">
-                  <i class="bi bi-trash"></i> Remove Selected
+                  <i class="bi bi-trash"></i> حذف موارد انتخاب شده
                 </button>
                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">
-                  Clear Selection
+                  لغو انتخاب
                 </button>
               </div>
             </div>
@@ -955,16 +941,16 @@
           <!-- Empty State -->
           <div class="text-center py-5 text-muted">
             <i class="bi bi-tag" style="font-size: 4rem;"></i>
-            <h4 class="mt-3">No Equipment Tags</h4>
-            <p class="text-muted">No equipment tags have been assigned to this work package yet.</p>
+            <h4 class="mt-3">هیچ برچسب تجهیزاتی وجود ندارد</h4>
+            <p class="text-muted">هنوز هیچ برچسب تجهیزاتی به این بسته کاری اختصاص داده نشده است.</p>
             <div class="mt-3">
               <a href="{% url 'construction:work_package_item_create' work_package.pk %}"
                  class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Add First Tag
+                <i class="bi bi-plus-lg"></i> افزودن اولین برچسب
               </a>
               <a href="{% url 'construction:work_package_item_bulk_add' work_package.pk %}"
                  class="btn btn-outline-primary ms-2">
-                <i class="bi bi-plus-lg"></i> Bulk Add Tags
+                <i class="bi bi-plus-lg"></i> افزودن گروهی برچسب‌ها
               </a>
             </div>
           </div>
@@ -975,13 +961,13 @@
             <div class="modal-dialog modal-lg">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h6 class="modal-title">Equipment Tag Details</h6>
+                  <h6 class="modal-title">جزئیات برچسب تجهیزات</h6>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="tagQuickViewContent">
                   <div class="text-center py-3">
                     <div class="spinner-border text-primary"></div>
-                    <p class="mt-2">Loading tag details...</p>
+                    <p class="mt-2">در حال بارگیری جزئیات برچسب...</p>
                   </div>
                 </div>
               </div>
@@ -996,11 +982,11 @@
 
             <div class="d-flex justify-content-between align-items-center mb-3">
               <div>
-                <h5 class="mb-0">Timesheets</h5>
+                <h5 class="mb-0">برگه‌های زمانی</h5>
                 <small class="text-muted">
-                  Total: {{ total_timesheets }} entries |
-                  {{ timesheet_total_hours|floatformat:1 }} regular hours |
-                  {{ timesheet_total_overtime|floatformat:1 }} overtime hours
+                  کل: {{ total_timesheets }} ورودی |
+                  {{ timesheet_total_hours|floatformat:1 }} ساعت عادی |
+                  {{ timesheet_total_overtime|floatformat:1 }} ساعت اضافه‌کاری
                 </small>
               </div>
               <div class="d-flex gap-2 "style="margin-left:10px ">
@@ -1008,22 +994,22 @@
                 <!-- Bulk Actions Dropdown -->
                 <div class="dropdown">
                   <button class="btn btn-outline-warning btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-check-all"></i> Bulk Actions
+                    <i class="bi bi-check-all"></i> عملیات گروهی
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                       <a class="dropdown-item" href="#" onclick="bulkApproveTimesheets()">
-                        <i class="bi bi-check-circle text-success"></i> Approve All Visible
+                        <i class="bi bi-check-circle text-success"></i> تأیید همه موارد قابل‌مشاهده
                       </a>
                     </li>
                     <li>
                       <a class="dropdown-item" href="#" onclick="filterTimesheets(); document.getElementById('approvalFilter').value='pending'; filterTimesheets();">
-                        <i class="bi bi-filter"></i> Show Pending Only
+                        <i class="bi bi-filter"></i> نمایش فقط در انتظار
                       </a>
                     </li>
                     <li>
                       <a class="dropdown-item" href="#" onclick="clearFilters()">
-                        <i class="bi bi-x-circle"></i> Clear All Filters
+                        <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها
                       </a>
                     </li>
                   </ul>
@@ -1031,11 +1017,11 @@
 
                 <a href="#"
                    class="btn btn-outline-primary btn-sm">
-                  <i class="bi bi-plus-lg"></i> Bulk Add
+                  <i class="bi bi-plus-lg"></i> افزودن گروهی
                 </a>
                 <a href="{% url 'resources:timesheet_create' %}?work_package={{ work_package.pk }}"
                    class="btn btn-primary btn-sm">
-                  <i class="bi bi-plus-lg"></i> Add Timesheet
+                  <i class="bi bi-plus-lg"></i> افزودن برگه زمانی
                 </a>
               </div>
             </div>
@@ -1047,7 +1033,7 @@
               <div class="card bg-primary bg-opacity-10 border-primary">
                 <div class="card-body text-center py-3">
                   <div class="fs-4 fw-bold text-primary">{{ total_timesheets }}</div>
-                  <small class="text-muted">Total Entries</small>
+                  <small class="text-muted">کل ورودی‌ها</small>
                 </div>
               </div>
             </div>
@@ -1055,7 +1041,7 @@
               <div class="card bg-success bg-opacity-10 border-success">
                 <div class="card-body text-center py-3">
                   <div class="fs-4 fw-bold text-success">{{ timesheet_total_hours|floatformat:1 }}</div>
-                  <small class="text-muted">Regular Hours</small>
+                  <small class="text-muted">ساعت عادی</small>
                 </div>
               </div>
             </div>
@@ -1063,7 +1049,7 @@
               <div class="card bg-warning bg-opacity-10 border-warning">
                 <div class="card-body text-center py-3">
                   <div class="fs-4 fw-bold text-warning">{{ timesheet_total_overtime|floatformat:1 }}</div>
-                  <small class="text-muted">Overtime Hours</small>
+                  <small class="text-muted">ساعت اضافه‌کاری</small>
                 </div>
               </div>
             </div>
@@ -1073,7 +1059,7 @@
                   <div class="fs-4 fw-bold text-info">
                     {{ timesheet_total_hours|add:timesheet_total_overtime|floatformat:1 }}
                   </div>
-                  <small class="text-muted">Total Hours</small>
+                  <small class="text-muted">کل ساعت‌ها</small>
                 </div>
               </div>
             </div>
@@ -1083,7 +1069,7 @@
                   <div class="fs-4 fw-bold text-secondary">
                     {{ timesheets_by_company|length }}
                   </div>
-                  <small class="text-muted">Companies</small>
+                  <small class="text-muted">شرکت‌ها</small>
                 </div>
               </div>
             </div>
@@ -1093,7 +1079,7 @@
                   <div class="fs-4 fw-bold text-danger">
                     {{ timesheets|dictsort:'employee_id'|length }}
                   </div>
-                  <small class="text-muted">Workers</small>
+                  <small class="text-muted">کارگران</small>
                 </div>
               </div>
             </div>
@@ -1102,9 +1088,9 @@
           <!-- Filter Bar -->
           <div class="row g-2 mb-3 align-items-end">
             <div class="col-md-3">
-              <label class="form-label small">Filter by Company</label>
+              <label class="form-label small">فیلتر بر اساس شرکت</label>
               <select id="companyFilter" class="form-select form-select-sm" onchange="filterTimesheets()">
-                <option value="all">All Companies</option>
+                <option value="all">همه شرکت‌ها</option>
                 {% for company in timesheets_by_company %}
                 <option value="{{ company.employee__company|slugify }}">
                   {{ company.employee__company }} ({{ company.total_hours|floatformat:1 }}h)
@@ -1113,9 +1099,9 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label class="form-label small">Filter by Trade</label>
+              <label class="form-label small">فیلتر بر اساس تخصص</label>
               <select id="tradeFilter" class="form-select form-select-sm" onchange="filterTimesheets()">
-                <option value="all">All Trades</option>
+                <option value="all">همه تخصص‌ها</option>
                 {% for trade in timesheets_by_trade %}
                 <option value="{{ trade.employee__trade }}">
                   {{ trade.get_trade_display }} ({{ trade.count }})
@@ -1124,20 +1110,20 @@
               </select>
             </div>
             <div class="col-md-2">
-              <label class="form-label small">Approval Status</label>
+              <label class="form-label small">وضعیت تأیید</label>
               <select id="approvalFilter" class="form-select form-select-sm" onchange="filterTimesheets()">
-                <option value="all">All</option>
-                <option value="approved">Approved</option>
-                <option value="pending">Pending</option>
+                <option value="all">همه</option>
+                <option value="approved">تأیید شده</option>
+                <option value="pending">در انتظار</option>
               </select>
             </div>
             <div class="col-md-3">
-              <label class="form-label small">Search</label>
+              <label class="form-label small">جستجو</label>
               <input type="text" id="timesheetSearchInput" class="form-control form-control-sm"
-                     placeholder="Search employee name..." oninput="filterTimesheets()">
+                     placeholder="جستجوی نام کارمند..." oninput="filterTimesheets()">
             </div>
             <div class="col-md-2">
-              <label class="form-label small">Date Range</label>
+              <label class="form-label small">بازه تاریخ</label>
               <input type="date" id="dateFromFilter" class="form-control form-control-sm" onchange="filterTimesheets()">
             </div>
           </div>
@@ -1152,11 +1138,11 @@
                     <div>
                       <strong class="small">{{ company.employee__company }}</strong>
                       <br>
-                      <small class="text-muted">{{ company.worker_count }} workers</small>
+                      <small class="text-muted">{{ company.worker_count }} کارگر</small>
                     </div>
                     <div class="text-end">
                       <div class="fw-bold text-primary">{{ company.total_hours|floatformat:1 }}h</div>
-                      <small class="text-muted">{{ company.entry_count }} entries</small>
+                      <small class="text-muted">{{ company.entry_count }} ورودی</small>
                     </div>
                   </div>
                 </div>
@@ -1167,28 +1153,28 @@
           <!-- Export Actions Card -->
           <div class="row g-2 mb-3" id="exportActions">
             <div class="col-auto">
-              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsCSV()" title="Export as CSV">
+              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsCSV()" title="خروجی CSV">
                 <i class="bi bi-filetype-csv"></i> CSV
               </button>
             </div>
             <div class="col-auto">
-              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsExcel()" title="Export as Excel (HTML)">
+              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsExcel()" title="خروجی Excel (HTML)">
                 <i class="bi bi-filetype-xls"></i> Excel
               </button>
             </div>
             <div class="col-auto">
-              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsXLSX()" title="Export as Excel (XLSX)">
+              <button class="btn btn-sm btn-outline-success" onclick="exportTimesheetsXLSX()" title="خروجی Excel (XLSX)">
                 <i class="bi bi-filetype-xlsx"></i> XLSX
               </button>
             </div>
             <div class="col-auto">
-              <button class="btn btn-sm btn-outline-danger" onclick="exportTimesheetsPDF()" title="Export as PDF">
+              <button class="btn btn-sm btn-outline-danger" onclick="exportTimesheetsPDF()" title="خروجی PDF">
                 <i class="bi bi-filetype-pdf"></i> PDF
               </button>
             </div>
             <div class="col-auto">
-              <button class="btn btn-sm btn-outline-secondary" onclick="window.print()" title="Print">
-                <i class="bi bi-printer"></i> Print
+              <button class="btn btn-sm btn-outline-secondary" onclick="window.print()" title="چاپ">
+                <i class="bi bi-printer"></i> چاپ
               </button>
             </div>
           </div>
@@ -1201,20 +1187,20 @@
                 <th>
                   <a href="?sort={% if request.GET.sort == 'date' %}-{% endif %}date"
                      class="text-decoration-none text-dark small">
-                    Date
+                    تاریخ
                     {% if request.GET.sort == 'date' %}<i class="bi bi-caret-up-fill"></i>
                     {% elif request.GET.sort == '-date' %}<i class="bi bi-caret-down-fill"></i>
                     {% endif %}
                   </a>
                 </th>
-                <th>Employee</th>
-                <th>Company</th>
-                <th>Trade</th>
-                <th>Regular Hours</th>
-                <th>Overtime</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>کارمند</th>
+                <th>شرکت</th>
+                <th>تخصص</th>
+                <th>ساعت عادی</th>
+                <th>اضافه‌کاری</th>
+                <th>کل</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
               </tr>
               </thead>
               <tbody>
@@ -1269,7 +1255,7 @@
                 <td>
                   {% if ts.is_approved %}
                   <span class="badge bg-success small">
-                                <i class="bi bi-check-circle"></i> Approved
+                                <i class="bi bi-check-circle"></i> تأیید شده
                             </span>
                   {% if ts.approved_by %}
                   <br>
@@ -1279,18 +1265,18 @@
                   <button class="btn btn-sm btn-outline-success approve-btn"
                           data-timesheet-id="{{ ts.pk }}"
                           onclick="approveSingleTimesheet({{ ts.pk }}, this)">
-                    <i class="bi bi-check-lg"></i> Approve
+                    <i class="bi bi-check-lg"></i> تأیید
                   </button>
                   {% endif %}
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
                     <a href="#"
-                       class="btn btn-outline-secondary btn-sm" title="Edit">
+                       class="btn btn-outline-secondary btn-sm" title="ویرایش">
                       <i class="bi bi-pencil"></i>
                     </a>
                     <a href="#"
-                       class="btn btn-outline-danger btn-sm" title="Delete">
+                       class="btn btn-outline-danger btn-sm" title="حذف">
                       <i class="bi bi-trash"></i>
                     </a>
                   </div>
@@ -1304,9 +1290,9 @@
           <!-- Empty State if no results after filtering -->
           <div id="noResultsMessage" class="text-center py-4 text-muted d-none">
             <i class="bi bi-filter" style="font-size: 2rem;"></i>
-            <p class="mt-2">No timesheets match the selected filters.</p>
+            <p class="mt-2">هیچ برگه زمانی با فیلترهای انتخاب شده مطابقت ندارد.</p>
             <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
-              <i class="bi bi-x-circle"></i> Clear Filters
+              <i class="bi bi-x-circle"></i> پاک کردن فیلترها
             </button>
           </div>
 
@@ -1314,16 +1300,16 @@
           <!-- Empty State -->
           <div class="text-center py-5 text-muted">
             <i class="bi bi-clock" style="font-size: 4rem;"></i>
-            <h4 class="mt-3">No Timesheets Recorded</h4>
-            <p class="text-muted">No timesheet entries have been recorded for this work package yet.</p>
+            <h4 class="mt-3">هیچ برگه زمانی ثبت نشده است</h4>
+            <p class="text-muted">هنوز هیچ ورودی برگه زمانی برای این بسته کاری ثبت نشده است.</p>
             <div class="mt-3">
               <a href="#"
                  class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Add First Timesheet
+                <i class="bi bi-plus-lg"></i> افزودن اولین برگه زمانی
               </a>
               <a href="#"
                  class="btn btn-outline-primary ms-2">
-                <i class="bi bi-plus-lg"></i> Bulk Add
+                <i class="bi bi-plus-lg"></i> افزودن گروهی
               </a>
             </div>
           </div>
@@ -1333,7 +1319,7 @@
           {% if timesheets_by_company %}
           <div class="mt-4">
             <h6 class="mb-3">
-              <i class="bi bi-pie-chart me-2"></i>Hours by Company
+              <i class="bi bi-pie-chart me-2"></i>ساعت‌ها بر اساس شرکت
             </h6>
             <div class="row g-3">
               {% for company in timesheets_by_company %}
@@ -1348,8 +1334,8 @@
                     </div>
                   </div>
                   <div class="d-flex justify-content-between mt-1">
-                    <small class="text-muted">{{ company.worker_count }} workers</small>
-                    <small class="text-muted">{{ company.entry_count }} entries</small>
+                    <small class="text-muted">{{ company.worker_count }} کارگر</small>
+                    <small class="text-muted">{{ company.entry_count }} ورودی</small>
                   </div>
                 </div>
               </div>
@@ -1360,18 +1346,18 @@
         </div>
         <!-- Tools Tab -->
         <div class="tab-pane fade" id="tools">
-          <h5 class="mb-3">Tool Assignments</h5>
+          <h5 class="mb-3">تخصیص ابزارها</h5>
 
           {% if tool_assignments %}
           <div class="table-responsive">
             <table class="table table-hover">
               <thead class="table-light">
               <tr>
-                <th>Asset #</th>
-                <th>Type</th>
-                <th>Make/Model</th>
-                <th>Assigned</th>
-                <th>Status</th>
+                <th>شماره دارایی</th>
+                <th>نوع</th>
+                <th>ساخت/مدل</th>
+                <th>تخصیص داده شده</th>
+                <th>وضعیت</th>
               </tr>
               </thead>
               <tbody>
@@ -1383,14 +1369,14 @@
                 <td>
                   {{ assignment.assignment_start|date:"M d, Y H:i" }}
                   {% if assignment.assignment_end %}
-                  <br><small class="text-muted">to {{ assignment.assignment_end|date:"M d, Y H:i" }}</small>
+                  <br><small class="text-muted">تا {{ assignment.assignment_end|date:"M d, Y H:i" }}</small>
                   {% endif %}
                 </td>
                 <td>
                   {% if not assignment.assignment_end %}
-                  <span class="badge bg-success">Active</span>
+                  <span class="badge bg-success">فعال</span>
                   {% else %}
-                  <span class="badge bg-secondary">Returned</span>
+                  <span class="badge bg-secondary">بازگشت داده شده</span>
                   {% endif %}
                 </td>
               </tr>
@@ -1399,7 +1385,7 @@
             </table>
           </div>
           {% else %}
-          <p class="text-muted text-center py-3">No tools assigned.</p>
+          <p class="text-muted text-center py-3">هیچ ابزاری تخصیص داده نشده است.</p>
           {% endif %}
         </div>
 
@@ -1510,16 +1496,16 @@
                 }
 
                 // Show brief notification
-                showToast(isComplete ? 'Tag marked as complete' : 'Tag marked as pending', 'success');
+                showToast(isComplete ? 'برچسب به‌عنوان تکمیل علامت‌گذاری شد' : 'برچسب به‌عنوان در انتظار علامت‌گذاری شد', 'success');
               } else {
                 // Revert checkbox
                 checkbox.checked = !isComplete;
-                showToast('Error updating tag status', 'danger');
+                showToast('خطا در به‌روزرسانی وضعیت برچسب', 'danger');
               }
             })
             .catch(error => {
               checkbox.checked = !isComplete;
-              showToast('Error updating tag status', 'danger');
+              showToast('خطا در به‌روزرسانی وضعیت برچسب', 'danger');
               console.error('Error:', error);
             });
   }
@@ -1543,7 +1529,7 @@
 
     if (selected.length > 0) {
       bar.classList.remove('d-none');
-      count.textContent = `${selected.length} tag(s) selected`;
+      count.textContent = `${selected.length} برچسب انتخاب شده`;
     } else {
       bar.classList.add('d-none');
     }
@@ -1554,7 +1540,7 @@
     const selected = document.querySelectorAll('.tag-select-checkbox:checked');
     if (selected.length === 0) return;
 
-    if (confirm(`Mark ${selected.length} tag(s) as complete?`)) {
+    if (confirm(`آیا ${selected.length} برچسب به‌عنوان تکمیل علامت‌گذاری شود؟`)) {
       const promises = [];
       selected.forEach(cb => {
         const itemId = cb.value;
@@ -1584,11 +1570,11 @@
     });
 
     if (completedOnly.length === 0) {
-      alert('No completed tags selected.');
+      alert('هیچ برچسب تکمیل شده‌ای انتخاب نشده است.');
       return;
     }
 
-    if (confirm(`Mark ${completedOnly.length} tag(s) as pending?`)) {
+    if (confirm(`آیا ${completedOnly.length} برچسب به‌عنوان در انتظار علامت‌گذاری شود؟`)) {
       const promises = [];
       completedOnly.forEach(cb => {
         const itemId = cb.value;
@@ -1614,7 +1600,7 @@
     const selected = document.querySelectorAll('.tag-select-checkbox:checked');
     if (selected.length === 0) return;
 
-    if (confirm(`Remove ${selected.length} tag(s) from this work package?`)) {
+    if (confirm(`آیا ${selected.length} برچسب از این بسته کاری حذف شود؟`)) {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = '{% url "construction:work_package_item_bulk_add" work_package.pk %}';
@@ -1647,7 +1633,7 @@
 
   // Mark all complete
   function markAllComplete() {
-    if (confirm('Mark ALL tags as complete?')) {
+    if (confirm('آیا همه برچسب‌ها به‌عنوان تکمیل علامت‌گذاری شوند؟')) {
       const checkboxes = document.querySelectorAll('.toggle-complete:not(:checked)');
       const promises = [];
 
@@ -1698,7 +1684,7 @@
     content.innerHTML = `
             <div class="text-center py-3">
                 <div class="spinner-border text-primary"></div>
-                <p class="mt-2">Loading tag details...</p>
+                <p class="mt-2">در حال بارگیری جزئیات برچسب...</p>
             </div>
         `;
 
@@ -1712,7 +1698,7 @@
             .catch(error => {
               content.innerHTML = `
                     <div class="alert alert-danger">
-                        Error loading tag details. Please try again.
+                        خطا در بارگیری جزئیات برچسب. لطفاً دوباره تلاش کنید.
                     </div>
                 `;
             });
@@ -1828,7 +1814,7 @@
 
   // Approve single timesheet
   function approveSingleTimesheet(timesheetId, button) {
-    if (confirm('Approve this timesheet entry?')) {
+    if (confirm('آیا این ورودی برگه زمانی تأیید شود؟')) {
       fetch(`/resources/timesheets/${timesheetId}/approve/`, {
         method: 'POST',
         headers: {
@@ -1843,19 +1829,19 @@
                   if (cell) {
                     cell.innerHTML = `
                         <span class="badge bg-success small">
-                            <i class="bi bi-check-circle"></i> Approved
+                            <i class="bi bi-check-circle"></i> تأیید شده
                         </span>
                         <br>
                         <small class="text-muted">{{ request.user.get_full_name|truncatechars:12 }}</small>
                     `;
                   }
-                  showToast('Timesheet approved successfully', 'success');
+                  showToast('برگه زمانی با موفقیت تأیید شد', 'success');
                 } else {
-                  showToast('Error approving timesheet', 'danger');
+                  showToast('خطا در تأیید برگه زمانی', 'danger');
                 }
               })
               .catch(error => {
-                showToast('Error approving timesheet', 'danger');
+                showToast('خطا در تأیید برگه زمانی', 'danger');
                 console.error('Error:', error);
               });
     }
@@ -1866,11 +1852,11 @@
     const pendingRows = document.querySelectorAll('.timesheet-row[data-approved="pending"]:not([style*="display: none"])');
 
     if (pendingRows.length === 0) {
-      alert('No pending timesheets to approve.');
+      alert('هیچ برگه زمانی در انتظار برای تأیید وجود ندارد.');
       return;
     }
 
-    if (confirm(`Approve ${pendingRows.length} pending timesheet entries?`)) {
+    if (confirm(`آیا ${pendingRows.length} ورودی برگه زمانی در انتظار تأیید شود؟`)) {
       const approveButtons = document.querySelectorAll('.approve-btn:not([style*="display: none"])');
       const promises = [];
 
@@ -1898,7 +1884,7 @@
     const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
 
     if (visibleRows.length === 0) {
-      alert('No timesheets to export.');
+      alert('هیچ برگه زمانی برای خروجی وجود ندارد.');
       return;
     }
 
@@ -1956,12 +1942,12 @@
     const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
 
     if (visibleRows.length === 0) {
-      showToast('No timesheets to export.', 'warning');
+      showToast('هیچ برگه زمانی برای خروجی وجود ندارد.', 'warning');
       return;
     }
 
     let csv = '\uFEFF'; // BOM for Excel UTF-8 support
-    csv += 'Date,Day,Employee,Employee ID,Company,Trade,Regular Hours,Overtime Hours,Total Hours,Status,Approved By\n';
+    csv += 'تاریخ,روز,کارمند,شناسه کارمند,شرکت,تخصص,ساعت عادی,ساعت اضافه‌کاری,کل ساعت,وضعیت,تأیید شده توسط\n';
 
     visibleRows.forEach(row => {
       const cells = row.querySelectorAll('td');
@@ -1974,7 +1960,7 @@
       const regularHours = cells[4]?.textContent.replace('h', '').trim() || '0';
       const overtime = cells[5]?.textContent.replace('h', '').trim() || '0';
       const total = cells[6]?.textContent.replace('h', '').trim() || '0';
-      const status = row.dataset.approved === 'approved' ? 'Approved' : 'Pending';
+      const status = row.dataset.approved === 'approved' ? 'تأیید شده' : 'در انتظار';
       const approvedBy = cells[7]?.querySelector('small')?.textContent.trim() || '';
 
       csv += `"${date}","${day}","${employeeName}","${employeeId}","${company}","${trade}",${regularHours},${overtime},${total},"${status}","${approvedBy}"\n`;
@@ -1982,7 +1968,7 @@
 
     // Add summary rows
     csv += '\n';
-    csv += 'SUMMARY\n';
+    csv += 'خلاصه\n';
 
     const companyFilter = document.getElementById('companyFilter')?.value || 'all';
     const tradeFilter = document.getElementById('tradeFilter')?.value || 'all';
@@ -1996,18 +1982,18 @@
       totalOvertime += parseFloat(cells[5]?.textContent.replace('h', '').trim() || '0');
     });
 
-    csv += `"","","","","","Total",${totalRegular.toFixed(1)},${totalOvertime.toFixed(1)},${(totalRegular + totalOvertime).toFixed(1)},"",""\n`;
+    csv += `"","","","","","کل",${totalRegular.toFixed(1)},${totalOvertime.toFixed(1)},${(totalRegular + totalOvertime).toFixed(1)},"",""\n`;
 
     downloadFile(csv, `timesheets_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8');
-    showToast('CSV exported successfully!', 'success');
+    showToast('خروجی CSV با موفقیت صادر شد!', 'success');
   }
 
-  // Export timesheets to Excel (XLSX)
+  // Export timesheets to Excel (XLS)
   function exportTimesheetsExcel() {
     const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
 
     if (visibleRows.length === 0) {
-      showToast('No timesheets to export.', 'warning');
+      showToast('هیچ برگه زمانی برای خروجی وجود ندارد.', 'warning');
       return;
     }
 
@@ -2061,29 +2047,29 @@
             </style>
         </head>
         <body>
-            <h2>Timesheet Report - {{ work_package.code }}</h2>
-            <p>Work Package: {{ work_package.name }}</p>
-            <p>Export Date: ${new Date().toLocaleDateString()}</p>
-            <p>Filters Applied:
-                Company: ${document.getElementById('companyFilter')?.value || 'All'} |
-                Trade: ${document.getElementById('tradeFilter')?.value || 'All'} |
-                Status: ${document.getElementById('approvalFilter')?.value || 'All'}
+            <h2>گزارش برگه‌های زمانی - {{ work_package.code }}</h2>
+            <p>بسته کاری: {{ work_package.name }}</p>
+            <p>تاریخ خروجی: ${new Date().toLocaleDateString()}</p>
+            <p>فیلترهای اعمال شده:
+                شرکت: ${document.getElementById('companyFilter')?.value || 'همه'} |
+                تخصص: ${document.getElementById('tradeFilter')?.value || 'همه'} |
+                وضعیت: ${document.getElementById('approvalFilter')?.value || 'همه'}
             </p>
             <br>
             <table>
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Day</th>
-                        <th>Employee</th>
-                        <th>Employee ID</th>
-                        <th>Company</th>
-                        <th>Trade</th>
-                        <th>Regular Hours</th>
-                        <th>Overtime Hours</th>
-                        <th>Total Hours</th>
-                        <th>Status</th>
-                        <th>Approved By</th>
+                        <th>تاریخ</th>
+                        <th>روز</th>
+                        <th>کارمند</th>
+                        <th>شناسه کارمند</th>
+                        <th>شرکت</th>
+                        <th>تخصص</th>
+                        <th>ساعت عادی</th>
+                        <th>ساعت اضافه‌کاری</th>
+                        <th>کل ساعت</th>
+                        <th>وضعیت</th>
+                        <th>تأیید شده توسط</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2122,7 +2108,7 @@
                 <td class="number-cell">${regularHours.toFixed(1)}</td>
                 <td class="number-cell">${overtime.toFixed(1)}</td>
                 <td class="number-cell"><strong>${totalHours.toFixed(1)}</strong></td>
-                <td class="center-cell">${isApproved ? 'Approved' : 'Pending'}</td>
+                <td class="center-cell">${isApproved ? 'تأیید شده' : 'در انتظار'}</td>
                 <td>${approvedBy}</td>
             </tr>
         `;
@@ -2131,7 +2117,7 @@
     // Add total row
     html += `
             <tr class="total-row">
-                <td colspan="6"><strong>TOTAL</strong></td>
+                <td colspan="6"><strong>جمع کل</strong></td>
                 <td class="number-cell"><strong>${totalRegular.toFixed(1)}</strong></td>
                 <td class="number-cell"><strong>${totalOvertime.toFixed(1)}</strong></td>
                 <td class="number-cell"><strong>${(totalRegular + totalOvertime).toFixed(1)}</strong></td>
@@ -2142,7 +2128,7 @@
     `;
 
     // Add company summary
-    html += '<br><h3>Summary by Company</h3><table><thead><tr><th>Company</th><th>Total Hours</th><th>Workers</th><th>Entries</th></tr></thead><tbody>';
+    html += '<br><h3>خلاصه بر اساس شرکت</h3><table><thead><tr><th>شرکت</th><th>کل ساعت</th><th>کارگران</th><th>ورودی‌ها</th></tr></thead><tbody>';
 
     const companySummary = {};
     visibleRows.forEach(row => {
@@ -2174,7 +2160,7 @@
     html += '</tbody></table></body></html>';
 
     downloadFile(html, `timesheets_${new Date().toISOString().split('T')[0]}.xls`, 'application/vnd.ms-excel;charset=utf-8');
-    showToast('Excel file exported successfully!', 'success');
+    showToast('فایل Excel با موفقیت صادر شد!', 'success');
   }
 
   // Export timesheets to Excel using SheetJS library (if available)
@@ -2189,7 +2175,7 @@
     const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
 
     if (visibleRows.length === 0) {
-      showToast('No timesheets to export.', 'warning');
+      showToast('هیچ برگه زمانی برای خروجی وجود ندارد.', 'warning');
       return;
     }
 
@@ -2198,8 +2184,8 @@
 
     // Header row
     data.push([
-      'Date', 'Day', 'Employee', 'Employee ID', 'Company', 'Trade',
-      'Regular Hours', 'Overtime Hours', 'Total Hours', 'Status', 'Approved By'
+      'تاریخ', 'روز', 'کارمند', 'شناسه کارمند', 'شرکت', 'تخصص',
+      'ساعت عادی', 'ساعت اضافه‌کاری', 'کل ساعت', 'وضعیت', 'تأیید شده توسط'
     ]);
 
     // Data rows
@@ -2214,7 +2200,7 @@
       const regularHours = parseFloat(cells[4]?.textContent.replace('h', '').trim() || '0');
       const overtime = parseFloat(cells[5]?.textContent.replace('h', '').trim() || '0');
       const totalHours = regularHours + overtime;
-      const status = row.dataset.approved === 'approved' ? 'Approved' : 'Pending';
+      const status = row.dataset.approved === 'approved' ? 'تأیید شده' : 'در انتظار';
       const approvedBy = cells[7]?.querySelector('small')?.textContent.trim() || '';
 
       data.push([
@@ -2225,7 +2211,7 @@
 
     // Add summary rows
     data.push([]);
-    data.push(['SUMMARY', '', '', '', '', '', '', '', '', '', '']);
+    data.push(['خلاصه', '', '', '', '', '', '', '', '', '', '']);
 
     let totalRegular = 0;
     let totalOvertime = 0;
@@ -2238,7 +2224,7 @@
     });
 
     data.push([
-      'TOTAL', '', '', '', '', '',
+      'جمع کل', '', '', '', '', '',
       totalRegular, totalOvertime, totalRegular + totalOvertime, '', ''
     ]);
 
@@ -2266,7 +2252,7 @@
     XLSX.utils.book_append_sheet(wb, ws, 'Timesheets');
 
     // Company summary sheet
-    const companyData = [['Company', 'Total Hours', 'Workers', 'Entries']];
+    const companyData = [['شرکت', 'کل ساعت', 'کارگران', 'ورودی‌ها']];
     const companySummary = {};
 
     visibleRows.forEach(row => {
@@ -2296,11 +2282,11 @@
       { wch: 10 },  // Entries
     ];
 
-    XLSX.utils.book_append_sheet(wb, wsCompany, 'Company Summary');
+    XLSX.utils.book_append_sheet(wb, wsCompany, 'خلاصه شرکت');
 
     // Export
     XLSX.writeFile(wb, `timesheets_${new Date().toISOString().split('T')[0]}.xlsx`);
-    showToast('Excel file exported successfully!', 'success');
+    showToast('فایل Excel با موفقیت صادر شد!', 'success');
   }
 
   // Generic download function
@@ -2321,7 +2307,7 @@
     const visibleRows = document.querySelectorAll('.timesheet-row:not([style*="display: none"])');
 
     if (visibleRows.length === 0) {
-      showToast('No timesheets to export.', 'warning');
+      showToast('هیچ برگه زمانی برای خروجی وجود ندارد.', 'warning');
       return;
     }
 
@@ -2332,7 +2318,7 @@
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Timesheet Report - {{ work_package.code }}</title>
+            <title>گزارش برگه‌های زمانی - {{ work_package.code }}</title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -2388,36 +2374,36 @@
         </head>
         <body>
             <div class="header">
-                <h2>Timesheet Report</h2>
-                <p><strong>Work Package:</strong> {{ work_package.code }} - {{ work_package.name }}</p>
-                <p><strong>Project:</strong> {{ work_package.project.name }}</p>
-                <p><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</p>
-                <p><strong>Filters:</strong>
-                    Company: ${document.getElementById('companyFilter')?.value || 'All'} |
-                    Status: ${document.getElementById('approvalFilter')?.value || 'All'}
+                <h2>گزارش برگه‌های زمانی</h2>
+                <p><strong>بسته کاری:</strong> {{ work_package.code }} - {{ work_package.name }}</p>
+                <p><strong>پروژه:</strong> {{ work_package.project.name }}</p>
+                <p><strong>تاریخ خروجی:</strong> ${new Date().toLocaleDateString()}</p>
+                <p><strong>فیلترها:</strong>
+                    شرکت: ${document.getElementById('companyFilter')?.value || 'همه'} |
+                    وضعیت: ${document.getElementById('approvalFilter')?.value || 'همه'}
                 </p>
             </div>
 
             <div class="no-print" style="margin-bottom: 20px;">
                 <button onclick="window.print()" style="padding: 10px 20px; background: #0d6efd; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    🖨️ Print / Save as PDF
+                    🖨️ چاپ / ذخیره به‌عنوان PDF
                 </button>
                 <button onclick="window.close()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
-                    Close
+                    بستن
                 </button>
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Employee</th>
-                        <th>Company</th>
-                        <th>Trade</th>
-                        <th>Regular Hours</th>
-                        <th>Overtime</th>
-                        <th>Total</th>
-                        <th>Status</th>
+                        <th>تاریخ</th>
+                        <th>کارمند</th>
+                        <th>شرکت</th>
+                        <th>تخصص</th>
+                        <th>ساعت عادی</th>
+                        <th>اضافه‌کاری</th>
+                        <th>کل</th>
+                        <th>وضعیت</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2449,14 +2435,14 @@
                 <td class="number-cell">${regularHours.toFixed(1)}</td>
                 <td class="number-cell">${overtime.toFixed(1)}</td>
                 <td class="number-cell"><strong>${totalHours.toFixed(1)}</strong></td>
-                <td>${isApproved ? '✓ Approved' : '⏳ Pending'}</td>
+                <td>${isApproved ? '✓ تأیید شده' : '⏳ در انتظار'}</td>
             </tr>
         `;
     });
 
     html += `
             <tr class="total-row">
-                <td colspan="4"><strong>TOTAL</strong></td>
+                <td colspan="4"><strong>جمع کل</strong></td>
                 <td class="number-cell"><strong>${totalRegular.toFixed(1)}</strong></td>
                 <td class="number-cell"><strong>${totalOvertime.toFixed(1)}</strong></td>
                 <td class="number-cell"><strong>${(totalRegular + totalOvertime).toFixed(1)}</strong></td>
@@ -2466,14 +2452,14 @@
     </table>
 
     <div class="summary-section">
-        <h3>Summary by Company</h3>
+        <h3>خلاصه بر اساس شرکت</h3>
         <table>
             <thead>
                 <tr>
-                    <th>Company</th>
-                    <th>Total Hours</th>
-                    <th>Workers</th>
-                    <th>Entries</th>
+                    <th>شرکت</th>
+                    <th>کل ساعت</th>
+                    <th>کارگران</th>
+                    <th>ورودی‌ها</th>
                 </tr>
             </thead>
             <tbody>
@@ -2512,7 +2498,7 @@
     </div>
 
     <div class="footer">
-        <p>Generated by Copper Mine Processing Facility Management System</p>
+        <p>تولید شده توسط سیستم مدیریت کارخانه فرآوری مس</p>
         <p>${new Date().toLocaleString()}</p>
     </div>
     </body>
