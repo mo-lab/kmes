@@ -330,7 +330,7 @@
                         </thead>
                         <tbody>
                         {% for system in systems %}
-                        <tr onclick="window.location='#'"
+                        <tr onclick="window.location='{% url 'core:system_detail' system.pk %}'"
                             class="{% if system.defective_count > 0 %}table-danger{% elif system.commissioned_count >= system.equipment_count and system.equipment_count > 0 %}table-success{% endif %}">
                             <td>
                                 <strong class="text-primary">{{ system.code }}</strong>

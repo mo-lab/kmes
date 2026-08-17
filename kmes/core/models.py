@@ -435,7 +435,7 @@ class EquipmentTag(models.Model):
 			'self', on_delete=models.CASCADE, null=True, blank=True,
 			related_name='child_tags'
 			)
-	
+	drawing_num = models.CharField(max_length=100, blank=True, null=True)
 	tag_number = models.CharField(max_length=100, db_index=True)
 	description = models.CharField(max_length=500)
 	equipment_type = models.CharField(max_length=5, choices=EquipmentType.choices)

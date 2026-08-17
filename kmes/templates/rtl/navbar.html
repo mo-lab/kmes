@@ -21,7 +21,12 @@
             <i class="bi bi-speedometer2 me-1" style="max-width: 90px;" ></i> داشبورد
           </a>
         </li>
-
+        <li class="nav-item">
+          <a style="max-height: 40px; width: 117px;" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+             href="{% url 'core:crusher_ga' %}">
+            <i class="bi bi-book-fill me-1" style="max-width: 90px;" ></i> crusher
+          </a>
+        </li>
         <!-- Projects Dropdown -->
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle {% if 'project' in request.resolver_match.url_name or 'area' in request.resolver_match.url_name or 'system' in request.resolver_match.url_name or 'equipment' in request.resolver_match.url_name %}active{% endif %}"

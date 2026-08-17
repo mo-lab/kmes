@@ -46,6 +46,16 @@ urlpatterns = [
 			views.verify_location,
 			name='verify_location'
 			),
+		path(
+				'manuals/crusher',
+				views.crusher_ga,
+				name='crusher_ga'
+				),
+		path(
+				'manuals/dust_bonnet',
+				views.dust_bonnet,
+				name='dust_bonnet'
+				),
 		path('areas/', views.AreaListView.as_view(), name='area_list'),
 		path('areas/<int:pk>/', views.AreaDetailView.as_view(), name='area_detail'),
 		path('areas/create/', views.AreaCreateView.as_view(), name='area_create'),

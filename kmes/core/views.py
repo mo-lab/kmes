@@ -31,13 +31,15 @@ from .forms import (
 
 
 
+
+
 class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 	model = EquipmentTag
 	form_class = EquipmentTagForm
 	template_name = 'rtl/core/equipment_tag_form.html'  # make sure this template exists
 	
 	def get_success_url(self):
-		return reverse('core:equipment_tag_detail', kwargs={'pk': self.object.pk})
+		return reverse('core:equipment-tag-detail', kwargs={'pk': self.object.pk})
 	
 	def get_initial(self):
 		initial = super().get_initial()
@@ -2245,3 +2247,13 @@ class AreaUpdateView(LoginRequiredMixin, generic.UpdateView):
 	def form_valid(self, form):
 		messages.success(self.request, self.success_message % {'code': form.cleaned_data['code'], 'name': form.cleaned_data['name']})
 		return super().form_valid(form)
+
+
+def crusher_ga(request):
+	"""Verify a location."""
+	
+	return render(request, 'rtl/drawings/crusher_ga.html')
+def dust_bonnet(request):
+	"""Verify a location."""
+	
+	return render(request, 'rtl/drawings/dust_bonnet.html')

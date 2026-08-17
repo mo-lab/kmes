@@ -698,13 +698,7 @@ class DailyProgressReportUpdateView(LoginRequiredMixin, generic.UpdateView):
 #
 # 		return queryset.order_by('-report_date', '-created_at')
 	
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['work_packages'] = WorkPackage.objects.filter(
-				status__in=['IPRO', 'MOB']
-				).select_related('project')
-		context['projects'] = Project.objects.all()
-		return context
+
 
 
 class WorkPackageDetailView(LoginRequiredMixin, generic.DetailView):

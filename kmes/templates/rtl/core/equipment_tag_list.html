@@ -8,7 +8,8 @@
 <style> .filter-sidebar
 { background: #f8f9fa; border-radius: 0.5rem; padding: 1.25rem; position: sticky; top: 1rem; }
 .tag-card { transition: transform 0.2s, box-shadow 0.2s; border-left: 4px solid #0d6efd; }
-.tag-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); } .tag-card.status-eng { border-left-color: #6c757d; } .tag-card.status-proc { border-left-color: #0dcaf0; } .tag-card.status-dlvd { border-left-color: #17a2b8; } .tag-card.status-inst { border-left-color: #ffc107; } .tag-card.status-algn { border-left-color: #fd7e14; } .tag-card.status-prec { border-left-color: #6f42c1; } .tag-card.status-comm { border-left-color: #198754; } .tag-card.status-hndo { border-left-color: #20c997; } .tag-card.status-def { border-left-color: #dc3545; } .status-badge { font-size: 0.7rem; padding: 0.25em 0.65em; } .type-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; } .hierarchy-badge { font-size: 0.7rem; background: #e9ecef; padding: 0.15em 0.5em; border-radius: 3px; } .quick-stats { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; } .stat-item { text-align: center; padding: 0.75rem; border-right: 1px solid rgba(255,255,255,0.2); } .stat-item:last-child { border-right: none; } .stat-value { font-size: 1.75rem; font-weight: 700; } .stat-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; } .table-hover tbody tr { cursor: pointer; } .empty-state { text-align: center; padding: 4rem 2rem; } .empty-state i { font-size: 4rem; color: #dee2e6; } .view-toggle .btn { padding: 0.25rem 0.75rem; } .bulk-actions-bar { background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem; display: none; } .bulk-actions-bar.show { display: flex; align-items: center; justify-content: space-between; } .pagination-info { font-size: 0.85rem; color: #6c757d; } .status-timeline { display: flex; align-items: center; gap: 0.25rem; } .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; } .status-date { font-size: 0.75rem; color: #6c757d; } .status-change-info { font-size: 0.8rem; } .overdue-badge { animation: pulse 2s infinite; } @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } } </style>
+.tag-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.tag-card.status-eng { border-left-color: #6c757d; } .tag-card.status-proc { border-left-color: #0dcaf0; } .tag-card.status-dlvd { border-left-color: #17a2b8; } .tag-card.status-inst { border-left-color: #ffc107; } .tag-card.status-algn { border-left-color: #fd7e14; } .tag-card.status-prec { border-left-color: #6f42c1; } .tag-card.status-comm { border-left-color: #198754; } .tag-card.status-hndo { border-left-color: #20c997; } .tag-card.status-def { border-left-color: #dc3545; } .status-badge { font-size: 0.7rem; padding: 0.25em 0.65em; } .type-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; } .hierarchy-badge { font-size: 0.7rem; background: #e9ecef; padding: 0.15em 0.5em; border-radius: 3px; } .quick-stats { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; } .stat-item { text-align: center; padding: 0.75rem; border-right: 1px solid rgba(255,255,255,0.2); } .stat-item:last-child { border-right: none; } .stat-value { font-size: 1.75rem; font-weight: 700; } .stat-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; } .table-hover tbody tr { cursor: pointer; } .empty-state { text-align: center; padding: 4rem 2rem; } .empty-state i { font-size: 4rem; color: #dee2e6; } .view-toggle .btn { padding: 0.25rem 0.75rem; } .bulk-actions-bar { background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem; display: none; } .bulk-actions-bar.show { display: flex; align-items: center; justify-content: space-between; } .pagination-info { font-size: 0.85rem; color: #6c757d; } .status-timeline { display: flex; align-items: center; gap: 0.25rem; } .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; } .status-date { font-size: 0.75rem; color: #6c757d; } .status-change-info { font-size: 0.8rem; } .overdue-badge { animation: pulse 2s infinite; } @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } } </style>
 {% endblock %}
 
 {% block content %}
@@ -53,32 +54,187 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                <tr> <th width="40">
+                <tr>
+                    <th width="40">
                     <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll(this)"> </th>
                     <th>
-                        <a href="?sort={% if request.GET.sort == 'tag_number' %}-{% endif %}tag_number{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> شماره برچسب {% if request.GET.sort == 'tag_number' %}<i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-tag_number' %}<i class="bi bi-caret-down-fill"></i> {% endif %} </a> </th> <th>توضیحات</th> <th>نوع</th> <th> <a href="?sort={% if request.GET.sort == 'status' %}-{% endif %}status{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> وضعیت </a> </th> <th>ناحیه</th> <th>سلسله‌مراتب</th> <th>مدارک</th> <th> <a href="?sort={% if request.GET.sort == 'updated_at' %}-{% endif %}updated_at{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> آخرین تغییر وضعیت {% if request.GET.sort == 'updated_at' %}<i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-updated_at' %}<i class="bi bi-caret-down-fill"></i> {% endif %} </a> </th> <th>عملیات</th> </tr> </thead> <tbody> {% for tag in tags %} <tr onclick="window.location='#'"> <td onclick="event.stopPropagation()"> <input type="checkbox" class="form-check-input tag-checkbox" value="{{ tag.pk }}" onchange="updateBulkActions()"> </td> <td> <strong class="text-primary">{{ tag.tag_number }}</strong> {% if tag.criticality == 'HIGH' %} <span class="badge bg-danger ms-1" title="اهمیت بالا">!</span> {% endif %} </td> <td> <div>{{ tag.description|truncatechars:60 }}</div> <small class="text-muted">{{ tag.get_discipline_display }}</small> </td> <td> <span class="badge bg-light text-dark"> {{ tag.get_equipment_type_display }} </span> </td> <td> <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning text-dark {% elif tag.status == 'PREC' %}bg-purple {% endif %}"> {{ tag.get_status_display }} </span> </td> <td>{{ tag.area.code|default:"-" }}</td> <td> {% if tag.parent_tag %} <span class="hierarchy-badge" title="والد: {{ tag.parent_tag.tag_number }}"> <i class="bi bi-arrow-return-right"></i> {{ tag.parent_tag.tag_number }} </span> {% endif %} {% if tag.child_count > 0 %} <span class="hierarchy-badge ms-1" title="{{ tag.child_count }} فرزند"> <i class="bi bi-diagram-3"></i> {{ tag.child_count }} </span> {% endif %} </td> <td> {% if tag.document_count > 0 %} <span class="badge bg-light text-dark"> <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }} </span> {% else %} <span class="text-muted">-</span> {% endif %} </td> <td> <div class="status-change-info"> <div class="d-flex align-items-center"> <span class="status-dot {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning {% elif tag.status == 'PREC' %}bg-purple {% else %}bg-secondary{% endif %} me-1"> </span> <div> <div class="small">{{ tag.get_status_display }}</div> <div class="status-date"> {% if tag.installation_date and tag.status == 'INST' %} نصب‌شده: {{ tag.installation_date|date:"M d, Y" }} {% else %} {{ tag.updated_at|date:"M d, Y" }} {% endif %} </div> <div class="status-date text-muted"> <small> {% with days_since=tag.updated_at|timesince %} {% if 'day' in days_since and tag.status not in 'HNDO,COMM,CLSD' %} {% if tag.updated_at|date:"U" < now|date:"U"|add:"-604800" %} <span class="text-danger overdue-badge"> <i class="bi bi-exclamation-triangle"></i> </span> {% endif %} {% endif %} {{ days_since }} پیش {% endwith %} </small> </div> </div> </div> </div> </td> <td onclick="event.stopPropagation()"> <div class="btn-group btn-group-sm"> <a href="{% url 'core:equipment-tag-detail' tag.id %}" class="btn btn-outline-primary" title="مشاهده"> <i class="bi bi-eye"></i> </a> <a href="#" class="btn btn-outline-secondary" title="ویرایش"> <i class="bi bi-pencil"></i> </a> <button type="button" class="btn btn-outline-info" title="عملیات سریع" data-bs-toggle="dropdown"> <i class="bi bi-three-dots-vertical"></i> </button> <ul class="dropdown-menu dropdown-menu-end"> <li> <a class="dropdown-item" href="#"> <i class="bi bi-check-circle"></i> بررسی نصب </a> </li> <li> <a class="dropdown-item" href="#"> <i class="bi bi-flag"></i> ثبت مورد اصلاحی </a> </li> <li> <a class="dropdown-item" href="#"> <i class="bi bi-paperclip"></i> پیوند مدرک </a> </li> {% if tag.child_count > 0 %} <li><hr class="dropdown-divider"></li> <li> <a class="dropdown-item" href="?parent_tag={{ tag.pk }}"> <i class="bi bi-diagram-3"></i> مشاهده فرزندان </a> </li> {% endif %} </ul> </div> </td> </tr> {% endfor %} </tbody> </table> </div> </div> <!-- Card View -->
+                        <a href="?sort={% if request.GET.sort == 'tag_number' %}-{% endif %}tag_number{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> شماره برچسب {% if request.GET.sort == 'tag_number' %}<i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-tag_number' %}<i class="bi bi-caret-down-fill"></i> {% endif %} </a> </th> <th>توضیحات</th> <th>نوع</th> <th> <a href="?sort={% if request.GET.sort == 'status' %}-{% endif %}status{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> وضعیت </a> </th> <th>ناحیه</th> <th>سلسله‌مراتب</th> <th>مدارک</th> <th> <a href="?sort={% if request.GET.sort == 'updated_at' %}-{% endif %}updated_at{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> آخرین تغییر وضعیت {% if request.GET.sort == 'updated_at' %}<i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-updated_at' %}<i class="bi bi-caret-down-fill"></i> {% endif %} </a> </th> <th>عملیات</th> </tr> </thead> <tbody> {% for tag in tags %} <tr onclick="window.location='#'"> <td onclick="event.stopPropagation()"> <input type="checkbox" class="form-check-input tag-checkbox" value="{{ tag.pk }}" onchange="updateBulkActions()"> </td> <td> <strong class="text-primary">{{ tag.tag_number }}</strong> {% if tag.criticality == 'HIGH' %} <span class="badge bg-danger ms-1" title="اهمیت بالا">!</span> {% endif %} </td> <td> <div>{{ tag.description|truncatechars:60 }}</div> <small class="text-muted">{{ tag.get_discipline_display }}</small> </td> <td> <span class="badge bg-light text-dark"> {{ tag.get_equipment_type_display }} </span> </td> <td> <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning text-dark {% elif tag.status == 'PREC' %}bg-purple {% endif %}"> {{ tag.get_status_display }} </span> </td> <td>{{ tag.area.code|default:"-" }}</td> <td> {% if tag.parent_tag %} <span class="hierarchy-badge" title="والد: {{ tag.parent_tag.tag_number }}"> <i class="bi bi-arrow-return-right"></i> {{ tag.parent_tag.tag_number }} </span> {% endif %} {% if tag.child_count > 0 %} <span class="hierarchy-badge ms-1" title="{{ tag.child_count }} فرزند"> <i class="bi bi-diagram-3"></i> {{ tag.child_count }} </span> {% endif %} </td> <td> {% if tag.document_count > 0 %} <span class="badge bg-light text-dark"> <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }} </span> {% else %} <span class="text-muted">-</span> {% endif %} </td> <td> <div class="status-change-info"> <div class="d-flex align-items-center"> <span class="status-dot {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning {% elif tag.status == 'PREC' %}bg-purple {% else %}bg-secondary{% endif %} me-1"> </span> <div> <div class="small">{{ tag.get_status_display }}</div> <div class="status-date"> {% if tag.installation_date and tag.status == 'INST' %} نصب‌شده: {{ tag.installation_date|date:"M d, Y" }} {% else %} {{ tag.updated_at|date:"M d, Y" }} {% endif %} </div> <div class="status-date text-muted"> <small> {% with days_since=tag.updated_at|timesince %} {% if 'day' in days_since and tag.status not in 'HNDO,COMM,CLSD' %} {% if tag.updated_at|date:"U" < now|date:"U"|add:"-604800" %} <span class="text-danger overdue-badge"> <i class="bi bi-exclamation-triangle"></i> </span> {% endif %} {% endif %} {{ days_since }} پیش {% endwith %} </small> </div> </div> </div> </div> </td> <td onclick="event.stopPropagation()"> <div class="btn-group btn-group-sm">
+                <a href="{% url 'core:equipment-tag-detail' tag.id %}" class="btn btn-outline-primary" title="مشاهده">
+                    <i class="bi bi-eye"></i>
+                </a>
+                <a href="#" class="btn btn-outline-secondary" title="ویرایش">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <button type="button" class="btn btn-outline-info" title="عملیات سریع" data-bs-toggle="dropdown">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'construction:installed_item_check_create' %}?tag={{ tag.pk }}">
+                            <i class="bi bi-check-circle"></i> بررسی نصب
+                        </a>
+                    </li>
+                    <li>
+                    <a class="dropdown-item" href="{% url 'documents:tag_document_create' %}?tag={{ tag.pk }}">
+                    <i class="bi bi-paperclip"></i> پیوند مدرک </a>
+                </li>
+                    {% if tag.child_count > 0 %} <li>
+                    <hr class="dropdown-divider"></li> <li>
+                    <a class="dropdown-item" href="?parent_tag={{ tag.pk }}">
+                        <i class="bi bi-diagram-3"></i> مشاهده فرزندان </a>
+                </li> {% endif %} </ul>
+            </div>
+            </td>
+            </tr> {% endfor %} </tbody>
+            </table>
+        </div>
+    </div> <!-- Card View -->
     {% else %}
 
-    <div class="row g-3"> {% for tag in tags %} <div class="col-xl-4 col-md-6"> <div class="card tag-card status-{{ tag.status|lower }} h-100"> <div class="card-body"> <div class="d-flex justify-content-between align-items-start mb-2"> <div class="d-flex align-items-center"> <div class="type-icon bg-primary bg-opacity-10 text-primary me-2"> <i class="bi bi-{% if tag.equipment_type == 'PUMP' %}water{% elif tag.equipment_type == 'MOTOR' %}lightning-charge{% elif tag.equipment_type == 'CRUSH' %}hammer{% elif tag.equipment_type == 'CONV' %}arrow-right-circle{% elif tag.equipment_type == 'TANK' %}droplet{% elif tag.equipment_type == 'INST' %}speedometer2{% else %}gear{% endif %}"></i> </div> <div> <h6 class="mb-0"> <a href="#" class="text-decoration-none stretched-link"> {{ tag.tag_number }} </a> </h6> <small class="text-muted">{{ tag.get_equipment_type_display }}</small> </div> </div> <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'DEF' %}bg-danger {% else %}bg-secondary {% endif %}"> {{ tag.get_status_display }} </span> </div> <p class="card-text small text-muted mb-2"> {{ tag.description|truncatechars:80 }} </p> <div class="row small mb-2"> <div class="col-6"> <span class="text-muted">ناحیه:</span> <strong>{{ tag.area.code|default:"-" }}</strong> </div> <div class="col-6"> <span class="text-muted">رشته:</span> <strong>{{ tag.get_discipline_display }}</strong> </div> </div>
+    <div class="row g-3">
+        {% for tag in tags %}
+        <div class="col-xl-4 col-md-6">
+            <div class="card tag-card status-{{ tag.status|lower }} h-100">
+                <div class="card-body"> <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="type-icon bg-primary bg-opacity-10 text-primary me-2">
+                            <i class="bi bi-{% if tag.equipment_type == 'PUMP' %}water{% elif tag.equipment_type == 'MOTOR' %}lightning-charge{% elif tag.equipment_type == 'CRUSH' %}hammer{% elif tag.equipment_type == 'CONV' %}arrow-right-circle{% elif tag.equipment_type == 'TANK' %}droplet{% elif tag.equipment_type == 'INST' %}speedometer2{% else %}gear{% endif %}">
+
+                            </i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0"> <a href="{% url 'core:equipment-tag-detail' tag.pk %}" class="text-decoration-none stretched-link"> {{ tag.tag_number }} </a>
+                            </h6>
+                            <small class="text-muted">{{ tag.get_equipment_type_display }}</small>
+                        </div>
+                    </div>
+                    <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'DEF' %}bg-danger {% else %}bg-secondary {% endif %}"> {{ tag.get_status_display }} </span> </div> <p class="card-text small text-muted mb-2"> {{ tag.description|truncatechars:80 }} </p> <div class="row small mb-2"> <div class="col-6"> <span class="text-muted">ناحیه:</span> <strong>{{ tag.area.code|default:"-" }}</strong> </div> <div class="col-6"> <span class="text-muted">رشته:</span> <strong>{{ tag.get_discipline_display }}</strong> </div> </div>
         {% if tag.manufacturer %}
 
-        <div class="small text-muted mb-2"> <i class="bi bi-building"></i> {{ tag.manufacturer }} {% if tag.model_number %}- {{ tag.model_number }}{% endif %} </div> {% endif %}
+        <div class="small text-muted mb-2">
+            <i class="bi bi-building"></i>
+            {{ tag.manufacturer }} {% if tag.model_number %}- {{ tag.model_number }}{% endif %}
+        </div>
+                    {% endif %}
         {% if tag.parent_tag or tag.child_count > 0 %}
 
-        <div class="mb-2"> {% if tag.parent_tag %} <span class="hierarchy-badge"> <i class="bi bi-arrow-return-right"></i> {{ tag.parent_tag.tag_number }} </span> {% endif %} {% if tag.child_count > 0 %} <span class="hierarchy-badge ms-1"> <i class="bi bi-diagram-3"></i> {{ tag.child_count }} فرزند </span> {% endif %} </div> {% endif %} <!-- Last Status Change in Card View --> <div class="mt-2 pt-2 border-top"> <div class="d-flex align-items-center small"> <span class="status-dot {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'DEF' %}bg-danger {% else %}bg-secondary{% endif %} me-1"> </span> <span class="text-muted"> وضعیت به‌روزرسانی شده {{ tag.updated_at|timesince }} پیش </span> </div> </div> </div> <div class="card-footer bg-transparent border-top"> <div class="d-flex justify-content-between align-items-center"> <small class="text-muted"> {% if tag.document_count > 0 %} <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }} مدرک {% endif %} {% if tag.open_punch_count > 0 %} <span class="text-danger ms-2"> <i class="bi bi-exclamation-triangle"></i> {{ tag.open_punch_count }} باز </span> {% endif %} </small> <small class="text-muted"> {{ tag.updated_at|timesince }} پیش </small> </div> </div> </div> </div> {% endfor %} </div> {% endif %} <!-- Pagination -->
+        <div class="mb-2">
+            {% if tag.parent_tag %}
+            <span class="hierarchy-badge">
+                <i class="bi bi-arrow-return-right"></i>
+                {{ tag.parent_tag.tag_number }} </span>
+            {% endif %}
+            {% if tag.child_count > 0 %}
+            <span class="hierarchy-badge ms-1">
+                <i class="bi bi-diagram-3">
+
+            </i> {{ tag.child_count }} فرزند </span> {% endif %}
+        </div>
+                    {% endif %} <!-- Last Status Change in Card View -->
+                    <div class="mt-2 pt-2 border-top">
+                        <div class="d-flex align-items-center small">
+                        <span class="status-dot {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'DEF' %}bg-danger {% else %}bg-secondary{% endif %} me-1"> </span> <span class="text-muted"> وضعیت به‌روزرسانی شده {{ tag.updated_at|timesince }} پیش </span> </div> </div> </div>
+                <div class="card-footer bg-transparent border-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted"> {% if tag.document_count > 0 %}
+                            <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }} مدرک {% endif %}
+                            {% if tag.open_punch_count > 0 %} <span class="text-danger ms-2">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                {{ tag.open_punch_count }} باز </span>
+                            {% endif %} </small>
+                        <small class="text-muted">
+                            {{ tag.updated_at|timesince }} پیش </small> </div>
+                </div> </div>
+        </div>
+        {% endfor %} </div>
+        {% endif %} <!-- Pagination -->
     {% if is_paginated %}
 
-    <div class="d-flex justify-content-between align-items-center mt-4"> <div class="pagination-info"> صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }} </div> <nav aria-label="صفحه‌بندی برچسب‌های تجهیزات"> <ul class="pagination mb-0"> {% if page_obj.has_previous %} <li class="page-item"> <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"> <i class="bi bi-chevron-double-left"></i> </a> </li> <li class="page-item"> <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"> <i class="bi bi-chevron-left"></i> </a> </li> {% endif %}
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="pagination-info">
+            صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }} </div>
+        <nav aria-label="صفحه‌بندی برچسب‌های تجهیزات">
+            <ul class="pagination mb-0"> {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a> </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-left"></i> </a> </li>
+                {% endif %}
         {% for num in page_obj.paginator.page_range %}
         {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
 
-        <li class="page-item {% if page_obj.number == num %}active{% endif %}"> <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"> {{ num }} </a> </li> {% endif %} {% endfor %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                {{ num }}
+            </a>
+        </li> {% endif %}
+        {% endfor %}
         {% if page_obj.has_next %}
 
-        <li class="page-item"> <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"> <i class="bi bi-chevron-right"></i> </a> </li> <li class="page-item"> <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"> <i class="bi bi-chevron-double-right"></i> </a> </li> {% endif %} </ul> </nav> </div> {% endif %}
+        <li class="page-item"> <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+            <i class="bi bi-chevron-right"></i>
+        </a> </li> <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="bi bi-chevron-double-right"></i> </a>
+                </li> {% endif %} </ul> </nav>
+    </div>
+        {% endif %}
     {% else %}
 
-    <!-- Empty State --> <div class="card"> <div class="card-body"> <div class="empty-state"> <i class="bi bi-tags"></i> <h3 class="mt-3">هیچ برچسب تجهیزاتی یافت نشد</h3> <p class="text-muted"> {% if request.GET %} هیچ برچسب تجهیزاتی با معیارهای جستجوی شما مطابقت ندارد. فیلترها را تنظیم کنید. {% else %} با ایجاد اولین برچسب تجهیزات شروع به ردیابی دارایی‌ها در پروژه خود کنید. {% endif %} </p> <div class="mt-3"> {% if request.GET %} <a href="#" class="btn btn-outline-secondary me-2"> <i class="bi bi-x-circle"></i> پاک کردن فیلترها </a> {% endif %} <a href="#" class="btn btn-primary"> <i class="bi bi-plus-lg"></i> ایجاد اولین برچسب </a> </div> </div> </div> </div> {% endif %} </div> </div> </div><!-- Export Modal --><div class="modal fade" id="exportModal" tabindex="-1"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <h5 class="modal-title">خروجی برچسب‌های تجهیزات</h5> <button type="button" class="btn-close" data-bs-dismiss="modal"></button> </div> <div class="modal-body"> <p>قالب خروجی را انتخاب کنید:</p> <div class="d-grid gap-2"> <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=csv" class="btn btn-outline-primary"> <i class="bi bi-filetype-csv"></i> خروجی به صورت CSV </a> <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=excel" class="btn btn-outline-success"> <i class="bi bi-filetype-xlsx"></i> خروجی به صورت Excel </a> <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=pdf" class="btn btn-outline-danger"> <i class="bi bi-filetype-pdf"></i> خروجی به صورت PDF </a> </div> </div> </div> </div> </div> {% endblock %}
+    <!-- Empty State -->
+        <div class="card">
+            <div class="card-body">
+                <div class="empty-state">
+                    <i class="bi bi-tags"></i>
+                    <h3 class="mt-3">هیچ برچسب تجهیزاتی یافت نشد</h3>
+                    <p class="text-muted"> {% if request.GET %} هیچ برچسب تجهیزاتی با معیارهای جستجوی شما مطابقت ندارد. فیلترها را تنظیم کنید. {% else %} با ایجاد اولین برچسب تجهیزات شروع به ردیابی دارایی‌ها در پروژه خود کنید. {% endif %} </p>
+                    <div class="mt-3">
+                        {% if request.GET %}
+                        <a href="#" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-x-circle"></i> پاک کردن فیلترها </a>
+                        {% endif %}
+                        <a href="#" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> ایجاد اولین برچسب </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    </div>
+</div>
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">خروجی برچسب‌های تجهیزات</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div> <div class="modal-body">
+            <p>قالب خروجی را انتخاب کنید:</p>
+            <div class="d-grid gap-2">
+                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=csv" class="btn btn-outline-primary">
+                    <i class="bi bi-filetype-csv">
+
+                    </i> خروجی به صورت CSV
+                </a>
+                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=excel" class="btn btn-outline-success">
+                    <i class="bi bi-filetype-xlsx"></i> خروجی به صورت Excel
+                </a>
+                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=pdf" class="btn btn-outline-danger">
+                    <i class="bi bi-filetype-pdf">
+
+                    </i>
+                    خروجی به صورت PDF </a>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 {% block extra_js %}
 
 <script> // View toggle
