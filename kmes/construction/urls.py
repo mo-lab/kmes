@@ -4,7 +4,8 @@ from .views import (WorkPackageCreateView, WorkPackageListView, DailyProgressRep
                     work_package_item_bulk_add_view, work_package_item_toggle_complete_view, ajax_search_available_tags, DailyProgressReportListView,
                     daily_report_approve_view, daily_report_approval_status_view, daily_report_unapprove_view, daily_report_bulk_approve_view,
                     DailyProgressReportListView2, DailyProcessReportEmployeeList, ManageDailyTimesheetsView, DailyProgressReportDetailView,
-                    InstalledItemCheckCreateView)
+                    InstalledItemCheckCreateView, WorkPackageAnalyticsView, WorkPackageRequirementsCreateView, toggle_requirement_completed,
+                    WorkPackageTree)
 
 app_name = 'construction'
 
@@ -19,6 +20,9 @@ urlpatterns = [
 		path('work-packages/', WorkPackageListView.as_view(), name='work_package_list'),
 		path('work-packages/<int:pk>/', WorkPackageDetailView.as_view(), name='work_package_detail'),
 		path('work-packages/create/', WorkPackageCreateView.as_view(), name='work_package_create'),
+		path('work-packages/analytics/',
+		     WorkPackageAnalyticsView.as_view(),
+		     name='work_package_analytics'),
 		path('daily-proccess/create/', DailyProgressReportCreateView.as_view(), name='daily_report_create'),
 		path('daily-report-timesheet/create/', DailyProcessReportEmployeeList.as_view(), name='daily_report_employees'),
 		path('daily-proccess/', DailyProgressReportListView.as_view(), name='daily_report_list'),
@@ -65,4 +69,13 @@ urlpatterns = [
 			ajax_search_available_tags,
 			name='ajax_search_available_tags'
 			),
+		path('work-packages/<int:wp_pk>/requirements/add/',
+		     WorkPackageRequirementsCreateView.as_view(),
+		     name='work_package_requirement_create'),
+		path('work-packages/requirements/<int:req_pk>/toggle/',
+		     toggle_requirement_completed,
+		     name='toggle_requirement_completed'),
+		path('work-packages/tree/',
+		     WorkPackageTree.as_view(),
+		     name='work-package_tree'),
 		]

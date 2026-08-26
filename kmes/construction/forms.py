@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from .models import (
 	WorkPackage, WorkPackageItem, DailyProgressReport,
-	InstalledItemCheck, InstallationCheckPhoto, DailyProcessReportEmployees
+	InstalledItemCheck, InstallationCheckPhoto, DailyProcessReportEmployees, WorkPackageRequirements
 	)
 from core.models import EquipmentTag,Project,Area,System
 
@@ -256,7 +256,15 @@ class WorkPackageSearchForm(forms.Form):
 							}
 					)
 			)
-	
+	company = forms.CharField(
+			required=False,
+			widget=forms.Select(
+					attrs={
+							'class':    'form-select form-select-sm',
+							'onchange': 'this.form.submit()'
+							}
+					)
+			)
 	status = forms.ChoiceField(
 			choices=[('', 'All Statuses')] + list(WorkPackage.Status.choices),
 			required=False,
@@ -723,3 +731,13 @@ class DailyProgressReportForm2(forms.ModelForm):
 		if date and date > timezone.now().date():
 			self.add_error('report_date', 'Report date cannot be in the future.')
 		return cleaned_data
+
+class WorkPackageRequirementsForm(forms.ModelForm):
+	class Meta:
+		model = WorkPackageRequirements
+		fields = ['name', 'description', 'priority']
+		widgets = {
+				'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'عنوان نیازمندی'}),
+				'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'توضیح کوتاه'}),
+				'priority': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'value': '1'}),
+				}

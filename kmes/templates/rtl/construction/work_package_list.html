@@ -150,17 +150,34 @@
                 </ol>
             </nav>
         </div>
+
         <div class="d-flex gap-2">
-            <div class="view-toggle btn-group" role="group">
-                <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=table"
-                   class="btn btn-outline-secondary btn-sm {% if view_mode == 'table' %}active{% endif %}">
-                    <i class="bi bi-list-ul"></i>
-                </a>
-                <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=card"
-                   class="btn btn-outline-secondary btn-sm {% if view_mode == 'card' %}active{% endif %}">
-                    <i class="bi bi-grid-3x3-gap"></i>
-                </a>
+            <!-- Export Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-download"></i> خروجی
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=excel">
+                            <i class="bi bi-filetype-xlsx text-success"></i> Excel (XLSX)
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=csv">
+                            <i class="bi bi-filetype-csv text-primary"></i> CSV
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                <span class="dropdown-item-text small text-muted">
+                    <i class="bi bi-info-circle"></i> فیلترهای فعلی اعمال می‌شود
+                </span>
+                    </li>
+                </ul>
             </div>
+
+            <!-- Existing buttons -->
             <a href="{% url 'construction:work_package_create' %}" class="btn btn-primary">
                 <i class="bi bi-plus-lg"></i> ایجاد بسته کاری
             </a>
@@ -168,44 +185,66 @@
     </div>
 
     <!-- Statistics Banner -->
-    <div class="stats-banner">
+    <div class="stats-banner" style="        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;">
         <div class="row">
             <div class="col">
-                <div class="stat-item">
-                    <div class="stat-value">{{ total_work_packages }}</div>
-                    <div class="stat-label">کل</div>
+                <div class="stat-item" style="text-align: center;
+        padding: 0.5rem;
+        border-right: 1px solid rgba(255,255,255,0.2);">
+                    <div class="stat-value" style="        font-size: 1.75rem;
+        font-weight: 700;">{{ total_work_packages }}</div>
+                    <div class="stat-label" style="        font-size: 0.75rem;
+        opacity: 0.9;
+        text-transform: uppercase;">کل</div>
                 </div>
             </div>
             <div class="col">
-                <div class="stat-item">
-                    <div class="stat-value">{{ active_work_packages }}</div>
+                <div class="stat-item" style="text-align: center;padding: 0.5rem;border-right: 1px solid rgba(255,255,255,0.2);">
+                    <div class="stat-value"style="        font-size: 1.75rem;
+        font-weight: 700;">{{ active_work_packages }}</div>
                     <div class="stat-label">در حال انجام</div>
                 </div>
             </div>
             <div class="col">
-                <div class="stat-item">
-                    <div class="stat-value">{{ completed_work_packages }}</div>
+                <div class="stat-item" style=" text-align: center;
+        padding: 0.5rem;
+        border-right: 1px solid rgba(255,255,255,0.2);">
+                    <div class="stat-value" style="        font-size: 1.75rem;
+        font-weight: 700;">{{ completed_work_packages }}</div>
                     <div class="stat-label">تکمیل شده</div>
                 </div>
             </div>
             <div class="col">
-                <div class="stat-item">
+                <div class="stat-item" style="        text-align: center;
+        padding: 0.5rem;
+        border-right: 1px solid rgba(255,255,255,0.2);">
                     <div class="stat-value">{{ not_started_work_packages }}</div>
                     <div class="stat-label">شروع نشده</div>
                 </div>
             </div>
             <div class="col">
-                <div class="stat-item">
-                    <div class="stat-value text-warning">{{ overdue_count }}</div>
-                    <div class="stat-label">تاریخ گذشته</div>
+                <div class="stat-item" style="        text-align: center;
+        padding: 0.5rem;
+        border-right: 1px solid rgba(255,255,255,0.2);">
+                    <div class="stat-value" style="        font-size: 1.75rem;
+        font-weight: 700;">{{ grand_total_weight_kg|floatformat:0 }}</div>
+                    <div class="stat-label">وزن کل</div>
                 </div>
             </div>
             <div class="col">
-                <div class="stat-item">
-                    <div class="stat-value">{{ avg_progress|floatformat:0 }}%</div>
-                    <div class="stat-label">میانگین پیشرفت</div>
+                <div class="stat-item" style="        text-align: center;
+        padding: 0.5rem;
+        border-right: 1px solid rgba(255,255,255,0.2);">
+                    <div class="stat-value" style="        font-size: 1.75rem;
+        font-weight: 700;">{{ grand_total_completed_weight_kg|floatformat:0 }}</div>
+                    <div class="stat-label">وزن کل انجام شده</div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -243,6 +282,18 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <!-- Company -->
+                    <div class="mb-3">
+                        <label class="form-label small">شرکت</label>
+                        <select name="company" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">همه شرکت ها</option>
+                            {% for company in companies %}
+                            <option value="{{ company.pk }}" {% if request.GET.company == company.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ company.title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
                     <!-- Status -->
                     <div class="mb-3">
@@ -270,13 +321,6 @@
                         </select>
                     </div>
 
-                    <!-- Contractor -->
-                    <div class="mb-3">
-                        <label class="form-label small">پیمانکار</label>
-                        <input type="text" name="contractor" class="form-control form-control-sm"
-                               placeholder="فیلتر بر اساس پیمانکار..."
-                               value="{{ request.GET.contractor|default:'' }}">
-                    </div>
 
                     <!-- Date Range -->
                     <div class="mb-3">
@@ -366,20 +410,21 @@
                         <tr>
                             <th>کد</th>
                             <th>نام</th>
+                            <th>توضیحات</th>
                             <th>منطقه</th>
                             <th>وضعیت</th>
-                            <th>اولویت</th>
                             <th>پیشرفت</th>
                             <th>آیتم‌ها</th>
                             <th>برنامه‌زمانی</th>
                             <th>پیمانکار</th>
+                            <th>سوپروایزر</th>
+                            <th>وزن کل (کیلوگرم)</th>
                             <th>عملیات</th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for wp in work_packages %}
-                        <tr onclick="window.location='{% url 'dashboard' %}'"
-                            class="{% if wp.planned_finish < now.date and wp.status not in 'COMP,HOLD' %}table-danger{% endif %}">
+                        <tr class="{% if wp.planned_finish < now.date and wp.status not in 'COMP,HOLD' %}table-danger{% endif %}">
                             <td>
                                 <strong class="text-primary">{{ wp.code }}</strong>
                                 {% if wp.planned_finish < now.date and wp.status not in 'COMP,HOLD' %}
@@ -390,10 +435,16 @@
                             </td>
                             <td>
                                 <div>{{ wp.name|truncatechars:60 }}</div>
+
+                            </td>
+                            <td>
                                 {% if wp.description %}
                                 <small class="text-muted">{{ wp.description|truncatechars:50 }}</small>
+                                {% else %}
+                                <p>--</p>
                                 {% endif %}
                             </td>
+
                             <td>
                                 {% if wp.area %}
                                 <span class="badge bg-light text-dark">{{ wp.area.code }}</span>
@@ -412,11 +463,7 @@
                                         {{ wp.get_status_display }}
                                     </span>
                             </td>
-                            <td>
-                                <div class="priority-indicator priority-{{ wp.priority }}">
-                                    {{ wp.priority }}
-                                </div>
-                            </td>
+
                             <td style="min-width: 120px;">
                                 <div class="d-flex align-items-center">
                                     <div class="progress flex-grow-1 progress-thin">
@@ -460,13 +507,28 @@
                                 </div>
                             </td>
                             <td>
-                                {% if wp.contractor %}
-                                <small>{{ wp.contractor|truncatechars:20 }}</small>
+                                {% if wp.contractor_company %}
+                                <small>{{ wp.contractor_company.title|truncatechars:20 }}</small>
                                 {% else %}
                                 <span class="text-muted">-</span>
                                 {% endif %}
+                            </td>
+                            <td>
+
                                 {% if wp.supervisor %}
                                 <br><small class="text-muted">{{ wp.supervisor.get_full_name|truncatechars:15 }}</small>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if wp.total_weight_kg %}
+                                <span class="badge bg-info">
+                                    <i class="bi bi-box-seam"></i> {{ wp.total_weight_kg|floatformat:0 }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
                                 {% endif %}
                             </td>
                             <td onclick="event.stopPropagation()">

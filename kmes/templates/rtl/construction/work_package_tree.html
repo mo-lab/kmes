@@ -1,0 +1,45 @@
+{% extends 'rtl/base.html' %}
+{% load static %}
+
+{% block title %}یسته های کاری{% endblock %}
+
+{% block content %}
+{% regroup work_packages by level as level_groups %}
+
+{% for group in level_groups %}
+<div class="row" style="margin-top: 0.9rem;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);border-radius: 15px;padding: 5px;" data-level="{{ group.grouper }}">
+    <h3>اولویت شماره {{ group.grouper }}</h3>
+    {% for wp in group.list %}
+    <div class="col-xl-4 col-md-6">
+            <div class="card tag-card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <a href="{% url 'construction:work_package_detail' wp.pk %}">
+                        <strong style="color: whitesmoke;">{{ wp.name }}</strong>
+
+                    </a>
+
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"></p>
+                    {% for item in work_package_items %}
+                    {% if item.work_package == wp %}
+                    <div class="row g-3" style="margin-top: 0.2rem;" data-level="{{ group.grouper }}">
+                        <a href="{% url 'core:equipment-tag-detail' item.equipment_tag.pk %}">
+                    <small class="text-muted">{{ item.sequence_number }}:</small>
+                    <small class="text-muted">{{ item.equipment_tag }}</small>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+
+                </div>
+        </div>
+           <!-- or any other field -->
+    </div>
+    {% endfor %}
+</div>
+{% empty %}
+<p>No items found.</p>
+{% endfor %}
+
+{% endblock %}

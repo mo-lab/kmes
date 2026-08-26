@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Timeline - Work Packages{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline-container {
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        overflow-x: auto;
+    }
+
+    .timeline-grid {
+        min-width: 800px;
+        position: relative;
+    }
+
+    .timeline-header {
+        display: flex;
+        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .timeline-header-cell {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .timeline-rows {
+        position: relative;
+    }
+
+    .timeline-row {
+        display: flex;
+        align-items: center;
+        height: 60px;
+        border-bottom: 1px solid #f0f0f0;
+        position: relative;
+        margin-bottom: 4px;
+    }
+
+    .timeline-row-info {
+        width: 200px;
+        min-width: 200px;
+        padding-right: 10px;
+        font-size: 0.85rem;
+    }
+
+    .timeline-row-bar {
+        flex: 1;
+        position: relative;
+        height: 30px;
+    }
+
+    .timeline-bar {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 20px;
+        border-radius: 4px;
+        min-width: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .timeline-bar:hover {
+        height: 26px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .timeline-bar .progress-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        border-radius: 4px;
+        background: rgba(255,255,255,0.5);
+    }
+
+    .timeline-bar.completed {
+        background: #198754;
+    }
+    .timeline-bar.in-progress {
+        background: #ffc107;
+    }
+    .timeline-bar.on-hold {
+        background: #dc3545;
+    }
+    .timeline-bar.mobilizing {
+        background: #0dcaf0;
+    }
+    .timeline-bar.not-started {
+        background: #6c757d;
+    }
+
+    .timeline-bar-label {
+        position: absolute;
+        top: -18px;
+        left: 0;
+        font-size: 0.7rem;
+        white-space: nowrap;
+    }
+
+    .timeline-day-grid {
+        position: absolute;
+        top: 0;
+        left: 200px;
+        right: 0;
+        height: 100%;
+        pointer-events: none;
+        display: flex;
+    }
+
+    .timeline-day-line {
+        flex: 1;
+        border-left: 1px dotted #e9ecef;
+    }
+
+    .timeline-day-line:last-child {
+        border-right: 1px dotted #e9ecef;
+    }
+
+    .timeline-legend {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.8rem;
+    }
+
+    .legend-color {
+        width: 15px;
+        height: 15px;
+        border-radius: 3px;
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+        .timeline-row-info {
+            width: 120px;
+            min-width: 120px;
+            font-size: 0.7rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4">
+        <i class="bi bi-calendar-range me-2"></i>Timeline بسته‌های کاری
+    </h2>
+
+    <!-- Filter Bar -->
+    <form method="get" class="filter-bar" style="        display: flex;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;">
+        <div>
+            <label class="form-label small">پروژه</label>
+            <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">همه پروژه‌ها</option>
+                {% for project in projects %}
+                <option value="{{ project.pk }}" {% if selected_project == project.pk|stringformat:"s" %}selected{% endif %}>
+                {{ project.code }} - {{ project.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label small">نمایش</label>
+            <span class="badge bg-light text-dark">{{ total_work_packages }} بسته کاری</span>
+        </div>
+    </form>
+
+    <div class="timeline-container" style="        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        overflow-x: auto;">
+        <div class="timeline-grid" style="min-width: 800px;position: relative;">
+            <!-- Header -->
+            <div class="timeline-header">
+                <div style="width: 200px; min-width: 200px;"></div>
+                <div style="flex:1; position:relative;">
+                    <div class="d-flex">
+                        {% if header_type == 'day' %}
+                        {% for day in day_headers %}
+                        <div class="timeline-header-cell" style="flex: 1;">
+                            {% if forloop.first or day.day == 1 %}
+                            {{ day|date:"M d" }}
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        {% for month in month_headers %}
+                        <div class="timeline-header-cell" style="flex: 1;">
+                            {{ month|date:"M Y" }}
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rows -->
+            <div class="timeline-rows" style="position: relative;">
+                {% for item in work_packages_data %}
+                <div class="timeline-row" style="display: flex;
+        align-items: center;
+        height: 60px;
+        border-bottom: 1px solid #f0f0f0;
+        position: relative;
+        margin-bottom: 4px;">
+                    <div class="timeline-row-info" style="width: 200px;min-width: 200px;padding-right: 10px;font-size: 0.85rem;">
+                        <a href="{% url 'construction:work_package_detail' item.wp.pk %}" class="text-decoration-none">
+                            <strong>{{ item.wp.code }}</strong>
+                        </a>
+                        <br>
+                        <small class="text-muted">{{ item.wp.name|truncatechars:30 }}</small>
+                    </div>
+                    <div class="timeline-row-bar" style="     flex: 1;
+        position: relative;
+        height: 30px;">
+                        <!-- Day grid lines -->
+                        <div class="timeline-day-grid" style="position: absolute;top: 0;left: 200px;right: 0;height: 100%;pointer-events: none;
+        display: flex;">
+                            {% for i in "x"|rjust:item.duration_days %}
+                            <div class="timeline-day-line" style="flex: 1;border-left: 1px dotted #e9ecef;"></div>
+                            {% endfor %}
+                        </div>
+                        <!-- Bar -->
+                        <div class="timeline-bar {{ item.status_class }}"
+                             style="left: {{ item.left_percent }}%; width: {{ item.width_percent }}%;        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 20px;
+        border-radius: 4px;
+        min-width: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+background: #198754;"
+                             title="{{ item.wp.code }} - {{ item.wp.name }} ({{ item.start|date:'Y-m-d' }} تا {{ item.finish|date:'Y-m-d' }})">
+                            <div class="progress-fill" style="width: {{ item.progress_percent }}%;position: absolute;top: 0;
+        left: 0;
+        height: 100%;
+        border-radius: 4px;
+        background: rgba(240,120,120,0.5);"></div>
+                            <span class="timeline-bar-label" style="        position: absolute;
+        top: -18px;
+        left: 0;
+        font-size: 0.7rem;
+        white-space: nowrap;">
+                                {{ item.wp.percent_complete }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-calendar-x" style="font-size: 3rem;"></i>
+                    <p class="mt-2">بسته کاری برای نمایش وجود ندارد.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="timeline-legend"style="display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;">
+            <span class="legend-item" style="        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.8rem;"><span class="legend-color" style="background:#198754;        width: 15px;
+        height: 15px;
+        border-radius: 3px;"></span> تکمیل شده</span>
+            <span class="legend-item"style="        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.8rem;"><span class="legend-color" style="background:#ffc107;        width: 15px;
+        height: 15px;
+        border-radius: 3px;"></span> در حال اجرا</span>
+            <span class="legend-item"style="        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.8rem;"><span class="legend-color" style="background:#dc3545;        width: 15px;
+        height: 15px;
+        border-radius: 3px;"></span> متوقف</span>
+            <span class="legend-item"style="        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.8rem;"><span class="legend-color" style="background:#0dcaf0;        width: 15px;
+        height: 15px;
+        border-radius: 3px;"></span> در حال تجهیز</span>
+            <span class="legend-item"style="        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.8rem;"><span class="legend-color" style="background:#6c757d;        width: 15px;
+        height: 15px;
+        border-radius: 3px;"></span> شروع نشده</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

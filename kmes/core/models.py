@@ -402,6 +402,7 @@ class EquipmentTag(models.Model):
 		FILTER = 'FILT', 'Filter'
 		COMPRESSOR = 'COMP', 'Compressor'
 		CRANE = 'CR', 'Crane'
+		SCREW_WASHER_NUT = 'SCNW', 'Screw Nut Washer'
 		OTHER = 'OTHR', 'Other'
 	
 	class Discipline(models.TextChoices):
@@ -427,7 +428,7 @@ class EquipmentTag(models.Model):
 		COMMISSIONED = 'COMM', 'Commissioned'
 		HANDED_OVER = 'HNDO', 'Handed Over'
 		DEFECT = 'DEF', 'Defective'
-	
+	installation_order=models.IntegerField(default=0,blank=True,null=True)
 	project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='equipment_tags')
 	area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True, related_name='equipment_tags')
 	system = models.ForeignKey(System, on_delete=models.SET_NULL, null=True, blank=True, related_name='equipment_tags')
@@ -448,7 +449,7 @@ class EquipmentTag(models.Model):
 	status = models.CharField(max_length=4, choices=Status.choices, default=Status.ENGINEERING)
 	
 	installation_date = models.DateField(null=True, blank=True)
-	weight_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+	weight_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,default=0)
 	dimensions = models.CharField(
 			max_length=200, blank=True,
 			help_text="LxWxH in mm, e.g., '3000x2000x1500'"

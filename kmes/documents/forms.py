@@ -204,8 +204,9 @@ class TagDocumentForm(forms.ModelForm):
 						'class': 'form-select',
 						'required': 'required'
 						}),
-				'relation_type': forms.Select(attrs={
-						'class': 'form-select'
+				'relation_type': forms.TextInput(attrs={
+						'class': 'form-control',
+						'placeholder': 'e.g., \'references\',defines, specifies'
 						}),
 				}
 	

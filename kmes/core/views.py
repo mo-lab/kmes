@@ -1586,7 +1586,7 @@ class EquipmentLocationCreateView(LoginRequiredMixin, generic.CreateView):
 	template_name = 'rtl/core/equipment_location_form.html'
 	
 	def get_success_url(self):
-		return self.object.equipment_tag.get_absolute_url()
+		return reverse('core:equipment-tag-list')
 	
 	def get_form_kwargs(self):
 		kwargs = super().get_form_kwargs()
@@ -1614,23 +1614,6 @@ class EquipmentLocationCreateView(LoginRequiredMixin, generic.CreateView):
 		return super().form_valid(form)
 
 
-class EquipmentLocationDetailView(LoginRequiredMixin, generic.DetailView):
-	"""View location details with images."""
-	model = EquipmentLocation
-	template_name = 'rtl/core/equipment_location_detail.html'
-	context_object_name = 'location'
-	
-	def get_queryset(self):
-		return EquipmentLocation.objects.select_related(
-				'equipment_tag', 'area', 'recorded_by', 'verified_by'
-				).prefetch_related('images')
-	
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['image_form'] = EquipmentLocationImageForm()
-		context['google_maps_url'] = self.object.google_maps_url
-		context['openstreetmap_url'] = self.object.openstreetmap_url
-		return context
 
 
 @login_required
@@ -2253,7 +2236,178 @@ def crusher_ga(request):
 	"""Verify a location."""
 	
 	return render(request, 'rtl/drawings/crusher_ga.html')
+
 def dust_bonnet(request):
 	"""Verify a location."""
 	
 	return render(request, 'rtl/drawings/dust_bonnet.html')
+
+
+class EquipmentLocationDetailView(LoginRequiredMixin, generic.DetailView):
+	model = EquipmentLocation
+	template_name = 'rtl/core/equipment_location_detail.html'
+	context_object_name = 'location'
+	
+	def get_queryset(self):
+		return EquipmentLocation.objects.select_related(
+				'equipment_tag', 'area', 'recorded_by', 'verified_by'
+				).prefetch_related('images')
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		location = self.get_object()
+		
+		# Image upload form
+		context['image_form'] = EquipmentLocationImageForm()
+		
+		# Map URLs
+		context['google_maps_url'] = location.google_maps_url
+		context['openstreetmap_url'] = location.openstreetmap_url
+		
+		# Primary image
+		primary_image = location.images.filter(is_primary=True).first()
+		if not primary_image and location.images.exists():
+			primary_image = location.images.first()
+		context['primary_image'] = primary_image
+		
+		# Gallery images (excluding primary if we want to highlight it separately)
+		context['gallery_images'] = location.images.exclude(pk=primary_image.pk) if primary_image else []
+		
+		# Location history – other locations for the same equipment
+		context['location_history'] = EquipmentLocation.objects.filter(
+				equipment_tag=location.equipment_tag
+				).exclude(pk=location.pk).order_by('-arrival_date')
+		
+		return context
+
+
+# Optional: View for uploading an image to a location (AJAX or simple form)
+def upload_location_image(request, pk):
+	location = get_object_or_404(EquipmentLocation, pk=pk)
+	if request.method == 'POST':
+		form = EquipmentLocationImageForm(request.POST, request.FILES)
+		if form.is_valid():
+			image = form.save(commit=False)
+			image.location = location
+			image.uploaded_by = request.user
+			image.save()
+			messages.success(request, 'تصویر با موفقیت بارگذاری شد.')
+		else:
+			messages.error(request, 'خطا در بارگذاری تصویر.')
+	return redirect('core:equipment_location_detail', pk=pk)
+
+
+
+	
+class WorkPackageTimelineView(LoginRequiredMixin, generic.TemplateView):
+	template_name = 'rtl/construction/work_package_timeline.html'
+	
+	def get_queryset(self):
+		queryset = WorkPackage.objects.select_related(
+				'project', 'area', 'supervisor'
+				).prefetch_related('items__equipment_tag')
+		
+		# Filter by project if provided
+		project_id = self.request.GET.get('project')
+		if project_id:
+			queryset = queryset.filter(project_id=project_id)
+		return queryset.order_by('planned_start', 'code')
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		queryset = self.get_queryset()
+		
+		# Determine date range
+		dates = []
+		for wp in queryset:
+			if wp.planned_start:
+				dates.append(wp.planned_start)
+			if wp.planned_finish:
+				dates.append(wp.planned_finish)
+			if wp.actual_start:
+				dates.append(wp.actual_start)
+			if wp.actual_finish:
+				dates.append(wp.actual_finish)
+		
+		if dates:
+			min_date = min(dates)
+			max_date = max(dates)
+			# Add padding
+			min_date = min_date - timedelta(days=3)
+			max_date = max_date + timedelta(days=3)
+		else:
+			min_date = timezone.now().date()
+			max_date = min_date + timedelta(days=30)
+		
+		# Generate day headers (maybe compress by weeks for long ranges)
+		total_days = (max_date - min_date).days + 1
+		if total_days > 90:
+			# Use month headers
+			context['header_type'] = 'month'
+			# Generate list of month starts
+			months = []
+			current = min_date.replace(day=1)
+			while current <= max_date:
+				months.append(current)
+				# next month
+				if current.month == 12:
+					current = current.replace(year=current.year+1, month=1)
+				else:
+					current = current.replace(month=current.month+1)
+			context['month_headers'] = months
+			context['total_days'] = total_days
+			context['min_date'] = min_date
+			context['max_date'] = max_date
+		else:
+			context['header_type'] = 'day'
+			context['total_days'] = total_days
+			context['min_date'] = min_date
+			context['max_date'] = max_date
+			# Generate list of day dates for header (maybe skip weekends)
+			day_headers = []
+			for i in range(total_days):
+				day = min_date + timedelta(days=i)
+				day_headers.append(day)
+			context['day_headers'] = day_headers
+		
+		# Prepare work packages with calculated positions and durations
+		work_packages_data = []
+		for wp in queryset:
+			# Use planned dates if available, else fallback
+			start = wp.planned_start or wp.actual_start or min_date
+			finish = wp.planned_finish or wp.actual_finish or (start + timedelta(days=1))
+			# Ensure start <= finish
+			if finish < start:
+				finish = start
+			duration_days = (finish - start).days + 1
+			# Calculate percentage offsets
+			total_span = (max_date - min_date).days + 1
+			left_percent = ((start - min_date).days / total_span) * 100
+			width_percent = (duration_days / total_span) * 100
+			
+			work_packages_data.append({
+					'wp': wp,
+					'start': start,
+					'finish': finish,
+					'duration_days': duration_days,
+					'left_percent': left_percent,
+					'width_percent': width_percent,
+					'progress_percent': wp.percent_complete,
+					'status_class': self._get_status_class(wp.status),
+					})
+		
+		context['work_packages_data'] = work_packages_data
+		context['total_work_packages'] = len(work_packages_data)
+		context['projects'] = Project.objects.all()
+		context['selected_project'] = self.request.GET.get('project')
+		return context
+	
+	def _get_status_class(self, status):
+		"""Return CSS class based on status."""
+		return {
+				'COMP': 'completed',
+				'IPRO': 'in-progress',
+				'HOLD': 'on-hold',
+				'MOB': 'mobilizing',
+				'NSTA': 'not-started',
+				}.get(status, 'not-started')

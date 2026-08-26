@@ -83,11 +83,11 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
-            <li class="breadcrumb-item"><a href="#">برچسب‌های تجهیزات</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'core:equipment-tag-list' %}">برچسب‌های تجهیزات</a></li>
             {% if equipment_tag %}
             <li class="breadcrumb-item">
-                <a href="#">{{ equipment_tag.tag_number }}</a>
+                <a href="{% url 'core:equipment-tag-detail' equipment_tag.pk %}">{{ equipment_tag.tag_number }}</a>
             </li>
             {% endif %}
             <li class="breadcrumb-item active">ثبت موقعیت</li>
@@ -124,11 +124,25 @@
                         <h5 class="mb-0">
                             <i class="bi bi-geo-alt me-2"></i>موقعیت GPS
                         </h5>
-                        <button type="button" class="btn btn-primary gps-button" id="getLocationBtn" onclick="getCurrentLocation()">
-                            <i class="bi bi-crosshair"></i> دریافت موقعیت من
-                        </button>
+
                     </div>
 
+                    <!-- Hidden GPS Fields -->
+                    {{ form.equipment_tag }}
+                    {{ form.latitude }}
+                    {{ form.longitude }}
+                    {{ form.accuracy }}
+
+
+                    {% if form.latitude.errors %}
+                    <div class="invalid-feedback d-block">{{ form.latitude.errors.0 }}</div>
+                    {% endif %}
+                    {% if form.longitude.errors %}
+                    <div class="invalid-feedback d-block">{{ form.longitude.errors.0 }}</div>
+                    {% endif %}
+                    {% if form.accuracy.errors %}
+                    <div class="invalid-feedback d-block">{{ form.accuracy.errors.0 }}</div>
+                    {% endif %}
                     <!-- GPS Status -->
                     <div id="gpsStatus" class="gps-status d-none"></div>
 
@@ -137,36 +151,8 @@
                         <div id="map"></div>
                     </div>
 
-                    <!-- Coordinates Display -->
-                    <div class="coordinates-display mb-3">
-                        <div class="row text-center">
-                            <div class="col-md-5">
-                                <small class="text-muted">عرض جغرافیایی</small>
-                                <div class="coord-value" id="displayLat">--</div>
-                            </div>
-                            <div class="col-md-5">
-                                <small class="text-muted">طول جغرافیایی</small>
-                                <div class="coord-value" id="displayLng">--</div>
-                            </div>
-                            <div class="col-md-2">
-                                <small class="text-muted">دقت</small>
-                                <div id="displayAccuracy">--</div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Hidden GPS Fields -->
-                    {{ form.equipment_tag }}
-                    <input type="hidden" name="latitude" id="id_latitude" value="{{ form.latitude.value|default:'' }}">
-                    <input type="hidden" name="longitude" id="id_longitude" value="{{ form.longitude.value|default:'' }}">
-                    <input type="hidden" name="accuracy" id="id_accuracy" value="{{ form.accuracy.value|default:'' }}">
 
-                    {% if form.latitude.errors %}
-                    <div class="invalid-feedback d-block">{{ form.latitude.errors.0 }}</div>
-                    {% endif %}
-                    {% if form.longitude.errors %}
-                    <div class="invalid-feedback d-block">{{ form.longitude.errors.0 }}</div>
-                    {% endif %}
                 </div>
 
                 <!-- Location Details -->

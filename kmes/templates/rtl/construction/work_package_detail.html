@@ -337,8 +337,9 @@
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tools">
-            <i class="bi bi-tools"></i> ابزارها
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#requirements">
+            <i class="bi bi-list-check"></i> نیازمندی‌ها
+            <span class="badge bg-primary ms-1">{{ requirements.count }}</span>
           </button>
         </li>
       </ul>
@@ -767,6 +768,7 @@
                 </th>
                 <th width="60">#</th>
                 <th>شماره برچسب</th>
+                <th>اولویت نصب</th>
                 <th>توضیحات</th>
                 <th>نوع</th>
                 <th>منطقه</th>
@@ -805,6 +807,8 @@
                      title="{{ item.notes }}"></i>
                   {% endif %}
                 </td>
+                <td>{{ item.equipment_tag.installation_order }}</td>
+
                 <td>
                   <div class="small">{{ item.equipment_tag.description|truncatechars:60 }}</div>
                   {% if item.equipment_tag.manufacturer %}
@@ -903,7 +907,7 @@
                       <li><hr class="dropdown-divider"></li>
                       <li>
                         <a class="dropdown-item small text-danger"
-                           href="{% url 'construction:work_package_item_delete' item.pk %}">
+                           href="#">
                           <i class="bi bi-trash"></i> حذف از بسته کاری
                         </a>
                       </li>
@@ -1389,6 +1393,61 @@
           {% endif %}
         </div>
 
+        <!-- requirements Tab -->
+        <div class="tab-pane fade" id="requirements">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">نیازمندی‌های بسته کاری</h5>
+            <a href="{% url 'construction:work_package_requirement_create' wp_pk=work_package.pk %}" class="btn btn-primary btn-sm">
+              <i class="bi bi-plus-lg"></i> افزودن نیازمندی
+            </a>
+          </div>
+
+          {% if requirements %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+              <tr>
+                <th>اولویت</th>
+                <th>عنوان</th>
+                <th>توضیحات</th>
+                <th>وضعیت</th>
+                <th>تکمیل شده</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for req in requirements %}
+              <tr>
+                <td><span class="badge bg-{% if req.priority == 1 %}danger{% elif req.priority == 2 %}warning{% else %}secondary{% endif %}">{{ req.priority }}</span></td>
+                <td><strong>{{ req.name }}</strong></td>
+                <td>{{ req.description|default:"-" }}</td>
+                <td>
+                  {% if req.is_completed %}
+                  <span class="badge bg-success">تکمیل شده</span>
+                  {% else %}
+                  <span class="badge bg-warning text-dark">در انتظار</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input requirement-toggle" type="checkbox"
+                           data-requirement-id="{{ req.pk }}"
+                           {% if req.is_completed %}checked{% endif %}
+                           onchange="toggleRequirement(this)">
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-list-check" style="font-size: 3rem;"></i>
+            <p class="mt-2">نیازمندی ثبت نشده است.</p>
+          </div>
+          {% endif %}
+        </div>
+
       </div>
     </div>
   </div>
@@ -1398,6 +1457,37 @@
 
 {% block extra_js %}
 <script>
+  function toggleRequirement(switchEl) {
+    const reqId = switchEl.dataset.requirementId;
+    const isChecked = switchEl.checked;
+
+    fetch(`/construction/work-packages/requirements/${reqId}/toggle/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json',
+      },
+    })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                // Update the status badge dynamically
+                const row = switchEl.closest('tr');
+                const statusCell = row.querySelector('td:nth-child(4)');
+                if (data.is_completed) {
+                  statusCell.innerHTML = '<span class="badge bg-success">تکمیل شده</span>';
+                } else {
+                  statusCell.innerHTML = '<span class="badge bg-warning text-dark">در انتظار</span>';
+                }
+                // Optional: show a toast
+                showToast(data.is_completed ? 'نیازمندی تکمیل شد' : 'نیازمندی باز شد', 'success');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              switchEl.checked = !switchEl.checked; // revert on error
+            });
+  }
   // Preserve active tab on page reload
   document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('#wpTabs button[data-bs-toggle="pill"]');

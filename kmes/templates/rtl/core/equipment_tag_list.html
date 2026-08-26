@@ -28,7 +28,9 @@
         <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=table" class="btn btn-outline-secondary btn-sm {% if view_mode == 'table' %}active{% endif %}">
             <i class="bi bi-list-ul"></i> </a>
         <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=card" class="btn btn-outline-secondary btn-sm {% if view_mode == 'card' %}active{% endif %}"> <i class="bi bi-grid-3x3-gap"></i> </a>
-    </div> <a href="#" class="btn btn-primary"> <i class="bi bi-plus-lg"></i> برچسب جدید </a> {% if tags %} <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exportModal"> <i class="bi bi-download"></i> خروجی </button> {% endif %} </div> </div> <!-- Quick Statistics --> <div class="quick-stats"> <div class="row"> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ total_count }}</div> <div class="stat-label">کل برچسب‌ها</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ installed_count }}</div> <div class="stat-label">نصب‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ delivered_count }}</div> <div class="stat-label">تحویل‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ commissioned_count }}</div> <div class="stat-label">راه‌اندازی‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ defective_count }}</div> <div class="stat-label">معیوب</div> </div> </div> </div> </div> <div class="row"> <!-- Filter Sidebar --> <div class="col-lg-3 mb-4"> <div class="filter-sidebar"> <h5 class="mb-3"> <i class="bi bi-funnel"></i> فیلترها </h5> <form method="get" id="filterForm"> <!-- Project --> <div class="mb-3"> <label class="form-label small">پروژه</label> <select name="project" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه پروژه‌ها</option> {% for proj in projects %} <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}> {{ proj.code }} - {{ proj.name }} </option> {% endfor %} </select> </div>
+    </div> <a href="#" class="btn btn-primary"> <i class="bi bi-plus-lg"></i> برچسب جدید </a>
+        {% if tags %}
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exportModal"> <i class="bi bi-download"></i> خروجی </button> {% endif %} </div> </div> <!-- Quick Statistics --> <div class="quick-stats"> <div class="row"> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ total_count }}</div> <div class="stat-label">کل برچسب‌ها</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ installed_count }}</div> <div class="stat-label">نصب‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ delivered_count }}</div> <div class="stat-label">تحویل‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ commissioned_count }}</div> <div class="stat-label">راه‌اندازی‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ defective_count }}</div> <div class="stat-label">معیوب</div> </div> </div> </div> </div> <div class="row"> <!-- Filter Sidebar --> <div class="col-lg-3 mb-4"> <div class="filter-sidebar"> <h5 class="mb-3"> <i class="bi bi-funnel"></i> فیلترها </h5> <form method="get" id="filterForm"> <!-- Project --> <div class="mb-3"> <label class="form-label small">پروژه</label> <select name="project" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه پروژه‌ها</option> {% for proj in projects %} <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}> {{ proj.code }} - {{ proj.name }} </option> {% endfor %} </select> </div>
         <!-- Area -->
         <div class="mb-3">
             <label class="form-label small">ناحیه</label>
@@ -44,7 +46,26 @@
         <div class="mb-3"> <label class="form-label small">نوع تجهیزات</label>
             <select name="equipment_type" class="form-select form-select-sm" onchange="this.form.submit()">
                 <option value="">همه انواع</option>
-                {% for value, label in filter_form.fields.equipment_type.choices %} {% if value %} <option value="{{ value }}" {% if request.GET.equipment_type == value %}selected{% endif %}> {{ label }} </option> {% endif %} {% endfor %} </select> </div> <!-- Status --> <div class="mb-3"> <label class="form-label small">وضعیت</label> <select name="status" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه وضعیت‌ها</option> {% for value, label in filter_form.fields.status.choices %} {% if value %} <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}> {{ label }} </option> {% endif %} {% endfor %} </select> </div> <!-- Discipline --> <div class="mb-3"> <label class="form-label small">رشته</label> <select name="discipline" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه رشته‌ها</option> {% for value, label in filter_form.fields.discipline.choices %} {% if value %} <option value="{{ value }}" {% if request.GET.discipline == value %}selected{% endif %}> {{ label }} </option> {% endif %} {% endfor %} </select> </div> <!-- Criticality --> <div class="mb-3"> <label class="form-label small">اهمیت</label> <select name="criticality" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه سطوح</option> {% for value, label in filter_form.fields.criticality.choices %} {% if value %} <option value="{{ value }}" {% if request.GET.criticality == value %}selected{% endif %}> {{ label }} </option> {% endif %} {% endfor %} </select> </div> <!-- Search --> <div class="mb-3"> <label class="form-label small">جستجو</label> <div class="input-group input-group-sm"> <span class="input-group-text"><i class="bi bi-search"></i></span> <input type="text" name="search" class="form-control" placeholder="شماره برچسب، توضیحات..." value="{{ request.GET.search|default:'' }}"> </div> </div> <!-- Parent Tag Only --> <div class="mb-3"> <div class="form-check form-switch"> <input class="form-check-input" type="checkbox" name="parent_tag_only" value="true" id="parentTagOnly" {% if request.GET.parent_tag_only == 'true' %}checked{% endif %} onchange="this.form.submit()"> <label class="form-check-label small" for="parentTagOnly"> فقط برچسب‌های سطح بالا </label> </div> </div> <div class="d-grid gap-2"> <button type="submit" class="btn btn-primary btn-sm"> <i class="bi bi-search"></i> اعمال فیلترها </button> {% if request.GET %} <a href="#" class="btn btn-outline-secondary btn-sm"> <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها </a> {% endif %} </div> </form> </div> </div> <!-- Main Content --> <div class="col-lg-9"> <!-- Bulk Actions Bar --> <div class="bulk-actions-bar" id="bulkActionsBar"> <span id="selectedCount">۰ برچسب انتخاب شده</span> <div> <button type="button" class="btn btn-warning btn-sm" onclick="bulkUpdateStatus()"> <i class="bi bi-pencil"></i> به‌روزرسانی وضعیت </button> <button type="button" class="btn btn-info btn-sm" onclick="bulkExport()"> <i class="bi bi-download"></i> خروجی انتخاب‌شده‌ها </button> <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()"> پاک کردن انتخاب </button> </div> </div> <!-- Results Info --> <div class="d-flex justify-content-between align-items-center mb-3"> <div class="pagination-info"> {% if is_paginated %} نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} برچسب {% else %} {{ tags.count }} برچسب یافت شد {% endif %} </div> <div> <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)"> <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>۲۰ در هر صفحه</option> <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>۵۰ در هر صفحه</option> <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option> </select> </div> </div>
+                {% for value, label in filter_form.fields.equipment_type.choices %} {% if value %}
+                <option value="{{ value }}" {% if request.GET.equipment_type == value %}
+                        selected
+                        {% endif %}>
+                    {{ label }}
+                </option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div> <!-- Status -->
+        <div class="mb-3"> <label class="form-label small">وضعیت</label>
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه وضعیت‌ها</option>
+                {% for value, label in filter_form.fields.status.choices %}
+                {% if value %}
+                <option value="{{ value }}"
+                        {% if request.GET.status == value %}
+                        selected
+                        {% endif %}>
+                    {{ label }} </option> {% endif %} {% endfor %} </select> </div>
+        <!-- Discipline --> <div class="mb-3"> <label class="form-label small">رشته</label> <select name="discipline" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه رشته‌ها</option> {% for value, label in filter_form.fields.discipline.choices %} {% if value %} <option value="{{ value }}" {% if request.GET.discipline == value %}selected{% endif %}> {{ label }} </option> {% endif %} {% endfor %} </select> </div> <!-- Criticality --> <div class="mb-3"> <label class="form-label small">اهمیت</label> <select name="criticality" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه سطوح</option> {% for value, label in filter_form.fields.criticality.choices %} {% if value %} <option value="{{ value }}" {% if request.GET.criticality == value %}selected{% endif %}> {{ label }} </option> {% endif %} {% endfor %} </select> </div> <!-- Search --> <div class="mb-3"> <label class="form-label small">جستجو</label> <div class="input-group input-group-sm"> <span class="input-group-text"><i class="bi bi-search"></i></span> <input type="text" name="search" class="form-control" placeholder="شماره برچسب، توضیحات..." value="{{ request.GET.search|default:'' }}"> </div> </div> <!-- Parent Tag Only --> <div class="mb-3"> <div class="form-check form-switch"> <input class="form-check-input" type="checkbox" name="parent_tag_only" value="true" id="parentTagOnly" {% if request.GET.parent_tag_only == 'true' %}checked{% endif %} onchange="this.form.submit()"> <label class="form-check-label small" for="parentTagOnly"> فقط برچسب‌های سطح بالا </label> </div> </div> <div class="d-grid gap-2"> <button type="submit" class="btn btn-primary btn-sm"> <i class="bi bi-search"></i> اعمال فیلترها </button> {% if request.GET %} <a href="#" class="btn btn-outline-secondary btn-sm"> <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها </a> {% endif %} </div> </form> </div> </div> <!-- Main Content --> <div class="col-lg-9"> <!-- Bulk Actions Bar --> <div class="bulk-actions-bar" id="bulkActionsBar"> <span id="selectedCount">۰ برچسب انتخاب شده</span> <div> <button type="button" class="btn btn-warning btn-sm" onclick="bulkUpdateStatus()"> <i class="bi bi-pencil"></i> به‌روزرسانی وضعیت </button> <button type="button" class="btn btn-info btn-sm" onclick="bulkExport()"> <i class="bi bi-download"></i> خروجی انتخاب‌شده‌ها </button> <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()"> پاک کردن انتخاب </button> </div> </div> <!-- Results Info --> <div class="d-flex justify-content-between align-items-center mb-3"> <div class="pagination-info"> {% if is_paginated %} نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} برچسب {% else %} {{ tags.count }} برچسب یافت شد {% endif %} </div> <div> <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)"> <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>۲۰ در هر صفحه</option> <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>۵۰ در هر صفحه</option> <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option> </select> </div> </div>
     {% if tags %}
 
     <!-- Table View -->
@@ -58,7 +79,77 @@
                     <th width="40">
                     <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll(this)"> </th>
                     <th>
-                        <a href="?sort={% if request.GET.sort == 'tag_number' %}-{% endif %}tag_number{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> شماره برچسب {% if request.GET.sort == 'tag_number' %}<i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-tag_number' %}<i class="bi bi-caret-down-fill"></i> {% endif %} </a> </th> <th>توضیحات</th> <th>نوع</th> <th> <a href="?sort={% if request.GET.sort == 'status' %}-{% endif %}status{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> وضعیت </a> </th> <th>ناحیه</th> <th>سلسله‌مراتب</th> <th>مدارک</th> <th> <a href="?sort={% if request.GET.sort == 'updated_at' %}-{% endif %}updated_at{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> آخرین تغییر وضعیت {% if request.GET.sort == 'updated_at' %}<i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-updated_at' %}<i class="bi bi-caret-down-fill"></i> {% endif %} </a> </th> <th>عملیات</th> </tr> </thead> <tbody> {% for tag in tags %} <tr onclick="window.location='#'"> <td onclick="event.stopPropagation()"> <input type="checkbox" class="form-check-input tag-checkbox" value="{{ tag.pk }}" onchange="updateBulkActions()"> </td> <td> <strong class="text-primary">{{ tag.tag_number }}</strong> {% if tag.criticality == 'HIGH' %} <span class="badge bg-danger ms-1" title="اهمیت بالا">!</span> {% endif %} </td> <td> <div>{{ tag.description|truncatechars:60 }}</div> <small class="text-muted">{{ tag.get_discipline_display }}</small> </td> <td> <span class="badge bg-light text-dark"> {{ tag.get_equipment_type_display }} </span> </td> <td> <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning text-dark {% elif tag.status == 'PREC' %}bg-purple {% endif %}"> {{ tag.get_status_display }} </span> </td> <td>{{ tag.area.code|default:"-" }}</td> <td> {% if tag.parent_tag %} <span class="hierarchy-badge" title="والد: {{ tag.parent_tag.tag_number }}"> <i class="bi bi-arrow-return-right"></i> {{ tag.parent_tag.tag_number }} </span> {% endif %} {% if tag.child_count > 0 %} <span class="hierarchy-badge ms-1" title="{{ tag.child_count }} فرزند"> <i class="bi bi-diagram-3"></i> {{ tag.child_count }} </span> {% endif %} </td> <td> {% if tag.document_count > 0 %} <span class="badge bg-light text-dark"> <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }} </span> {% else %} <span class="text-muted">-</span> {% endif %} </td> <td> <div class="status-change-info"> <div class="d-flex align-items-center"> <span class="status-dot {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning {% elif tag.status == 'PREC' %}bg-purple {% else %}bg-secondary{% endif %} me-1"> </span> <div> <div class="small">{{ tag.get_status_display }}</div> <div class="status-date"> {% if tag.installation_date and tag.status == 'INST' %} نصب‌شده: {{ tag.installation_date|date:"M d, Y" }} {% else %} {{ tag.updated_at|date:"M d, Y" }} {% endif %} </div> <div class="status-date text-muted"> <small> {% with days_since=tag.updated_at|timesince %} {% if 'day' in days_since and tag.status not in 'HNDO,COMM,CLSD' %} {% if tag.updated_at|date:"U" < now|date:"U"|add:"-604800" %} <span class="text-danger overdue-badge"> <i class="bi bi-exclamation-triangle"></i> </span> {% endif %} {% endif %} {{ days_since }} پیش {% endwith %} </small> </div> </div> </div> </div> </td> <td onclick="event.stopPropagation()"> <div class="btn-group btn-group-sm">
+                        <a href="?sort={% if request.GET.sort == 'tag_number' %}-{% endif %}tag_number{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> شماره برچسب {% if request.GET.sort == 'tag_number' %}<i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-tag_number' %}
+                            <i class="bi bi-caret-down-fill"></i> {% endif %} </a>
+                    </th>
+                    <th>توضیحات</th>
+                    <th>نوع</th>
+                    <th>
+                    <a href="?sort={% if request.GET.sort == 'status' %}-{% endif %}status{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> وضعیت
+                    </a>
+                    </th>
+                    <th>ناحیه</th>
+                    <th>سلسله‌مراتب</th>
+                    <th>مدارک</th>
+
+
+                    <th>
+                        <a href="?sort={% if request.GET.sort == 'updated_at' %}-{% endif %}updated_at{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> آخرین تغییر وضعیت {% if request.GET.sort == 'updated_at' %}
+                            <i class="bi bi-caret-up-fill"></i>
+                            {% elif request.GET.sort == '-updated_at' %}
+                            <i class="bi bi-caret-down-fill"></i>
+                            {% endif %} </a>
+                    </th> <th>عملیات</th> </tr>
+                </thead>
+                <tbody> {% for tag in tags %} <tr>
+                    <td onclick="event.stopPropagation()">
+                        <input type="checkbox" class="form-check-input tag-checkbox" value="{{ tag.pk }}" onchange="updateBulkActions()">
+                    </td> <td>
+                    <strong class="text-primary">{{ tag.tag_number }}</strong>
+                    {% if tag.criticality == 'HIGH' %}
+                    <span class="badge bg-danger ms-1" title="اهمیت بالا">!</span>
+                    {% endif %} </td>
+                    <td>
+                        <div>{{ tag.description|truncatechars:60 }}</div>
+                        <small class="text-muted">{{ tag.get_discipline_display }}</small>
+                    </td> <td>
+                    <span class="badge bg-light text-dark"> {{ tag.get_equipment_type_display }} </span>
+                </td> <td>
+                    <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning text-dark {% elif tag.status == 'PREC' %}bg-purple {% endif %}">
+                        {{ tag.get_status_display }}
+                    </span>
+                </td>
+                    <td>{{ tag.area.code|default:"-" }}</td>
+                    <td>
+                        {% if tag.parent_tag %}
+                        <span class="hierarchy-badge" title="والد: {{ tag.parent_tag.tag_number }}">
+                            <i class="bi bi-arrow-return-right"></i>
+                            {{ tag.parent_tag.tag_number }} </span>
+                        {% endif %} {% if tag.child_count > 0 %}
+                        <span class="hierarchy-badge ms-1" title="{{ tag.child_count }} فرزند"> <i class="bi bi-diagram-3"></i>
+                            {{ tag.child_count }} </span> {% endif %} </td> <td> {% if tag.document_count > 0 %}
+                    <span class="badge bg-light text-dark"> <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }} </span>
+                    {% else %} <span class="text-muted">-</span> {% endif %} </td>
+                    <td> <div class="status-change-info">
+                    <div class="d-flex align-items-center">
+                        <span class="status-dot {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning {% elif tag.status == 'PREC' %}bg-purple {% else %}bg-secondary{% endif %} me-1">
+                        </span> <div> <div class="small">{{ tag.get_status_display }}</div>
+                        <div class="status-date">
+                            {% if tag.installation_date and tag.status == 'INST' %} نصب‌شده : {{ tag.installation_date|date:"M d, Y" }}
+                            {% else %} {{ tag.updated_at|date:"M d, Y" }}
+                            {% endif %}
+                        </div>
+                        <div class="status-date text-muted">
+                            <small>
+                                {% with days_since=tag.updated_at|timesince %} {% if 'day' in days_since and tag.status not in 'HNDO,COMM,CLSD' %}
+                                {% if tag.updated_at|date:"U" < now|date:"U"|add:"-604800" %}
+                                <span class="text-danger overdue-badge">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </span> {% endif %} {% endif %} {{ days_since }} پیش {% endwith %}
+                            </small>
+                        </div>
+                    </div> </div> </div> </td>
+                    <td onclick="event.stopPropagation()"> <div class="btn-group btn-group-sm">
                 <a href="{% url 'core:equipment-tag-detail' tag.id %}" class="btn btn-outline-primary" title="مشاهده">
                     <i class="bi bi-eye"></i>
                 </a>
@@ -108,7 +199,11 @@
                             <small class="text-muted">{{ tag.get_equipment_type_display }}</small>
                         </div>
                     </div>
-                    <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'DEF' %}bg-danger {% else %}bg-secondary {% endif %}"> {{ tag.get_status_display }} </span> </div> <p class="card-text small text-muted mb-2"> {{ tag.description|truncatechars:80 }} </p> <div class="row small mb-2"> <div class="col-6"> <span class="text-muted">ناحیه:</span> <strong>{{ tag.area.code|default:"-" }}</strong> </div> <div class="col-6"> <span class="text-muted">رشته:</span> <strong>{{ tag.get_discipline_display }}</strong> </div> </div>
+                    <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'DEF' %}bg-danger {% else %}bg-secondary {% endif %}">
+                        {{ tag.get_status_display }} </span>
+                </div> <p class="card-text small text-muted mb-2"> {{ tag.description|truncatechars:80 }} </p>
+                    <div class="row small mb-2"> <div class="col-6"> <span class="text-muted">ناحیه:</span> <strong>{{ tag.area.code|default:"-" }}</strong>
+                </div> <div class="col-6"> <span class="text-muted">رشته:</span> <strong>{{ tag.get_discipline_display }}</strong> </div> </div>
         {% if tag.manufacturer %}
 
         <div class="small text-muted mb-2">
@@ -238,9 +333,37 @@
 {% block extra_js %}
 
 <script> // View toggle
- function updatePerPage(value) { const url = new URL(window.location.href); url.searchParams.set('per_page', value); url.searchParams.delete('page'); window.location.href = url.toString(); } // Bulk selection
-function toggleSelectAll(checkbox) { const checkboxes = document.querySelectorAll('.tag-checkbox'); checkboxes.forEach(cb => cb.checked = checkbox.checked); updateBulkActions(); } function updateBulkActions() { const selected = document.querySelectorAll('.tag-checkbox:checked'); const bar = document.getElementById('bulkActionsBar'); const count = document.getElementById('selectedCount'); if (selected.length > 0) { bar.classList.add('show'); count.textContent = `${selected.length} برچسب انتخاب شد`; } else { bar.classList.remove('show'); count.textContent = '۰ برچسب انتخاب شده'; } } function clearSelection() { document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false); document.getElementById('selectAll').checked = false; updateBulkActions(); } function bulkUpdateStatus() { const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value); if (selected.length > 0) { window.location.href = `#?tags=${selected.join(',')}`; } } function bulkExport() { const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value); if (selected.length > 0) { window.location.href = `?selected_tags=${selected.join(',')}&export=csv`; } } // Keyboard shortcuts
-document.addEventListener('keydown', function(e) { if (e.ctrlKey && e.key === 'a') { e.preventDefault(); document.getElementById('selectAll').click(); } });
+ function updatePerPage(value) {
+     const url = new URL(window.location.href);
+     url.searchParams.set('per_page', value);
+     url.searchParams.delete('page');
+     window.location.href = url.toString(); }
+// Bulk selection
+function toggleSelectAll(checkbox) {
+     const checkboxes = document.querySelectorAll('.tag-checkbox');
+     checkboxes.forEach(cb => cb.checked = checkbox.checked);
+     updateBulkActions(); }
+function updateBulkActions() {
+     const selected = document.querySelectorAll('.tag-checkbox:checked');
+     const bar = document.getElementById('bulkActionsBar');
+     const count = document.getElementById('selectedCount');
+     if (selected.length > 0)
+     { bar.classList.add('show'); count.textContent = `${selected.length} برچسب انتخاب شد`;
+     } else { bar.classList.remove('show');
+         count.textContent = '۰ برچسب انتخاب شده';
+     } }
+function clearSelection() {
+     document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+     document.getElementById('selectAll').checked = false; updateBulkActions();
+ } function bulkUpdateStatus() {
+     const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
+     if (selected.length > 0) { window.location.href = `#?tags=${selected.join(',')}`; } }
+function bulkExport() { const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
+     if (selected.length > 0) { window.location.href = `?selected_tags=${selected.join(',')}&export=csv`; } }
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'a') { e.preventDefault();
+    document.getElementById('selectAll').click(); } });
  // Initialize tooltips
 document.addEventListener('DOMContentLoaded', function() {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));

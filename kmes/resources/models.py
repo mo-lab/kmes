@@ -31,6 +31,7 @@ class Employee(models.Model):
 	last_name = models.CharField(max_length=100)
 	company = models.CharField(max_length=255, help_text="Contractor or employer name")
 	trade = models.CharField(max_length=5, choices=Trade.choices)
+	contractor=models.ForeignKey('Company', on_delete=models.SET_NULL, null=True)
 	
 	phone = models.CharField(max_length=50, blank=True)
 	email = models.EmailField(blank=True)

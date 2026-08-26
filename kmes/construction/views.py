@@ -12,8 +12,9 @@ from .models import WorkPackage, WorkPackageItem, DailyProgressReport, DailyProc
 from core.models import Project, Area, System, EquipmentTag
 from resources.models import Company
 from .forms import WorkPackageForm, WorkPackageItemForm, WorkPackageSearchForm, DailyProgressReportForm, WorkPackageProgressUpdateForm, \
-	WorkPackageItemBulkForm, DailyProccessReportEmployeeForm, DailyProgressReportForm2, PhotoFormSet, InstalledItemCheckForm
-from django.db.models import Q, Count, Case, When, Value, CharField, Sum, Avg
+	WorkPackageItemBulkForm, DailyProccessReportEmployeeForm, DailyProgressReportForm2, PhotoFormSet, InstalledItemCheckForm, \
+	WorkPackageRequirementsForm
+from django.db.models import Q, Count, Case, When, Value, CharField, Sum, Avg, DecimalField
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.views import generic
@@ -22,10 +23,14 @@ from django.db.models import Q, Count, Sum, Avg
 from django.utils import timezone
 from datetime import timedelta, date
 
-from .models import DailyProgressReport, WorkPackage
+from .models import DailyProgressReport, WorkPackage,WorkPackageRequirements
 from .forms import DailyReportSearchForm
 from resources.models import Employee,Timesheet
-
+import csv
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 class WorkPackageCreateView(LoginRequiredMixin, generic.CreateView):
 	"""Create a new work package with optional equipment tags."""
@@ -347,6 +352,13 @@ class WorkPackageListView( generic.ListView):
 	context_object_name = 'work_packages'
 	paginate_by = 20
 	
+	def get(self, request, *args, **kwargs):
+		# Check if export is requested
+		if request.GET.get('export') == 'excel':
+			return self.export_excel()
+		elif request.GET.get('export') == 'csv':
+			return self.export_csv()
+		return super().get(request, *args, **kwargs)
 	def get_queryset(self):
 		queryset = WorkPackage.objects.select_related(
 				'project', 'area', 'system', 'supervisor'
@@ -365,7 +377,8 @@ class WorkPackageListView( generic.ListView):
 								output_field=CharField(),
 								),
 						distinct=True
-						)
+						),
+						total_weight_kg=Sum('items__equipment_tag__weight_kg', distinct=True),
 				)
 		
 		# Apply filters
@@ -378,6 +391,10 @@ class WorkPackageListView( generic.ListView):
 			
 			if data.get('area'):
 				queryset = queryset.filter(area=data['area'])
+				
+			if data.get('company'):
+				print(data.get('company'))
+				queryset = queryset.filter(contractor_company=data['company'])
 			
 			if data.get('status'):
 				queryset = queryset.filter(status=data['status'])
@@ -453,7 +470,20 @@ class WorkPackageListView( generic.ListView):
 		context['completed_work_packages'] = base_queryset.filter(status='COMP').count()
 		context['not_started_work_packages'] = base_queryset.filter(status='NSTA').count()
 		context['on_hold_work_packages'] = base_queryset.filter(status='HOLD').count()
-		
+		filtered_work_packages = self.get_queryset()
+		context['grand_total_weight_kg'] = WorkPackageItem.objects.filter(
+				work_package__in=filtered_work_packages,
+				equipment_tag__weight_kg__isnull=False,
+				).aggregate(
+				total=Sum('equipment_tag__weight_kg')
+				)['total'] or 0
+		context['grand_total_completed_weight_kg'] = WorkPackageItem.objects.filter(
+				work_package__in=filtered_work_packages,
+				equipment_tag__weight_kg__isnull=False,
+				is_complete=True
+				).aggregate(
+				total=Sum('equipment_tag__weight_kg')
+				)['total'] or 0
 		# Overdue work packages
 		context['overdue_count'] = base_queryset.filter(
 				status__in=['IPRO', 'NSTA', 'MOB'],
@@ -478,6 +508,7 @@ class WorkPackageListView( generic.ListView):
 			context['areas'] = Area.objects.filter(project_id=project_id)
 		else:
 			context['areas'] = Area.objects.all()
+		context['companies'] = Company.objects.all()
 		
 		# Recent activity
 		context['recent_reports'] = DailyProgressReport.objects.filter(
@@ -486,6 +517,273 @@ class WorkPackageListView( generic.ListView):
 		
 		# Current time for calculations
 		context['now'] = timezone.now()
+		
+		return context
+	
+	def get_filtered_queryset(self):
+		"""Return the filtered queryset without pagination."""
+		return self.get_queryset()
+	
+	def export_excel(self):
+		"""Export filtered work packages to Excel."""
+		queryset = self.get_filtered_queryset()
+		
+		# Create workbook
+		wb = Workbook()
+		ws = wb.active
+		ws.title = 'Work Packages'
+		
+		# Define styles
+		header_font = Font(bold=True, color='FFFFFF', size=11)
+		header_fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
+		header_alignment = Alignment(horizontal='center', vertical='center')
+		data_alignment = Alignment(vertical='center')
+		border = Border(
+				left=Side(style='thin'),
+				right=Side(style='thin'),
+				top=Side(style='thin'),
+				bottom=Side(style='thin')
+				)
+		
+		# Headers
+		headers = [
+				'Code', 'Name', 'Project', 'Area', 'System', 'Status',
+				'Priority', 'Progress (%)', 'Total Items', 'Completed Items',
+				'Total Weight (kg)', 'Planned Start', 'Planned Finish',
+				'Actual Start', 'Actual Finish', 'Contractor', 'Supervisor'
+				]
+		
+		for col, header in enumerate(headers, 1):
+			cell = ws.cell(row=1, column=col, value=header)
+			cell.font = header_font
+			cell.fill = header_fill
+			cell.alignment = header_alignment
+			cell.border = border
+		
+		# Data rows
+		for row, wp in enumerate(queryset, 2):
+			data = [
+					wp.code,
+					wp.name,
+					wp.project.name if wp.project else '',
+					wp.area.code if wp.area else '',
+					wp.system.code if wp.system else '',
+					wp.get_status_display(),
+					wp.priority,
+					wp.percent_complete,
+					wp.item_count,
+					wp.completed_items,
+					wp.total_weight_kg or 0,
+					wp.planned_start.strftime('%Y-%m-%d') if wp.planned_start else '',
+					wp.planned_finish.strftime('%Y-%m-%d') if wp.planned_finish else '',
+					wp.actual_start.strftime('%Y-%m-%d') if wp.actual_start else '',
+					wp.actual_finish.strftime('%Y-%m-%d') if wp.actual_finish else '',
+					wp.contractor_company.title or '',
+					wp.supervisor.get_full_name() if wp.supervisor else '',
+					]
+			
+			for col, value in enumerate(data, 1):
+				cell = ws.cell(row=row, column=col, value=value)
+				cell.alignment = data_alignment
+				cell.border = border
+				
+				# Color coding for status
+				if col == 6:  # Status column
+					status_colors = {
+							'COMP': 'C6EFCE',
+							'IPRO': 'FFEB9C',
+							'HOLD': 'FFC7CE',
+							'MOB': 'BDD7EE',
+							'NSTA': 'D9D9D9',
+							}
+					if wp.status in status_colors:
+						cell.fill = PatternFill(
+								start_color=status_colors[wp.status],
+								end_color=status_colors[wp.status],
+								fill_type='solid'
+								)
+		
+		# Adjust column widths
+		column_widths = {
+				1: 20,   # Code
+				2: 40,   # Name
+				3: 25,   # Project
+				4: 15,   # Area
+				5: 15,   # System
+				6: 18,   # Status
+				7: 10,   # Priority
+				8: 15,   # Progress
+				9: 12,   # Total Items
+				10: 15,  # Completed Items
+				11: 18,  # Total Weight
+				12: 15,  # Planned Start
+				13: 15,  # Planned Finish
+				14: 15,  # Actual Start
+				15: 15,  # Actual Finish
+				16: 25,  # Contractor
+				17: 20,  # Supervisor
+				}
+		
+		for col, width in column_widths.items():
+			ws.column_dimensions[get_column_letter(col)].width = width
+		
+		# Freeze header row
+		ws.freeze_panes = 'A2'
+		
+		# Auto-filter
+		ws.auto_filter.ref = f'A1:{get_column_letter(len(headers))}{queryset.count() + 1}'
+		
+		# Create summary sheet
+		ws2 = wb.create_sheet('Summary')
+		
+		# Summary data
+		total_weight = queryset.aggregate(total=Sum('items__equipment_tag__weight_kg'))['total'] or 0
+		total_items = sum(wp.item_count for wp in queryset)
+		total_completed = sum(wp.completed_items for wp in queryset)
+		
+		summary_data = [
+				['Summary of Filtered Work Packages', ''],
+				['', ''],
+				['Total Work Packages', queryset.count()],
+				['Total Equipment Items', total_items],
+				['Completed Items', total_completed],
+				['Total Weight (kg)', total_weight],
+				['', ''],
+				['Export Date', timezone.now().strftime('%Y-%m-%d %H:%M')],
+				['Filter Applied', self.request.GET.urlencode() or 'None'],
+				]
+		
+		for row, (label, value) in enumerate(summary_data, 1):
+			ws2.cell(row=row, column=1, value=label).font = Font(bold=True)
+			ws2.cell(row=row, column=2, value=value)
+		
+		ws2.column_dimensions['A'].width = 30
+		ws2.column_dimensions['B'].width = 40
+		
+		# Create response
+		response = HttpResponse(
+				content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+				)
+		filename = f'work_packages_{timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+		response['Content-Disposition'] = f'attachment; filename="{filename}"'
+		
+		wb.save(response)
+		return response
+
+	def export_csv(self):
+		"""Export filtered work packages to CSV."""
+		queryset = self.get_filtered_queryset()
+		
+		response = HttpResponse(content_type='text/csv; charset=utf-8')
+		response['Content-Disposition'] = f'attachment; filename="work_packages_{timezone.now().strftime("%Y%m%d")}.csv"'
+		response.write('\ufeff')  # BOM for Excel UTF-8 support
+		
+		writer = csv.writer(response)
+		
+		# Headers
+		writer.writerow([
+				'Code', 'Name', 'Project', 'Area', 'Status', 'Priority',
+				'Progress (%)', 'Total Items', 'Completed Items',
+				'Total Weight (kg)', 'Planned Start', 'Planned Finish',
+				'Contractor'
+				])
+		
+		# Data
+		for wp in queryset:
+			writer.writerow([
+					wp.code,
+					wp.name,
+					wp.project.name if wp.project else '',
+					wp.area.code if wp.area else '',
+					wp.get_status_display(),
+					wp.priority,
+					wp.percent_complete,
+					wp.item_count,
+					wp.completed_items,
+					wp.total_weight_kg or 0,
+					wp.planned_start.strftime('%Y-%m-%d') if wp.planned_start else '',
+					wp.planned_finish.strftime('%Y-%m-%d') if wp.planned_finish else '',
+					wp.contractor or '',
+					])
+		return response
+
+
+class WorkPackageAnalyticsView(LoginRequiredMixin, generic.TemplateView):
+	template_name = 'rtl/construction/work_package_analytics.html'
+	
+	def get_queryset(self):
+		"""Return filtered work packages based on optional project filter."""
+		queryset = WorkPackage.objects.select_related('project', 'area', 'supervisor')
+		project_id = self.request.GET.get('project')
+		if project_id:
+			queryset = queryset.filter(project_id=project_id)
+		return queryset
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		wp_queryset = self.get_queryset()
+		
+		# Basic counts
+		context['total_work_packages'] = wp_queryset.count()
+		context['total_items'] = WorkPackageItem.objects.filter(
+				work_package__in=wp_queryset
+				).count()
+		context['avg_progress'] = wp_queryset.aggregate(avg=Avg('percent_complete'))['avg'] or 0
+		
+		# Total weight per contractor
+		# Contractor weight aggregation (total and completed)
+		contractor_weight = (
+				WorkPackageItem.objects.filter(
+						work_package__in=wp_queryset,
+						equipment_tag__weight_kg__isnull=False
+						)
+				.values('work_package__contractor_company__title')
+				.annotate(
+						total_weight=Sum('equipment_tag__weight_kg'),
+						completed_weight=Sum(
+								Case(
+										When(is_complete=True, then='equipment_tag__weight_kg'),
+										default=0,
+										output_field=DecimalField(max_digits=10, decimal_places=2)
+										)
+								)
+						)
+				.order_by('-total_weight')
+		)
+		
+		context['contractor_weight_labels'] = [
+				item['work_package__contractor_company__title'] or 'Unknown'
+				for item in contractor_weight
+				]
+		context['contractor_total_weight_data'] = [float(item['total_weight'] or 0) for item in contractor_weight]
+		context['contractor_completed_weight_data'] = [float(item['completed_weight'] or 0) for item in contractor_weight]
+		
+		# Status distribution
+		status_counts = wp_queryset.values('status').annotate(count=Count('id')).order_by('status')
+		context['status_labels'] = [dict(WorkPackage.Status.choices)[item['status']] for item in status_counts]
+		context['status_data'] = [item['count'] for item in status_counts]
+		context['status_colors'] = [
+				'#198754' if item['status'] == 'COMP' else
+				'#ffc107' if item['status'] == 'IPRO' else
+				'#dc3545' if item['status'] == 'HOLD' else
+				'#0dcaf0' if item['status'] == 'MOB' else
+				'#6c757d'
+				for item in status_counts
+				]
+		
+		# Work packages per area
+		area_counts = wp_queryset.values('area__code').annotate(count=Count('id')).order_by('-count')
+		context['area_labels'] = [item['area__code'] or 'No Area' for item in area_counts]
+		context['area_data'] = [item['count'] for item in area_counts]
+		
+		# Average progress per contractor
+		contractor_progress = wp_queryset.values('contractor_company__title').annotate(avg_progress=Avg('percent_complete')).order_by('-avg_progress')
+		context['contractor_progress_labels'] = [item['contractor_company__title'] or 'Unknown' for item in contractor_progress]
+		context['contractor_progress_data'] = [float(item['avg_progress']) for item in contractor_progress]
+		
+		# Projects for filter dropdown
+		context['projects'] = Project.objects.all()
+		context['selected_project'] = self.request.GET.get('project')
 		
 		return context
 
@@ -580,21 +878,21 @@ class DailyProgressReportCreateView(LoginRequiredMixin, generic.CreateView):
 		form.instance.reported_by = self.request.user
 		
 		# Check if report already exists for today
-		existing_report = DailyProgressReport.objects.filter(
-				work_package=form.cleaned_data['work_package'],
-				report_date=form.cleaned_data['report_date']
-				).first()
-		
-		if existing_report:
-			messages.warning(
-					self.request,
-					f'A report for {form.cleaned_data["report_date"]} already exists. '
-					f'Please update the existing report instead.'
-					)
-			return redirect(
-					'construction:daily_report_update',
-					pk=existing_report.pk
-					)
+		# existing_report = DailyProgressReport.objects.filter(
+		# 		work_package=form.cleaned_data['work_package'],
+		# 		report_date=form.cleaned_data['report_date']
+		# 		).first()
+		#
+		# if existing_report:
+		# 	messages.warning(
+		# 			self.request,
+		# 			f'A report for {form.cleaned_data["report_date"]} already exists. '
+		# 			f'Please update the existing report instead.'
+		# 			)
+		# 	return redirect(
+		# 			'construction:daily_report_update',
+		# 			pk=existing_report.pk
+		# 			)
 		
 		# Save the report
 		response = super().form_valid(form)
@@ -723,7 +1021,7 @@ class WorkPackageDetailView(LoginRequiredMixin, generic.DetailView):
 		# Equipment tags in this work package
 		context['work_package_items'] = wp.items.select_related(
 				'equipment_tag__area'
-				).order_by('sequence_number')
+				).order_by('equipment_tag__installation_order')
 		
 		context['total_items'] = wp.items.count()
 		context['completed_items'] = wp.items.filter(is_complete=True).count()
@@ -846,13 +1144,14 @@ class WorkPackageDetailView(LoginRequiredMixin, generic.DetailView):
 					total_hours=Sum('hours_worked')
 					).order_by('-total_hours')
 			
-			# Timesheets by date (for chart)
+		# Timesheets by date (for chart)
 		context['timesheets_by_date'] = wp.timesheets.values('date').annotate(
 					total_hours=Sum('hours_worked'),
 					total_overtime=Sum('overtime_hours'),
 					worker_count=Count('employee', distinct=True)
 					).order_by('-date')[:30]
-			
+		context['requirements'] = self.object.requirements.all().order_by('priority')
+		
 		return context
 	
 	def get_work_package_activities(self, wp):
@@ -1008,24 +1307,24 @@ class WorkPackageItemCreateView(LoginRequiredMixin, generic.CreateView):
 		work_package = form.cleaned_data.get('work_package')
 		equipment_tag = form.cleaned_data.get('equipment_tag')
 		
-		# Check if tag is already in the work package
-		if WorkPackageItem.objects.filter(
-				work_package=work_package,
-				equipment_tag=equipment_tag
-				).exists():
-			messages.warning(
-					self.request,
-					f'Tag "{equipment_tag.tag_number}" is already in this work package.'
-					)
-			return redirect('construction:work_package_detail', pk=work_package.pk)
-		
-		# Check if tag belongs to the same project
-		if equipment_tag.project_id != work_package.project_id:
-			messages.error(
-					self.request,
-					'Equipment tag must belong to the same project as the work package.'
-					)
-			return self.form_invalid(form)
+		# # Check if tag is already in the work package
+		# if WorkPackageItem.objects.filter(
+		# 		work_package=work_package,
+		# 		equipment_tag=equipment_tag
+		# 		).exists():
+		# 	messages.warning(
+		# 			self.request,
+		# 			f'Tag "{equipment_tag.tag_number}" is already in this work package.'
+		# 			)
+		# 	return redirect('construction:work_package_detail', pk=work_package.pk)
+		#
+		# # Check if tag belongs to the same project
+		# if equipment_tag.project_id != work_package.project_id:
+		# 	messages.error(
+		# 			self.request,
+		# 			'Equipment tag must belong to the same project as the work package.'
+		# 			)
+		# 	return self.form_invalid(form)
 		
 		messages.success(
 				self.request,
@@ -2160,3 +2459,64 @@ class InstalledItemCheckCreateView(LoginRequiredMixin, CreateView):
 			return super().form_valid(form)
 		else:
 			return self.render_to_response(self.get_context_data(form=form))
+
+
+class WorkPackageRequirementsCreateView(LoginRequiredMixin, CreateView):
+	model = WorkPackageRequirements
+	form_class = WorkPackageRequirementsForm
+	template_name = 'rtl/construction/work_package_requirements_form.html'
+	
+	def form_valid(self, form):
+		work_pack_id = self.kwargs.get('wp_pk')
+		work_pack = get_object_or_404(WorkPackage, pk=work_pack_id)
+		form.instance.work_pack = work_pack
+		messages.success(self.request, 'نیازمندی با موفقیت اضافه شد.')
+		return super().form_valid(form)
+	
+	def get_success_url(self):
+		return reverse('construction:work_package_detail', kwargs={'pk': self.kwargs.get('wp_pk')})
+
+# @login_required
+# @require_POST
+def toggle_requirement_completed(request, req_pk):
+	"""Toggle the is_completed status of a work package requirement."""
+	requirement = get_object_or_404(WorkPackageRequirements, pk=req_pk)
+	requirement.is_completed = not requirement.is_completed
+	requirement.save()
+	return JsonResponse({
+			'success': True,
+			'is_completed': requirement.is_completed,
+			'requirement_id': requirement.pk,
+			})
+
+
+class WorkPackageTree(LoginRequiredMixin, generic.TemplateView):
+	template_name = 'rtl/construction/work_package_tree.html'
+	
+	def get_queryset(self):
+		"""Return filtered work packages based on optional project filter."""
+		queryset = WorkPackage.objects.select_related('project', 'area', 'supervisor')
+		project_id = self.request.GET.get('project')
+		
+		if project_id:
+			queryset = queryset.filter(project_id=project_id)
+		area_id = self.request.GET.get('area')
+		if area_id:
+			queryset = queryset.filter(area_id=area_id)
+		
+		system_id = self.request.GET.get('system')
+		if system_id:
+			queryset = queryset.filter(system_id=system_id)
+		return queryset
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		wp_queryset = self.get_queryset()
+		
+		# Basic counts
+		context['work_packages'] = wp_queryset.all().order_by('level')
+		context['work_package_items'] = WorkPackageItem.objects.filter(
+				work_package__in=wp_queryset
+				).all().order_by('sequence_number')
+		
+		return context

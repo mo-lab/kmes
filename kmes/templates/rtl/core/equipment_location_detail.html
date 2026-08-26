@@ -1,0 +1,401 @@
+{% extends 'rtl/base.html' %}
+{% load static %}
+
+{% block title %}جزئیات موقعیت - {{ location.equipment_tag.tag_number }}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+{% block extra_css %}
+<style>
+    .location-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    #map {
+        height: 400px;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .image-thumbnail {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .image-thumbnail:hover {
+        transform: scale(1.05);
+    }
+
+    .primary-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .info-card {
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .history-item {
+        border-left: 3px solid #dee2e6;
+        padding-left: 1rem;
+        margin-bottom: 0.5rem;
+        transition: border-color 0.15s;
+    }
+    .history-item:hover {
+        border-left-color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'core:equipment-tag-detail' location.equipment_tag.pk %}">
+                    {{ location.equipment_tag.tag_number }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active">جزئیات موقعیت</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="location-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h4 class="mb-2">
+                    <i class="bi bi-geo-alt-fill me-2"></i>
+                    موقعیت {{ location.equipment_tag.tag_number }}
+                </h4>
+                <p class="mb-1">
+                    <span class="badge bg-light text-dark">{{ location.get_location_type_display }}</span>
+                    {% if location.is_current %}
+                    <span class="badge bg-success ms-1">موقعیت فعلی</span>
+                    {% else %}
+                    <span class="badge bg-secondary ms-1">تاریخی</span>
+                    {% endif %}
+                    {% if location.is_verified %}
+                    <span class="badge bg-success ms-1"><i class="bi bi-check-circle"></i> تایید شده</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark ms-1"><i class="bi bi-clock"></i> تایید نشده</span>
+                    {% endif %}
+                </p>
+                <p class="mb-0 small opacity-75">
+                    ثبت شده توسط: {{ location.recorded_by.get_full_name|default:"نامشخص" }}
+                    در {{ location.created_at|date:"Y/m/d H:i" }}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ google_maps_url }}" target="_blank" class="btn btn-light btn-sm">
+                    <i class="bi bi-google"></i> Google Maps
+                </a>
+                <a href="{{ openstreetmap_url }}" target="_blank" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-map"></i> OpenStreetMap
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map and Details -->
+    <div class="row g-4">
+        <!-- Map -->
+        <div class="col-lg-8">
+            <div class="card info-card">
+                <div class="card-body p-2">
+                    <div id="map" style="height: 400px; width: 100%; border-radius: 0.5rem;"></div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Details -->
+        <div class="col-lg-4">
+            <div class="card info-card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>مشخصات موقعیت</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th class="text-muted">عرض جغرافیایی:</th>
+                            <td><code>{{ location.latitude }}</code></td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">طول جغرافیایی:</th>
+                            <td><code>{{ location.longitude }}</code></td>
+                        </tr>
+                        {% if location.elevation %}
+                        <tr>
+                            <th class="text-muted">ارتفاع:</th>
+                            <td>{{ location.elevation }} متر</td>
+                        </tr>
+                        {% endif %}
+                        {% if location.accuracy %}
+                        <tr>
+                            <th class="text-muted">دقت GPS:</th>
+                            <td>
+                                {% if location.accuracy <= 10 %}
+                                <span class="badge bg-success">{{ location.accuracy }} متر</span>
+                                {% elif location.accuracy <= 30 %}
+                                <span class="badge bg-warning text-dark">{{ location.accuracy }} متر</span>
+                                {% else %}
+                                <span class="badge bg-danger">{{ location.accuracy }} متر</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% if location.area %}
+                        <tr>
+                            <th class="text-muted">ناحیه:</th>
+                            <td>{{ location.area.code }} - {{ location.area.name }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th class="text-muted">تاریخ ورود:</th>
+                            <td>{{ location.arrival_date|date:"Y/m/d H:i" }}</td>
+                        </tr>
+                        {% if location.departure_date %}
+                        <tr>
+                            <th class="text-muted">تاریخ خروج:</th>
+                            <td>{{ location.departure_date|date:"Y/m/d H:i" }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+            <!-- Verification Status -->
+            <div class="card info-card">
+                <div class="card-body">
+                    {% if location.is_verified %}
+                    <div class="alert alert-success mb-0">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        این موقعیت توسط <strong>{{ location.verified_by.get_full_name|default:"کاربر" }}</strong>
+                        در {{ location.verified_date|date:"Y/m/d" }} تایید شده است.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-clock me-2"></i>
+                        این موقعیت هنوز تایید نشده است.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Images Gallery -->
+    <div class="card info-card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+                <i class="bi bi-images me-2"></i>
+                تصاویر موقعیت
+                <span class="badge bg-primary ms-1">{{ location.images.count }}</span>
+            </h6>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadImageModal">
+                <i class="bi bi-plus-lg"></i> افزودن تصویر
+            </button>
+        </div>
+        <div class="card-body">
+            {% if location.images.exists %}
+            <div class="row g-3">
+                <!-- Primary Image -->
+                {% if primary_image %}
+                <div class="col-lg-6">
+                    <div class="position-relative">
+                        <img src="{{ primary_image.image.url }}"
+                             class="img-fluid rounded w-100"
+                             style="height: 300px; object-fit: cover; cursor: zoom-in;"
+                             alt="{{ primary_image.title }}"
+                             data-bs-toggle="modal" data-bs-target="#imageModal{{ primary_image.pk }}">
+                        <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">
+                            <i class="bi bi-star-fill"></i> اصلی
+                        </span>
+                    </div>
+                    {% if primary_image.caption %}
+                    <p class="text-muted small mt-2">{{ primary_image.caption }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Other Images -->
+                <div class="col-lg-6">
+                    <div class="row g-2">
+                        {% for image in gallery_images %}
+                        <div class="col-md-6 col-sm-4">
+                            <div class="position-relative">
+                                <img src="{{ image.image.url }}"
+                                     class="img-fluid rounded image-thumbnail"
+                                     alt="{{ image.title }}"
+                                     data-bs-toggle="modal" data-bs-target="#imageModal{{ image.pk }}">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Modals -->
+            {% for image in location.images.all %}
+            <div class="modal fade" id="imageModal{{ image.pk }}" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">{{ image.title|default:"تصویر موقعیت" }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center bg-dark">
+                            <img src="{{ image.image.url }}" class="img-fluid" alt="{{ image.title }}">
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <div class="text-start">
+                                {% if image.description %}
+                                <p class="mb-1">{{ image.description }}</p>
+                                {% endif %}
+                                <small class="text-muted">
+                                    <i class="bi bi-tag"></i> {{ image.get_image_type_display }} |
+                                    <i class="bi bi-calendar"></i> {{ image.taken_date|date:"Y/m/d"|default:"بدون تاریخ" }}
+                                </small>
+                            </div>
+                            <a href="{{ image.image.url }}" class="btn btn-sm btn-outline-primary" download>
+                                <i class="bi bi-download"></i> دانلود
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-camera" style="font-size: 3rem;"></i>
+                <p class="mt-2">تصویری برای این موقعیت ثبت نشده است.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Location History -->
+    {% if location_history %}
+    <div class="card info-card mt-4">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>سایر موقعیت‌های این تجهیز</h6>
+        </div>
+        <div class="card-body">
+            {% for loc in location_history %}
+            <div class="history-item">
+                <a href="{% url 'core:equipment_location_detail' loc.pk %}" class="text-decoration-none">
+                    <strong>{{ loc.get_location_type_display }}</strong>
+                    - {{ loc.arrival_date|date:"Y/m/d" }}
+                    <span class="badge bg-light text-dark ms-1">{{ loc.latitude }}, {{ loc.longitude }}</span>
+                    {% if loc.is_current %}
+                    <span class="badge bg-success ms-1">فعلی</span>
+                    {% endif %}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Upload Image Modal -->
+<div class="modal fade" id="uploadImageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">افزودن تصویر به موقعیت</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'core:upload_location_image' location.pk %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">تصویر</label>
+                        {{ image_form.image }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">عنوان</label>
+                        {{ image_form.title }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">نوع تصویر</label>
+                        {{ image_form.image_type }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">توضیحات</label>
+                        {{ image_form.description }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary">بارگذاری</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Ensure Leaflet is loaded
+        if (typeof L === 'undefined') {
+            console.error('Leaflet not loaded');
+            return;
+        }
+
+        const lat = parseFloat("{{ location.latitude }}");
+        const lng = parseFloat("{{ location.longitude }}");
+
+        // Check if coordinates are valid
+        if (isNaN(lat) || isNaN(lng)) {
+            console.error('Invalid coordinates');
+            document.getElementById('map').innerHTML = '<p class="text-danger text-center mt-5">مختصات نامعتبر</p>';
+            return;
+        }
+
+        const map = L.map('map').setView([lat, lng], 16);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        L.marker([lat, lng]).addTo(map)
+            .bindPopup(`
+                <strong>{{ location.equipment_tag.tag_number }}</strong><br>
+                {{ location.get_location_type_display }}<br>
+                Lat: ${lat.toFixed(6)}<br>
+                Lng: ${lng.toFixed(6)}
+            `)
+            .openPopup();
+
+        {% if location.accuracy %}
+        L.circle([lat, lng], {
+            radius: {{ location.accuracy }},
+        color: '#198754',
+            fillColor: '#198754',
+            fillOpacity: 0.1,
+            weight: 1
+    }).addTo(map);
+        {% endif %}
+
+        // Fix map size if container was hidden initially
+        setTimeout(() => map.invalidateSize(), 100);
+    });
+</script>
+{% endblock %}

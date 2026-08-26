@@ -16,6 +16,7 @@ urlpatterns = [
 		path('projects/<int:pk>/update/', views.ProjectUpdateView.as_view(), name='project_update'),
 		path('equipments/', views.EquipmentTagListView.as_view(), name='equipment-tag-list'),
 		path('tags/<int:pk>/', views.EquipmentTagDetailView.as_view(), name='equipment-tag-detail'),
+		path('work-packages/timeline/',views.WorkPackageTimelineView.as_view(),name='work_package_timeline'),
 		path(
 			'tags/<int:tag_id>/location/create/',
 			views.EquipmentLocationCreateView.as_view(),
@@ -26,11 +27,8 @@ urlpatterns = [
 			views.EquipmentLocationDetailView.as_view(),
 			name='equipment_location_detail'
 			),
-		path(
-			'locations/<int:location_id>/upload-image/',
-			views.upload_location_image,
-			name='upload_location_image'
-			),
+		path('locations/<int:pk>/', views.EquipmentLocationDetailView.as_view(), name='equipment_location_detail'),
+		path('locations/<int:pk>/upload-image/', views.upload_location_image, name='upload_location_image'),
 		path(
 			'locations/image/<int:image_id>/delete/',
 			views.delete_location_image,
