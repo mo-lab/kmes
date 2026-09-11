@@ -5,28 +5,52 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="manual">
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_analytics.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_requirements_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_timeline.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_tree.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_detail.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/Procfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/accounts/forms.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/accounts/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/accounts/login.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/packing_list_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/qr_code_print.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/drawings/drawing_detail.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/construction/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/construction/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/construction/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/construction/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/construction/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/core/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/core/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/documents/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/resources/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/resources/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/documents/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/kmes/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/kmes/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/core/equipment_tag_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/equipment_tag_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/navbar.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/navbar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_analytics.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_analytics.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_item_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_item_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_timeline.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_timeline.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_tree.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_tree.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/area_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/area_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_detail.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_form.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_form.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/tag_document_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/tag_document_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/drawings/crusher_ga.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/drawings/crusher_ga.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/drawings/dust_bonnet.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/drawings/dust_bonnet.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/navbar.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/navbar.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -199,7 +223,33 @@
       <workItem from="1787637639440" duration="5307000" />
       <workItem from="1787650577660" duration="6911000" />
       <workItem from="1787661457121" duration="1940000" />
-      <workItem from="1787724308200" duration="5225000" />
+      <workItem from="1787724308200" duration="5901000" />
+      <workItem from="1787731536139" duration="2715000" />
+      <workItem from="1787736084467" duration="454000" />
+      <workItem from="1787740907291" duration="2882000" />
+      <workItem from="1787806945464" duration="8089000" />
+      <workItem from="1787836609396" duration="5033000" />
+      <workItem from="1787975665663" duration="990000" />
+      <workItem from="1787980777960" duration="957000" />
+      <workItem from="1787982844055" duration="6934000" />
+      <workItem from="1788002519097" duration="7152000" />
+      <workItem from="1788068539176" duration="3984000" />
+      <workItem from="1788085485453" duration="1374000" />
+      <workItem from="1788090764643" duration="1463000" />
+      <workItem from="1788151610543" duration="8327000" />
+      <workItem from="1788165662428" duration="1304000" />
+      <workItem from="1788170660916" duration="5693000" />
+      <workItem from="1788178702708" duration="67000" />
+      <workItem from="1788178793610" duration="1523000" />
+      <workItem from="1788248559527" duration="3057000" />
+      <workItem from="1788267204531" duration="1089000" />
+      <workItem from="1788330133874" duration="5120000" />
+      <workItem from="1788335635754" duration="2707000" />
+      <workItem from="1788342359393" duration="2446000" />
+      <workItem from="1788497519670" duration="1855000" />
+      <workItem from="1789021423480" duration="2523000" />
+      <workItem from="1789033174969" duration="3397000" />
+      <workItem from="1789136112956" duration="4683000" />
     </task>
     <task id="LOCAL‎−۰۰۰۰۱" summary="init">
       <option name="closed" value="true" />
@@ -313,7 +363,14 @@
       <option name="presentableId" value="LOCAL‎−۰۰۰۱۶" />
       <updated>1786952929499</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL‎−۰۰۰۱۷" summary="manual">
+      <option name="closed" value="true" />
+      <created>1787731216407</created>
+      <option name="number" value="LOCAL‎−۰۰۰۱۷" />
+      <option name="presentableId" value="LOCAL‎−۰۰۰۱۷" />
+      <updated>1787731216407</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -327,6 +384,17 @@
     <MESSAGE value="employee report" />
     <MESSAGE value="manual" />
     <option name="LAST_COMMIT_MESSAGE" value="manual" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/kmes/core/views.py</url>
+          <line>23</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/km$import_script.coverage" NAME="import_script Coverage Results" MODIFIED="1786775734028" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/kmes" />

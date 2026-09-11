@@ -3,34 +3,92 @@
 
 {% block title %}برچسب‌های تجهیزات - {{ project.name|default:"همه پروژه‌ها" }}{% endblock %}
 
-{% block extra_css %}
+{% block extra_head %}
 
 <style> .filter-sidebar
 { background: #f8f9fa; border-radius: 0.5rem; padding: 1.25rem; position: sticky; top: 1rem; }
 .tag-card { transition: transform 0.2s, box-shadow 0.2s; border-left: 4px solid #0d6efd; }
 .tag-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.tag-card.status-eng { border-left-color: #6c757d; } .tag-card.status-proc { border-left-color: #0dcaf0; } .tag-card.status-dlvd { border-left-color: #17a2b8; } .tag-card.status-inst { border-left-color: #ffc107; } .tag-card.status-algn { border-left-color: #fd7e14; } .tag-card.status-prec { border-left-color: #6f42c1; } .tag-card.status-comm { border-left-color: #198754; } .tag-card.status-hndo { border-left-color: #20c997; } .tag-card.status-def { border-left-color: #dc3545; } .status-badge { font-size: 0.7rem; padding: 0.25em 0.65em; } .type-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; } .hierarchy-badge { font-size: 0.7rem; background: #e9ecef; padding: 0.15em 0.5em; border-radius: 3px; } .quick-stats { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; } .stat-item { text-align: center; padding: 0.75rem; border-right: 1px solid rgba(255,255,255,0.2); } .stat-item:last-child { border-right: none; } .stat-value { font-size: 1.75rem; font-weight: 700; } .stat-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; } .table-hover tbody tr { cursor: pointer; } .empty-state { text-align: center; padding: 4rem 2rem; } .empty-state i { font-size: 4rem; color: #dee2e6; } .view-toggle .btn { padding: 0.25rem 0.75rem; } .bulk-actions-bar { background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem; display: none; } .bulk-actions-bar.show { display: flex; align-items: center; justify-content: space-between; } .pagination-info { font-size: 0.85rem; color: #6c757d; } .status-timeline { display: flex; align-items: center; gap: 0.25rem; } .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; } .status-date { font-size: 0.75rem; color: #6c757d; } .status-change-info { font-size: 0.8rem; } .overdue-badge { animation: pulse 2s infinite; } @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } } </style>
+.tag-card .status-eng { border-left-color: #6c757d; }
+.tag-card.status-proc { border-left-color: #0dcaf0; }
+.tag-card.status-dlvd { border-left-color: #17a2b8; }
+.tag-card.status-inst { border-left-color: #ffc107; }
+.tag-card.status-algn { border-left-color: #fd7e14; }
+.tag-card.status-prec { border-left-color: #6f42c1; }
+.tag-card.status-comm { border-left-color: #198754; }
+.tag-card.status-hndo { border-left-color: #20c997; }
+.tag-card.status-def { border-left-color: #dc3545; }
+.status-badge { font-size: 0.7rem; padding: 0.25em 0.65em; }
+.type-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; }
+.hierarchy-badge { font-size: 0.7rem; background: #e9ecef; padding: 0.15em 0.5em; border-radius: 3px; }
+.quick-stats { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+.stat-item { text-align: center; padding: 0.75rem; border-right: 1px solid rgba(255,255,255,0.2); }
+.stat-item:last-child { border-right: none; } .stat-value { font-size: 1.75rem; font-weight: 700; }
+.stat-label { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; }
+.table-hover tbody tr { cursor: pointer; }
+.empty-state { text-align: center; padding: 4rem 2rem; }
+.empty-state i { font-size: 4rem; color: #dee2e6; }
+.view-toggle .btn { padding: 0.25rem 0.75rem; }
+.bulk-actions-bar { background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem;
+    padding: 0.75rem 1rem; margin-bottom: 1rem; display: none; }
+.bulk-actions-bar.show { display: flex; align-items: center; justify-content: space-between; }
+.pagination-info { font-size: 0.85rem; color: #6c757d; }
+.status-timeline { display: flex; align-items: center; gap: 0.25rem; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.status-date { font-size: 0.75rem; color: #6c757d; }
+.status-change-info { font-size: 0.8rem; }
+.overdue-badge { animation: pulse 2s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="container-fluid py-4"> <!-- Page Header -->
+<div class="container-fluid py-4">
+    <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div> <h1 class="h2 mb-1">برچسب‌های تجهیزات</h1>
             <nav aria-label="breadcrumb"> <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
                 {% if request.GET.project %}
                 <li class="breadcrumb-item"><a href="#">پروژه</a></li>
                 {% endif %}
                 <li class="breadcrumb-item active">برچسب‌های تجهیزات</li> </ol>
             </nav>
-        </div> <div class="d-flex gap-2"> <div class="view-toggle btn-group" role="group">
+        </div>
+        <div class="d-flex gap-2"> <div class="view-toggle btn-group" role="group">
         <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=table" class="btn btn-outline-secondary btn-sm {% if view_mode == 'table' %}active{% endif %}">
             <i class="bi bi-list-ul"></i> </a>
         <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=card" class="btn btn-outline-secondary btn-sm {% if view_mode == 'card' %}active{% endif %}"> <i class="bi bi-grid-3x3-gap"></i> </a>
-    </div> <a href="#" class="btn btn-primary"> <i class="bi bi-plus-lg"></i> برچسب جدید </a>
+    </div>
+            <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#uploadPackingListModal">
+                <i class="bi bi-upload"></i> خواندن اکسل
+            </button>
+            <a href="#" class="btn btn-primary"> <i class="bi bi-plus-lg"></i> برچسب جدید </a>
         {% if tags %}
-        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exportModal"> <i class="bi bi-download"></i> خروجی </button> {% endif %} </div> </div> <!-- Quick Statistics --> <div class="quick-stats"> <div class="row"> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ total_count }}</div> <div class="stat-label">کل برچسب‌ها</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ installed_count }}</div> <div class="stat-label">نصب‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ delivered_count }}</div> <div class="stat-label">تحویل‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ commissioned_count }}</div> <div class="stat-label">راه‌اندازی‌شده</div> </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ defective_count }}</div> <div class="stat-label">معیوب</div> </div> </div> </div> </div> <div class="row"> <!-- Filter Sidebar --> <div class="col-lg-3 mb-4"> <div class="filter-sidebar"> <h5 class="mb-3"> <i class="bi bi-funnel"></i> فیلترها </h5> <form method="get" id="filterForm"> <!-- Project --> <div class="mb-3"> <label class="form-label small">پروژه</label> <select name="project" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه پروژه‌ها</option> {% for proj in projects %} <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}> {{ proj.code }} - {{ proj.name }} </option> {% endfor %} </select> </div>
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exportModal">
+            <i class="bi bi-download">
+
+        </i> خروجی </button> {% endif %} </div> </div> <!-- Quick Statistics --> <div class="quick-stats">
+    <div class="row"> <div class="col">
+    <div class="stat-item"> <div class="stat-value">{{ total_count }}</div> <div class="stat-label">کل برچسب‌ها</div>
+    </div> </div>
+    <div class="col"> <div class="stat-item">
+        <div class="stat-value">{{ installed_count }}</div> <div class="stat-label">نصب‌شده</div> </div> </div>
+    <div class="col"> <div class="stat-item"> <div class="stat-value">{{ delivered_count }}</div> <div class="stat-label">تحویل‌شده</div>
+    </div> </div> <div class="col"> <div class="stat-item"> <div class="stat-value">{{ commissioned_count }}</div>
+        <div class="stat-label">راه‌اندازی‌شده</div> </div> </div> <div class="col"> <div class="stat-item">
+        <div class="stat-value" id="totalWeightDisplay">{{ total_weight_kg|floatformat:0 }}</div>
+            <div class="stat-label">وزن کل</div>
+        </div> </div> </div>
+</div> <div class="row"> <!-- Filter Sidebar --> <div class="col-lg-3 mb-4"> <div class="filter-sidebar"> <h5 class="mb-3">
+    <i class="bi bi-funnel"></i> فیلترها </h5> <form method="get" id="filterForm"> <!-- Project --> <div class="mb-3">
+    <label class="form-label small">پروژه</label>
+    <select name="project" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه پروژه‌ها</option> {% for proj in projects %} <option value="{{ proj.pk }}" {% if request.GET.project == proj.pk|stringformat:"s" %}selected{% endif %}> {{ proj.code }} - {{ proj.name }} </option> {% endfor %} </select> </div>
         <!-- Area -->
         <div class="mb-3">
             <label class="form-label small">ناحیه</label>
@@ -42,7 +100,40 @@
                 {% endfor %}
             </select>
         </div>
-        <!-- Equipment Type -->
+    <!-- packing list -->
+    <div class="mb-3">
+        <label class="form-label small">Packing List</label>
+        <select name="packing" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">All Packing Lists</option>
+            {% for pl in packing_lists %}
+            <option value="{{ pl.pk }}" {% if request.GET.packing_list == pl.pk|stringformat:"s" %}selected{% endif %}>
+            {{ pl.packing_list_num }}  <!-- adjust field to display -->
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+        <!-- Equipment grids -->
+    <div class="mb-3">
+        <label class="form-label small">Grid X</label>
+        <input type="text" name="grid_x" class="form-control form-control-sm"
+               placeholder="e.g., A-12"
+               value="{{ request.GET.grid_x|default:'' }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label small">Grid Y</label>
+        <input type="text" name="grid_y" class="form-control form-control-sm"
+               placeholder="e.g., B-08"
+               value="{{ request.GET.grid_y|default:'' }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label small">Grid Z</label>
+        <input type="text" name="grid_z" class="form-control form-control-sm"
+               placeholder="e.g., L2"
+               value="{{ request.GET.grid_z|default:'' }}">
+    </div>
+        <!-- Equipment type -->
         <div class="mb-3"> <label class="form-label small">نوع تجهیزات</label>
             <select name="equipment_type" class="form-select form-select-sm" onchange="this.form.submit()">
                 <option value="">همه انواع</option>
@@ -55,7 +146,8 @@
                 {% endif %}
                 {% endfor %}
             </select>
-        </div> <!-- Status -->
+        </div>
+    <!-- Status -->
         <div class="mb-3"> <label class="form-label small">وضعیت</label>
             <select name="status" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه وضعیت‌ها</option>
                 {% for value, label in filter_form.fields.status.choices %}
@@ -65,7 +157,83 @@
                         selected
                         {% endif %}>
                     {{ label }} </option> {% endif %} {% endfor %} </select> </div>
-        <!-- Discipline --> <div class="mb-3"> <label class="form-label small">رشته</label> <select name="discipline" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه رشته‌ها</option> {% for value, label in filter_form.fields.discipline.choices %} {% if value %} <option value="{{ value }}" {% if request.GET.discipline == value %}selected{% endif %}> {{ label }} </option> {% endif %} {% endfor %} </select> </div> <!-- Criticality --> <div class="mb-3"> <label class="form-label small">اهمیت</label> <select name="criticality" class="form-select form-select-sm" onchange="this.form.submit()"> <option value="">همه سطوح</option> {% for value, label in filter_form.fields.criticality.choices %} {% if value %} <option value="{{ value }}" {% if request.GET.criticality == value %}selected{% endif %}> {{ label }} </option> {% endif %} {% endfor %} </select> </div> <!-- Search --> <div class="mb-3"> <label class="form-label small">جستجو</label> <div class="input-group input-group-sm"> <span class="input-group-text"><i class="bi bi-search"></i></span> <input type="text" name="search" class="form-control" placeholder="شماره برچسب، توضیحات..." value="{{ request.GET.search|default:'' }}"> </div> </div> <!-- Parent Tag Only --> <div class="mb-3"> <div class="form-check form-switch"> <input class="form-check-input" type="checkbox" name="parent_tag_only" value="true" id="parentTagOnly" {% if request.GET.parent_tag_only == 'true' %}checked{% endif %} onchange="this.form.submit()"> <label class="form-check-label small" for="parentTagOnly"> فقط برچسب‌های سطح بالا </label> </div> </div> <div class="d-grid gap-2"> <button type="submit" class="btn btn-primary btn-sm"> <i class="bi bi-search"></i> اعمال فیلترها </button> {% if request.GET %} <a href="#" class="btn btn-outline-secondary btn-sm"> <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها </a> {% endif %} </div> </form> </div> </div> <!-- Main Content --> <div class="col-lg-9"> <!-- Bulk Actions Bar --> <div class="bulk-actions-bar" id="bulkActionsBar"> <span id="selectedCount">۰ برچسب انتخاب شده</span> <div> <button type="button" class="btn btn-warning btn-sm" onclick="bulkUpdateStatus()"> <i class="bi bi-pencil"></i> به‌روزرسانی وضعیت </button> <button type="button" class="btn btn-info btn-sm" onclick="bulkExport()"> <i class="bi bi-download"></i> خروجی انتخاب‌شده‌ها </button> <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()"> پاک کردن انتخاب </button> </div> </div> <!-- Results Info --> <div class="d-flex justify-content-between align-items-center mb-3"> <div class="pagination-info"> {% if is_paginated %} نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} برچسب {% else %} {{ tags.count }} برچسب یافت شد {% endif %} </div> <div> <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)"> <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>۲۰ در هر صفحه</option> <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>۵۰ در هر صفحه</option> <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option> </select> </div> </div>
+        <!-- Discipline -->
+    <div class="mb-3"> <label class="form-label small">رشته</label>
+        <select name="discipline" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">همه رشته‌ها</option>
+            {% for value, label in filter_form.fields.discipline.choices %}
+            {% if value %}
+            <option value="{{ value }}"
+                    {% if request.GET.discipline == value %}selected{% endif %}>
+                {{ label }} </option>
+            {% endif %} {% endfor %}
+        </select> </div>
+    <!-- Criticality -->
+    <div class="mb-3"> <label class="form-label small">اهمیت</label>
+        <select name="criticality" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">همه سطوح</option>
+            {% for value, label in filter_form.fields.criticality.choices %} {% if value %}
+            <option value="{{ value }}" {% if request.GET.criticality == value %}selected{% endif %}> {{ label }}
+            </option> {% endif %}
+            {% endfor %}
+        </select> </div>
+    <!-- Search -->
+    <div class="mb-3">
+        <label class="form-label small">جستجو</label>
+        <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-search"></i>
+            </span>
+            <input type="text" name="search" class="form-control" placeholder="شماره برچسب، توضیحات..." value="{{ request.GET.search|default:'' }}">
+        </div>
+    </div>
+    <!-- Parent Tag Only -->
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" name="parent_tag_only" value="true" id="parentTagOnly" {% if request.GET.parent_tag_only == 'true' %}checked{% endif %} onchange="this.form.submit()">
+            <label class="form-check-label small" for="parentTagOnly"> فقط برچسب‌های سطح بالا </label>
+        </div>
+    </div>
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bi bi-search"></i> اعمال فیلترها </button>
+        {% if request.GET %}
+        <a href="#" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-x-circle"></i> پاک کردن همه فیلترها
+        </a>
+        {% endif %}
+    </div>
+</form>
+</div>
+</div>
+    <!-- Main Content -->
+    <div class="col-lg-9">
+    <!-- Bulk Actions Bar --> <div class="bulk-actions-bar" id="bulkActionsBar">
+    <span id="selectedCount">۰ برچسب انتخاب شده</span> <div>
+
+    <button type="button" class="btn btn-outline-primary" onclick="printSelectedQRCodes()">
+        <i class="bi bi-qr-code"></i> چاپ QR Codes
+    </button>
+        <button type="button" class="btn btn-outline-success" onclick="exportSelectedTags()">
+            <i class="bi bi-file-earmark-excel"></i> خروجی MIV
+        </button>
+    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()"> پاک کردن انتخاب
+    </button>
+</div>
+    </div>
+    <!-- Results Info -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="pagination-info">
+            {% if is_paginated %} نمایش {{ page_obj.start_index }} - {{ page_obj.end_index }} از {{ page_obj.paginator.count }} برچسب
+            {% else %} {{ tags.count }} برچسب یافت شد {% endif %}
+        </div>
+        <div>
+            <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="updatePerPage(this.value)">
+                <option value="20" {% if request.GET.per_page == '20' %}selected{% endif %}>۲۰ در هر صفحه</option>
+                <option value="50" {% if request.GET.per_page == '50' %}selected{% endif %}>۵۰ در هر صفحه</option>
+                <option value="100" {% if request.GET.per_page == '100' %}selected{% endif %}>۱۰۰ در هر صفحه</option>
+            </select>
+        </div>
+    </div>
     {% if tags %}
 
     <!-- Table View -->
@@ -77,9 +245,11 @@
                 <thead class="table-light">
                 <tr>
                     <th width="40">
-                    <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll(this)"> </th>
+                    <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll(this)">
+                    </th>
                     <th>
-                        <a href="?sort={% if request.GET.sort == 'tag_number' %}-{% endif %}tag_number{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> شماره برچسب {% if request.GET.sort == 'tag_number' %}<i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-tag_number' %}
+                        <a href="?sort={% if request.GET.sort == 'tag_number' %}-{% endif %}tag_number{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> شماره برچسب {% if request.GET.sort == 'tag_number' %}
+                            <i class="bi bi-caret-up-fill"></i> {% elif request.GET.sort == '-tag_number' %}
                             <i class="bi bi-caret-down-fill"></i> {% endif %} </a>
                     </th>
                     <th>توضیحات</th>
@@ -90,21 +260,28 @@
                     </th>
                     <th>ناحیه</th>
                     <th>سلسله‌مراتب</th>
-                    <th>مدارک</th>
+                    <th>Grid</th>
+
 
 
                     <th>
-                        <a href="?sort={% if request.GET.sort == 'updated_at' %}-{% endif %}updated_at{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark"> آخرین تغییر وضعیت {% if request.GET.sort == 'updated_at' %}
+                        <a href="?sort={% if request.GET.sort == 'updated_at' %}-{% endif %}updated_at{% for key, value in request.GET.items %}{% if key != 'sort' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="text-decoration-none text-dark">
+                            آخرین تغییر وضعیت {% if request.GET.sort == 'updated_at' %}
                             <i class="bi bi-caret-up-fill"></i>
                             {% elif request.GET.sort == '-updated_at' %}
                             <i class="bi bi-caret-down-fill"></i>
                             {% endif %} </a>
                     </th> <th>عملیات</th> </tr>
                 </thead>
-                <tbody> {% for tag in tags %} <tr>
+                <tbody>
+                {% for tag in tags %}
+                <tr>
                     <td onclick="event.stopPropagation()">
-                        <input type="checkbox" class="form-check-input tag-checkbox" value="{{ tag.pk }}" onchange="updateBulkActions()">
-                    </td> <td>
+                        <input type="checkbox"
+                               class="form-check-input tag-checkbox" data-weight="{{ tag.weight_kg|default:0 }}"
+                               value="{{ tag.pk }}" onchange="updateBulkActions(); recalcTotalWeight()">
+                    </td>
+                    <td>
                     <strong class="text-primary">{{ tag.tag_number }}</strong>
                     {% if tag.criticality == 'HIGH' %}
                     <span class="badge bg-danger ms-1" title="اهمیت بالا">!</span>
@@ -112,9 +289,11 @@
                     <td>
                         <div>{{ tag.description|truncatechars:60 }}</div>
                         <small class="text-muted">{{ tag.get_discipline_display }}</small>
-                    </td> <td>
+                    </td>
+                    <td>
                     <span class="badge bg-light text-dark"> {{ tag.get_equipment_type_display }} </span>
-                </td> <td>
+                </td>
+                    <td>
                     <span class="badge status-badge {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info text-dark {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning text-dark {% elif tag.status == 'PREC' %}bg-purple {% endif %}">
                         {{ tag.get_status_display }}
                     </span>
@@ -126,11 +305,20 @@
                             <i class="bi bi-arrow-return-right"></i>
                             {{ tag.parent_tag.tag_number }} </span>
                         {% endif %} {% if tag.child_count > 0 %}
-                        <span class="hierarchy-badge ms-1" title="{{ tag.child_count }} فرزند"> <i class="bi bi-diagram-3"></i>
-                            {{ tag.child_count }} </span> {% endif %} </td> <td> {% if tag.document_count > 0 %}
-                    <span class="badge bg-light text-dark"> <i class="bi bi-file-earmark-text"></i> {{ tag.document_count }} </span>
-                    {% else %} <span class="text-muted">-</span> {% endif %} </td>
-                    <td> <div class="status-change-info">
+                        <span class="hierarchy-badge ms-1" title="{{ tag.child_count }} فرزند">
+                            <i class="bi bi-diagram-3"></i>
+                            {{ tag.child_count }} </span> {% endif %} </td>
+                    <td>
+                        {% for g in tag.grids.all %}
+                        <span class="badge bg-light text-dark">
+                            {{ g.grid_x }}/{{ g.grid_y }}/{{ g.grid_z }}
+                        </span>
+                        {% empty %}
+                        <span class="text-muted">-</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <div class="status-change-info">
                     <div class="d-flex align-items-center">
                         <span class="status-dot {% if tag.status == 'INST' %}bg-success {% elif tag.status == 'DLVD' %}bg-info {% elif tag.status == 'COMM' %}bg-primary {% elif tag.status == 'HNDO' %}bg-success {% elif tag.status == 'DEF' %}bg-danger {% elif tag.status == 'ENG' %}bg-secondary {% elif tag.status == 'PROC' %}bg-info {% elif tag.status == 'ALGN' %}bg-warning {% elif tag.status == 'PREC' %}bg-purple {% else %}bg-secondary{% endif %} me-1">
                         </span> <div> <div class="small">{{ tag.get_status_display }}</div>
@@ -141,7 +329,8 @@
                         </div>
                         <div class="status-date text-muted">
                             <small>
-                                {% with days_since=tag.updated_at|timesince %} {% if 'day' in days_since and tag.status not in 'HNDO,COMM,CLSD' %}
+                                {% with days_since=tag.updated_at|timesince %}
+                                {% if 'day' in days_since and tag.status not in 'HNDO,COMM,CLSD' %}
                                 {% if tag.updated_at|date:"U" < now|date:"U"|add:"-604800" %}
                                 <span class="text-danger overdue-badge">
                                     <i class="bi bi-exclamation-triangle"></i>
@@ -150,7 +339,8 @@
                         </div>
                     </div> </div> </div> </td>
                     <td onclick="event.stopPropagation()"> <div class="btn-group btn-group-sm">
-                <a href="{% url 'core:equipment-tag-detail' tag.id %}" class="btn btn-outline-primary" title="مشاهده">
+                <a href="{% url 'core:equipment-tag-detail' tag.id %}"
+                   class="btn btn-outline-primary" title="مشاهده">
                     <i class="bi bi-eye"></i>
                 </a>
                 <a href="#" class="btn btn-outline-secondary" title="ویرایش">
@@ -252,11 +442,11 @@
             <ul class="pagination mb-0"> {% if page_obj.has_previous %}
                 <li class="page-item">
                     <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        <i class="bi bi-chevron-double-left"></i>
+                        <i class="bi bi-chevron-double-right"></i>
                     </a> </li>
                 <li class="page-item">
                     <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        <i class="bi bi-chevron-left"></i> </a> </li>
+                        <i class="bi bi-chevron-right"></i> </a> </li>
                 {% endif %}
         {% for num in page_obj.paginator.page_range %}
         {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
@@ -270,10 +460,10 @@
         {% if page_obj.has_next %}
 
         <li class="page-item"> <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-            <i class="bi bi-chevron-right"></i>
+            <i class="bi bi-chevron-left"></i>
         </a> </li> <li class="page-item">
                     <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        <i class="bi bi-chevron-double-right"></i> </a>
+                        <i class="bi bi-chevron-double-left"></i> </a>
                 </li> {% endif %} </ul> </nav>
     </div>
         {% endif %}
@@ -311,65 +501,253 @@
         </div> <div class="modal-body">
             <p>قالب خروجی را انتخاب کنید:</p>
             <div class="d-grid gap-2">
-                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=csv" class="btn btn-outline-primary">
+                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=csv"
+                   class="btn btn-outline-primary">
                     <i class="bi bi-filetype-csv">
 
                     </i> خروجی به صورت CSV
                 </a>
-                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=excel" class="btn btn-outline-success">
+                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=excel"
+                   class="btn btn-outline-success">
                     <i class="bi bi-filetype-xlsx"></i> خروجی به صورت Excel
                 </a>
-                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=pdf" class="btn btn-outline-danger">
-                    <i class="bi bi-filetype-pdf">
-
-                    </i>
-                    خروجی به صورت PDF </a>
+                <a href="?{% for key, value in request.GET.items %}&{{ key }}={{ value }}{% endfor %}&export=pdf"
+                   class="btn btn-outline-danger">
+                    <i class="bi bi-filetype-pdf"></i>خروجی به صورت PDF </a>
             </div>
         </div>
         </div>
     </div>
 </div>
+<div class="modal fade" id="uploadPackingListModal" tabindex="-1" aria-labelledby="uploadPackingListModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadPackingListModalLabel">مقدار دهی از فایل اکسل پکینگ لیست</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="packingListUploadForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Excel file -->
+                    <div class="mb-3">
+                        <label for="excelFile" class="form-label">Excel File</label>
+                        <input type="file" class="form-control" id="excelFile" name="excel_file" accept=".xlsx,.xls" required>
+                    </div>
+
+                    <!-- Equipment Type -->
+                    <div class="mb-3">
+                        <label for="equipmentType" class="form-label">نوع</label>
+                        <select name="equipment_type" id="equipmentType" class="form-select">
+                            <option value="">--- انتخاب ---</option>
+                            {% for value, label in equipment_type_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Discipline -->
+                    <div class="mb-3">
+                        <label for="discipline" class="form-label">رشته</label>
+                        <select name="discipline" id="discipline" class="form-select">
+                            <option value="">--- انتخاب ---</option>
+                            {% for value, label in discipline_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label for="status" class="form-label">وضعیت</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">--- انتخاب ---</option>
+                            {% for value, label in status_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="uploadStatus" class="mt-2"></div>
+                </form>
+            </div>            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+                <button type="button" class="btn btn-primary" id="submitPackingListUpload">بارگزاری</button>
+            </div>
+        </div>
+    </div>
+</div>
+<span id="filteredTotalWeight" data-value="{{ total_weight_kg|floatformat:0 }}" style="display:none;"></span>
 {% endblock %}
 {% block extra_js %}
 
 <script> // View toggle
- function updatePerPage(value) {
-     const url = new URL(window.location.href);
-     url.searchParams.set('per_page', value);
-     url.searchParams.delete('page');
-     window.location.href = url.toString(); }
+function updatePerPage(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', value);
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+
 // Bulk selection
 function toggleSelectAll(checkbox) {
-     const checkboxes = document.querySelectorAll('.tag-checkbox');
-     checkboxes.forEach(cb => cb.checked = checkbox.checked);
-     updateBulkActions(); }
+    const checkboxes = document.querySelectorAll('.tag-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateBulkActions();
+}
+
 function updateBulkActions() {
-     const selected = document.querySelectorAll('.tag-checkbox:checked');
-     const bar = document.getElementById('bulkActionsBar');
-     const count = document.getElementById('selectedCount');
-     if (selected.length > 0)
-     { bar.classList.add('show'); count.textContent = `${selected.length} برچسب انتخاب شد`;
-     } else { bar.classList.remove('show');
-         count.textContent = '۰ برچسب انتخاب شده';
-     } }
+    const selected = document.querySelectorAll('.tag-checkbox:checked');
+    const bar = document.getElementById('bulkActionsBar');
+    const count = document.getElementById('selectedCount');
+    if (selected.length > 0) {
+        bar.classList.add('show');
+        count.textContent = `${selected.length} برچسب انتخاب شد`;
+    } else {
+        bar.classList.remove('show');
+        count.textContent = '۰ برچسب انتخاب شده';
+    }
+}
+
 function clearSelection() {
-     document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
-     document.getElementById('selectAll').checked = false; updateBulkActions();
- } function bulkUpdateStatus() {
-     const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
-     if (selected.length > 0) { window.location.href = `#?tags=${selected.join(',')}`; } }
-function bulkExport() { const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
-     if (selected.length > 0) { window.location.href = `?selected_tags=${selected.join(',')}&export=csv`; } }
+    document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('selectAll').checked = false;
+    updateBulkActions();
+}
+
+function bulkUpdateStatus() {
+    const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
+    if (selected.length > 0) {
+        window.location.href = `#?tags=${selected.join(',')}`;
+    }
+}
+
+function cd() {
+    const selected = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(cb => cb.value);
+    if (selected.length > 0) {
+        window.location.href = `{% url 'core:print_qr_codes' %}?tags=${selected.join(',')}`;
+    }
+}
+
+function printSelectedQRCodes() {
+    const selected = Array.from(
+        document.querySelectorAll('.tag-checkbox:checked')
+    ).map(cb => cb.value);
+
+    if (selected.length === 0) {
+        alert('لطفاً حداقل یک برچسب انتخاب کنید.');
+        return;
+    }
+
+    // Send as individual tags parameters
+    const params = selected.map(id => `tags=${id}`).join('&');
+    window.open(`{% url 'core:print_qr_codes' %}?${params}`, '_blank');
+}
+
 // Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 'a') { e.preventDefault();
-    document.getElementById('selectAll').click(); } });
- // Initialize tooltips
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && e.key === 'a') {
+        e.preventDefault();
+        document.getElementById('selectAll').click();
+    }
+});
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function () {
+    recalcTotalWeight();
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl); });
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 });
+
+function exportSelectedTags() {
+    const checkboxes = document.querySelectorAll('.tag-checkbox:checked');
+    const selected = Array.from(checkboxes).map(cb => cb.value);
+
+    if (selected.length === 0) {
+        alert('Please select at least one tag.');
+        return;
+    }
+
+    // Build URL with individual ids parameters (or comma-separated as view accepts both)
+    const baseUrl = "{% url 'core:export_equipment_tags_template' %}";
+    const params = selected.map(id => `ids=${id}`).join('&');
+    const url = `${baseUrl}?${params}`;
+
+    // Option 1: Open in new tab
+    window.open(url, '_blank');
+
+    // Option 2: Direct download (may block if popup blocked)
+    // window.location.href = url;
+}
+
+    document.getElementById('submitPackingListUpload').addEventListener('click', function() {
+    const form = document.getElementById('packingListUploadForm');
+    const formData = new FormData(form);
+    const statusDiv = document.getElementById('uploadStatus');
+
+    statusDiv.innerHTML = '<div class="spinner-border spinner-border-sm"></div> Processing...';
+
+    fetch('{% url "core:upload_packing_list" %}',{
+    method: 'POST',
+    body: formData,
+    headers: {
+    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+}
+})
+    .then(response => response.json())
+    .then(data => {
+    if (data.success) {
+    statusDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+    if (data.errors && data.errors.length > 0) {
+    statusDiv.innerHTML += `<div class="alert alert-warning">${data.errors.join('<br>')}</div>`;
+}
+    // Optionally reload the page after a delay
+    setTimeout(() => location.reload(), 3000);
+} else {
+    statusDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+}
+})
+    .catch(error => {
+    statusDiv.innerHTML = '<div class="alert alert-danger">Upload failed. Check console.</div>';
+    console.error('Upload error:', error);
+});
+});
+function recalcTotalWeight() {
+    const selected = document.querySelectorAll('.tag-checkbox:checked');
+    let total = 0;
+    let count = 0;
+
+    if (selected.length > 0) {
+        // Sum selected tags only
+        selected.forEach(cb => {
+            const w = parseFloat(cb.dataset.weight) || 0;
+            total += w;
+            if (w > 0) count++;
+        });
+    } else {
+        // No selection → show the total for all filtered tags
+        // Read it from a data attribute we'll add to the page
+        const allWeight = parseFloat(
+            document.getElementById('filteredTotalWeight')?.dataset.value
+        ) || 0;
+        total = allWeight;
+    }
+
+    const display = document.getElementById('totalWeightDisplay');
+    display.textContent = total.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+    const info = document.getElementById('weightSelectionInfo');
+    if (selected.length > 0) {
+        info.textContent = `Selected ${selected.length} tag(s), ${count} with weight`;
+    } else {
+        info.textContent = 'Total for all filtered tags';
+    }
+}
+
+// Store the filtered total in a hidden element so JS can read it
 </script>
+
 {% endblock %}
 

@@ -20,18 +20,28 @@
 
                 </div>
                 <div class="card-body">
-                    <p class="mb-1"></p>
+                    <p class="mb-1">تجهیزها</p>
                     {% for item in work_package_items %}
                     {% if item.work_package == wp %}
                     <div class="row g-3" style="margin-top: 0.2rem;" data-level="{{ group.grouper }}">
-                        <a href="{% url 'core:equipment-tag-detail' item.equipment_tag.pk %}">
+                        <a href="{% url 'core:equipment-tag-detail' item.equipment_tag.pk %}" class="text-decoration-none">
                     <small class="text-muted">{{ item.sequence_number }}:</small>
                     <small class="text-muted">{{ item.equipment_tag }}</small>
                         </a>
                     </div>
                     {% endif %}
                     {% endfor %}
-
+                    </br>
+                    <p class="mb-1">نیازمندی ها</p>
+                    {% for req in work_package_requirements %}
+                    {% if req.work_pack == wp %}
+                    <div class="row g-3" style="margin-top: 0.2rem;" data-level="{{ group.grouper }}" >
+                        <a href="{% url 'construction:work_package_detail' wp.pk %}" class="text-decoration-none">
+                            <p class="mb-1">{{ req.name }}</p>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
                 </div>
         </div>
            <!-- or any other field -->

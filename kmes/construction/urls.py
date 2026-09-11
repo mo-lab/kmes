@@ -77,5 +77,5 @@ urlpatterns = [
 		     name='toggle_requirement_completed'),
 		path('work-packages/tree/',
 		     WorkPackageTree.as_view(),
-		     name='work-package_tree'),
+		     name='work_package_tree'),
 		]

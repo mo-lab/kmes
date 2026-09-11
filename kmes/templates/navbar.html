@@ -26,13 +26,34 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
         <!-- Dashboard -->
-        <li class="nav-item">
-          <a style="max-height: 40px; width: 117px;" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-             href="{% url 'dashboard' %}">
-            <i class="bi bi-speedometer2 me-1" style="max-width: 90px;" ></i> Dashboard
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'equipment_tag' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-tag me-1"></i> Dashboard
           </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-speedometer2 me-1" style="max-width: 90px;" ></i> dashboards
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'dashboard' %}">
+                <i class="bi bi-list-ul"></i> dashboard 1
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:work_package_timeline' %}">
+                <i class="bi bi-plus-circle"></i> dashboard 2
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:work_package_tree' %}">
+                <i class="bi bi-grid-3x3-gap"></i> dashboard 3
+              </a>
+            </li>
+          </ul>
         </li>
-
         <!-- Projects Dropdown -->
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle {% if 'project' in request.resolver_match.url_name or 'area' in request.resolver_match.url_name or 'system' in request.resolver_match.url_name or 'equipment' in request.resolver_match.url_name %}active{% endif %}"

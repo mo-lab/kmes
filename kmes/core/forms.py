@@ -2,7 +2,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from .models import Project, Area, System, EquipmentTag
+from .models import Project, Area, System, EquipmentTag, PackingList
 
 DATE_INPUT = forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
 
@@ -190,7 +190,7 @@ class EquipmentTagForm(forms.ModelForm):
 				'tag_number', 'description', 'equipment_type', 'discipline',
 				'manufacturer', 'model_number', 'serial_number',
 				'criticality', 'status',
-				'installation_date', 'weight_kg', 'dimensions', 'notes',
+				'installation_date', 'weight_kg', 'dimensions', 'notes','packing'
 				]
 		widgets = {
 				'description':       forms.Textarea(attrs={'rows': 3}),
@@ -199,6 +199,7 @@ class EquipmentTagForm(forms.ModelForm):
 				'discipline':        forms.Select(),
 				'criticality':       forms.Select(),
 				'status':            forms.Select(),
+				'packing':           forms.Select(),
 				'installation_date': DATE_INPUT,
 				'weight_kg':         forms.NumberInput(attrs={'step': '0.01'}),
 				}
@@ -263,35 +264,55 @@ class EquipmentTagForm(forms.ModelForm):
 	
 	def clean(self):
 		cleaned = super().clean()
-		project = cleaned.get('project')
-		area = cleaned.get('area')
-		system = cleaned.get('system')
-		parent = cleaned.get('parent_tag')
-		
+		# project = cleaned.get('project')
+		# area = cleaned.get('area')
+		# system = cleaned.get('system')
+		# parent = cleaned.get('parent_tag')
+		#
 		# If area or system provided, ensure they belong to the same project (if project provided)
-		if project:
-			if area and area.project_id != project.id:
-				raise ValidationError({'area': _("Selected area does not belong to the chosen project.")})
-			if system and system.project_id != project.id:
-				raise ValidationError({'system': _("Selected system does not belong to the chosen project.")})
-			if parent and parent.project_id != project.id:
-				raise ValidationError({'parent_tag': _("Parent tag does not belong to the chosen project.")})
-		
+		# if project:
+		# 	if area and area.project_id != project.id:
+		# 		raise ValidationError({'area': _("Selected area does not belong to the chosen project.")})
+		# 	if system and system.project_id != project.id:
+		# 		raise ValidationError({'system': _("Selected system does not belong to the chosen project.")})
+		# 	if parent and parent.project_id != project.id:
+		# 		raise ValidationError({'parent_tag': _("Parent tag does not belong to the chosen project.")})
+		#
 		# Ensure tag_number uniqueness within project (helpful UX; model-level indexes still enforce)
-		tag_number = cleaned.get('tag_number')
-		if project and tag_number:
-			qs = EquipmentTag.objects.filter(project=project, tag_number=tag_number)
-			if self.instance.pk:
-				qs = qs.exclude(pk=self.instance.pk)
-			if qs.exists():
-				raise ValidationError({'tag_number': _("An equipment tag with this tag number already exists in the project.")})
-		
+		# tag_number = cleaned.get('tag_number')
+		# if project and tag_number:
+		# 	qs = EquipmentTag.objects.filter(project=project, tag_number=tag_number)
+		# 	if self.instance.pk:
+		# 		qs = qs.exclude(pk=self.instance.pk)
+		# 	if qs.exists():
+		# 		raise ValidationError({'tag_number': _("An equipment tag with this tag number already exists in the project.")})
+		#
 		return cleaned
 
 
 class EquipmentTagFilterForm(forms.Form):
 	"""Form for filtering equipment tags in lists."""
-	
+	grid_x = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'Grid X'
+					})
+			)
+	grid_y = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'Grid Y'
+					})
+			)
+	grid_z = forms.CharField(
+			required=False,
+			widget=forms.TextInput(attrs={
+					'class': 'form-control form-control-sm',
+					'placeholder': 'Grid Z'
+					})
+			)
 	project = forms.ModelChoiceField(
 			queryset=Project.objects.all(),
 			required=False,
@@ -299,6 +320,11 @@ class EquipmentTagFilterForm(forms.Form):
 			)
 	area = forms.ModelChoiceField(
 			queryset=Area.objects.none(),
+			required=False,
+			widget=forms.Select(attrs={'class': 'form-select form-select-sm'})
+			)
+	packing = forms.ModelChoiceField(
+			queryset=PackingList.objects.all(),
 			required=False,
 			widget=forms.Select(attrs={'class': 'form-select form-select-sm'})
 			)
@@ -591,3 +617,57 @@ class SystemSearchForm(forms.Form):
 							}
 					)
 			)
+
+
+class PackingListForm(forms.ModelForm):
+	class Meta:
+		model = PackingList
+		fields = ['name', 'description','packing_list_num']
+		widgets = {
+				'name': forms.TextInput(attrs={'class': 'form-control'}),
+				'packing_list_num': forms.TextInput(attrs={'class': 'form-control'}),
+				'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+				}
+	
+	equipment_tags = forms.ModelMultipleChoiceField(
+			queryset=EquipmentTag.objects.all(),
+			required=False,
+			widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '10'}),
+			label='Equipment Tags'
+			)
+	
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		# If a project is already selected (e.g., from URL), filter tags accordingly
+		project_id = self.initial.get('project') or (self.data.get('project') if self.data else None)
+		if project_id:
+			self.fields['equipment_tags'].queryset = EquipmentTag.objects.filter(
+					project_id=project_id
+					)
+		else:
+			self.fields['equipment_tags'].queryset = EquipmentTag.objects.all()
+
+
+class PackingListUploadForm(forms.Form):
+	excel_file = forms.FileField(
+			label='Excel File',
+			widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx,.xls'})
+			)
+	equipment_type = forms.ChoiceField(
+			choices=[('', '--- انتخاب ---')] + list(EquipmentTag.EquipmentType.choices),
+			required=False,
+			widget=forms.Select(attrs={'class': 'form-select'})
+			)
+
+	discipline = forms.ChoiceField(
+			choices=[('', '--- انتخاب ---')] + list(EquipmentTag.Discipline.choices),
+			required=False,
+			widget=forms.Select(attrs={'class': 'form-select'})
+			)
+	
+	status = forms.ChoiceField(
+			choices=[('', '--- انتخاب ---')] + list(EquipmentTag.Status.choices),
+			required=False,
+			widget=forms.Select(attrs={'class': 'form-select'})
+			)
+	

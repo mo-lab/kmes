@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 		"django.contrib.messages",
 		"django.contrib.staticfiles",
 		"openpyxl",
+		'accounts',
 		'core',
 		'documents',
 		'procurement',
@@ -137,3 +138,12 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # For file uploads
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+
+# Login/Logout redirect URLs
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'core:dashboard'
+LOGOUT_REDIRECT_URL = 'accounts:login'
+
+# Session settings (optional)
+SESSION_COOKIE_AGE = 30 * 24 * 60 * 60  # 30 days
+SESSION_SAVE_EVERY_REQUEST = True

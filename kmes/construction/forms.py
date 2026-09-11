@@ -443,8 +443,13 @@ class WorkPackageItemForm(forms.ModelForm):
 	
 	class Meta:
 		model = WorkPackageItem
-		fields = ['equipment_tag', 'sequence_number', 'notes']
+		fields = ['work_package' , 'equipment_tag', 'sequence_number', 'notes']
 		widgets = {
+				'work_package':   forms.Select(
+						attrs={
+								'class':    'form-select',
+								}
+						),
 				'equipment_tag':   forms.Select(
 						attrs={
 								'class':    'form-select',

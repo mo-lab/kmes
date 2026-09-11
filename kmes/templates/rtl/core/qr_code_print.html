@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Print QR Codes</title>
+    <style>
+        @page { size: A4; margin: 1cm; }
+        body { font-family: Arial, sans-serif; }
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .qr-item {
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 15px;
+            page-break-inside: avoid;
+        }
+        .qr-item img {
+            width: 150px;
+            height: 150px;
+        }
+        .qr-item h5 { margin: 10px 0 5px; }
+        .qr-item p { margin: 0; font-size: 12px; color: #666; }
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="no-print" style="margin-bottom: 20px; text-align: center;">
+    <button onclick="window.print()">چاپ</button>
+    <button onclick="window.close()">بستن</button>
+</div>
+<div class="qr-grid">
+    {% for tag in tags %}
+    <div class="qr-item">
+        {% if tag.qr_code %}
+        <img src="{{ tag.qr_code.url }}" alt="QR {{ tag.tag_number }}">
+        {% endif %}
+        <h5>{{ tag.tag_number }}</h5>
+        <p>{{ tag.description|truncatechars:30 }}</p>
+        {% if tag.area %}
+        <p>{{ tag.area|truncatechars:30 }}</p>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+</div>
+</body>
+</html>

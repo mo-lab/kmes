@@ -3,7 +3,7 @@
 
 {% block title %}{{ tag.tag_number }} - جزئیات برچسب تجهیزات{% endblock %}
 
-{% block extra_css %}
+{% block extra_head %}
 <style>
     .tag-header {
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -303,6 +303,9 @@
         </a>
         <a href="{% url 'core:equipment_tag_create' %}?parent_tag={{ tag.pk }}" class="quick-action bg-primary bg-opacity-10 text-primary text-decoration-none">
             <i class="bi bi-plus-circle me-2"></i> افزودن برچسب فرزند
+        </a>
+        <a href="{% url 'core:print_qr_codes' %}?tags={{ tag.pk }}" class="quick-action bg-primary bg-opacity-10 text-primary text-decoration-none">
+            <i class="bi bi-plus-circle me-2"></i> چاپ QRCode
         </a>
     </div>
 
@@ -1227,6 +1230,43 @@
                 </div>
 
             </div>
+        </div>
+    </div>
+
+    <!-- QR Code Section -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-qr-code me-2"></i>QR Code</h6>
+        </div>
+        <div class="card-body text-center">
+            {% if tag.qr_code %}
+            <img src="{{ tag.qr_code.url }}"
+                 alt="QR Code for {{ tag.tag_number }}"
+                 class="img-fluid"
+                 style="max-width: 200px;">
+            <p class="text-muted small mt-2">
+                اسکن کنید تا جزئیات تجهیز را مشاهده کنید
+            </p>
+            <div class="d-grid gap-2 d-flex justify-content-center">
+                <a href="{% url 'core:download_qr_code' tag.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-download"></i> دانلود QR Code
+                </a>
+                <form method="post" action="{% url 'core:regenerate_qr_code' tag.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> تولید مجدد
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <p class="text-muted">QR code هنوز تولید نشده است.</p>
+            <form method="post" action="{% url 'core:regenerate_qr_code' tag.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-qr-code"></i> تولید QR Code
+                </button>
+            </form>
+            {% endif %}
         </div>
     </div>
 

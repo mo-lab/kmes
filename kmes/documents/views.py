@@ -1,5 +1,5 @@
 from datetime import timezone, time, datetime
-from time import timezone as ttimezone
+from django.utils import timezone as ttimezone
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -343,7 +343,7 @@ class DocumentDetailView(LoginRequiredMixin, generic.DetailView):
 					is_accessed=False
 					).update(
 					is_accessed=True,
-					accessed_date=timezone.now()
+					accessed_date=ttimezone.now()
 					)
 			
 			# Get my share permissions

@@ -1,14 +1,12 @@
 from datetime import timezone, timedelta
-
+import math
+import os
+from openpyxl import load_workbook
 from django.db.models import Q, Count, Case, When, Value, CharField, Sum
-from django.http import HttpResponse
-# views.py
+from django.http import HttpResponse, JsonResponse
 from django.urls import reverse_lazy, reverse
-from django.shortcuts import get_object_or_404
-from django.views import generic
 from django.views.generic import CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Project, Area, System, EquipmentTag
+from .models import Project, Area, System, EquipmentTag, Drawing, DrawingHotSpot, PackingList,PackingListItem
 from .forms import ProjectForm, AreaForm, SystemForm, EquipmentTagForm, EquipmentTagFilterForm, SystemSearchForm
 from construction.models import WorkPackage, DailyProgressReport, WorkPackageItem
 from commissioning.models import PunchItem
@@ -21,17 +19,15 @@ from django.utils import timezone
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
-
+from openpyxl.utils import column_index_from_string
 from .models import EquipmentTag, EquipmentLocation, EquipmentLocationImage
 from .forms import (
 	EquipmentLocationForm,
 	EquipmentLocationImageForm,
-	EquipmentLocationSearchForm
+	EquipmentLocationSearchForm,
+	PackingListForm,
+	PackingListUploadForm
 	)
-
-
-
-
 
 class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 	model = EquipmentTag
@@ -46,7 +42,7 @@ class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 		
 		project_id = self.request.GET.get('project')
 		if project_id:
-			project_id=int(project_id)
+			project_id = int(project_id)
 			initial['project'] = get_object_or_404(Project, pk=project_id)
 		
 		parent_id = self.request.GET.get('parent_tag')
@@ -84,7 +80,7 @@ class EquipmentTagCreateView(LoginRequiredMixin, CreateView):
 		project_id = self.kwargs.get('project_id') or self.request.GET.get('project')
 		if project_id:
 			context['project'] = get_object_or_404(Project, pk=project_id)
-		
+		context['packing_list']=PackingList.objects.all()
 		return context
 	
 	# @transaction.atomic
@@ -1061,11 +1057,12 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 	
 	def get_queryset(self):
 		queryset = EquipmentTag.objects.select_related(
-				'project', 'area', 'system', 'parent_tag'
+				'project', 'area', 'system', 'parent_tag','packing'
 				).prefetch_related(
 				'child_tags',
 				'tag_documents',
-				'punch_items'
+				'punch_items',
+				'grids',
 				).annotate(
 				child_count=Count('child_tags', distinct=True),
 				document_count=Count('tag_documents', distinct=True),
@@ -1088,7 +1085,11 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 			
 			if data.get('area'):
 				queryset = queryset.filter(area=data['area'])
-			
+				
+			if data.get('packing'):
+				
+				queryset = queryset.filter(packing=data['packing'])
+		
 			if data.get('system'):
 				queryset = queryset.filter(system=data['system'])
 			
@@ -1103,7 +1104,16 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 			
 			if data.get('criticality'):
 				queryset = queryset.filter(criticality=data['criticality'])
-			
+				
+			if data.get('grid_x'):
+				queryset = queryset.filter(grids__grid_x__icontains=data['grid_x'])
+				
+			if data.get('grid_y'):
+				queryset = queryset.filter(grids__grid_y__icontains=data['grid_y'])
+				
+			if data.get('grid_z'):
+				queryset = queryset.filter(grids__grid_z__icontains=data['grid_z'])
+				
 			if data.get('search'):
 				search = data['search']
 				queryset = queryset.filter(
@@ -1111,6 +1121,7 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 						Q(description__icontains=search) |
 						Q(manufacturer__icontains=search) |
 						Q(model_number__icontains=search) |
+						Q(packing__packing_list_num__icontains=search) |
 						Q(serial_number__icontains=search)
 						)
 			
@@ -1130,7 +1141,7 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 				]
 		if sort in allowed_sorts:
 			queryset = queryset.order_by(sort)
-		
+	
 		return queryset
 	
 	def get_paginate_by(self, queryset):
@@ -1145,10 +1156,11 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 		
 		# Filter form
 		context['filter_form'] = EquipmentTagFilterForm(self.request.GET)
-	
+		
 		# View mode (card or table)
 		context['view_mode'] = self.request.GET.get('view', 'table')
 		context['areas_list'] = Area.objects.all()
+		context['packing_lists'] = PackingList.objects.all()
 		
 		# Statistics
 		queryset = EquipmentTag.objects.all()
@@ -1178,8 +1190,21 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 		
 		# Projects for filter dropdown
 		context['projects'] = Project.objects.all()
-		
+		context['equipment_type_choices'] = EquipmentTag.EquipmentType.choices
+		context['discipline_choices'] = EquipmentTag.Discipline.choices
+		context['status_choices'] = EquipmentTag.Status.choices
 		# Bulk action tag IDs (for checkboxes)
+		filtered_qs = self.get_queryset()
+		total_weight = filtered_qs.aggregate(
+				total=Sum('weight_kg')
+				)['total'] or 0
+
+		context['total_weight_kg'] = total_weight
+		
+		# If you also want a count of tags that have weight defined:
+		context['tags_with_weight'] = filtered_qs.filter(
+				weight_kg__isnull=False
+				).exclude(weight_kg=0).count()
 		if self.request.GET.getlist('selected_tags'):
 			context['selected_tag_ids'] = self.request.GET.getlist('selected_tags')
 		
@@ -1612,8 +1637,6 @@ class EquipmentLocationCreateView(LoginRequiredMixin, generic.CreateView):
 		form.instance.recorded_by = self.request.user
 		messages.success(self.request, 'Equipment location recorded successfully.')
 		return super().form_valid(form)
-
-
 
 
 @login_required
@@ -2214,17 +2237,17 @@ class SystemListView(LoginRequiredMixin, generic.ListView):
 class AreaUpdateView(LoginRequiredMixin, generic.UpdateView):
 	model = Area
 	form_class = AreaForm
-	template_name = 'rtl/core/area_form.html'          # reuse the same form template as create
+	template_name = 'rtl/core/area_form.html'  # reuse the same form template as create
 	success_message = "ناحیه '%(code)s - %(name)s' با موفقیت به‌روزرسانی شد."
 	
 	def get_success_url(self):
-		return reverse('core:area_list')            # redirect to area list after update
+		return reverse('core:area_list')  # redirect to area list after update
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		context['is_create'] = False
 		context['page_title'] = f"ویرایش ناحیه: {self.object.code} - {self.object.name}"
-		context['projects'] = Project.objects.all()   # if needed for project dropdown
+		context['projects'] = Project.objects.all()  # if needed for project dropdown
 		return context
 	
 	def form_valid(self, form):
@@ -2236,6 +2259,7 @@ def crusher_ga(request):
 	"""Verify a location."""
 	
 	return render(request, 'rtl/drawings/crusher_ga.html')
+
 
 def dust_bonnet(request):
 	"""Verify a location."""
@@ -2297,8 +2321,61 @@ def upload_location_image(request, pk):
 	return redirect('core:equipment_location_detail', pk=pk)
 
 
-
+def download_qr_code(request, pk):
+	"""Download QR code for an equipment tag."""
+	tag = get_object_or_404(EquipmentTag, pk=pk)
 	
+	if not tag.qr_code:
+		# Generate if not exists
+		tag.generate_qr_code()
+	
+	response = HttpResponse(tag.qr_code, content_type='image/png')
+	response['Content-Disposition'] = f'attachment; filename="qr_{tag.tag_number}.png"'
+	return response
+
+
+@login_required
+def regenerate_qr_code(request, pk):
+	"""Regenerate QR code for an equipment tag."""
+	tag = get_object_or_404(EquipmentTag, pk=pk)
+	
+	if request.method == 'POST':
+		# Delete old QR code
+		if tag.qr_code:
+			tag.qr_code.delete(save=False)
+		
+		# Generate new QR code
+		tag.generate_qr_code()
+		messages.success(request, f'QR code برای "{tag.tag_number}" مجدداً تولید شد.')
+		return redirect('core:equipment_tag_detail', pk=tag.pk)
+	
+	return redirect('core:equipment_tag_detail', pk=tag.pk)
+
+
+# View for printing multiple QR codes
+def print_qr_codes(request):
+	"""Print QR codes for multiple equipment tags."""
+	raw_ids = request.GET.getlist('tags')
+	
+	tag_ids = []
+	for raw_id in raw_ids:
+		# Split by comma if present
+		for part in raw_id.split(','):
+			part = part.strip()
+			if part.isdigit():
+				tag_ids.append(int(part))
+	
+	# Remove duplicates while preserving order
+	tag_ids = list(dict.fromkeys(tag_ids))
+	
+	if tag_ids:
+		tags = EquipmentTag.objects.filter(pk__in=tag_ids).order_by('tag_number')
+	else:
+		tags = EquipmentTag.objects.all().order_by('tag_number')[:50]
+	
+	return render(request, 'rtl/core/qr_code_print.html', {'tags': tags})
+
+
 class WorkPackageTimelineView(LoginRequiredMixin, generic.TemplateView):
 	template_name = 'rtl/construction/work_package_timeline.html'
 	
@@ -2351,9 +2428,9 @@ class WorkPackageTimelineView(LoginRequiredMixin, generic.TemplateView):
 				months.append(current)
 				# next month
 				if current.month == 12:
-					current = current.replace(year=current.year+1, month=1)
+					current = current.replace(year=current.year + 1, month=1)
 				else:
-					current = current.replace(month=current.month+1)
+					current = current.replace(month=current.month + 1)
 			context['month_headers'] = months
 			context['total_days'] = total_days
 			context['min_date'] = min_date
@@ -2385,16 +2462,18 @@ class WorkPackageTimelineView(LoginRequiredMixin, generic.TemplateView):
 			left_percent = ((start - min_date).days / total_span) * 100
 			width_percent = (duration_days / total_span) * 100
 			
-			work_packages_data.append({
-					'wp': wp,
-					'start': start,
-					'finish': finish,
-					'duration_days': duration_days,
-					'left_percent': left_percent,
-					'width_percent': width_percent,
-					'progress_percent': wp.percent_complete,
-					'status_class': self._get_status_class(wp.status),
-					})
+			work_packages_data.append(
+					{
+							'wp':               wp,
+							'start':            start,
+							'finish':           finish,
+							'duration_days':    duration_days,
+							'left_percent':     left_percent,
+							'width_percent':    width_percent,
+							'progress_percent': wp.percent_complete,
+							'status_class':     self._get_status_class(wp.status),
+							}
+					)
 		
 		context['work_packages_data'] = work_packages_data
 		context['total_work_packages'] = len(work_packages_data)
@@ -2408,6 +2487,339 @@ class WorkPackageTimelineView(LoginRequiredMixin, generic.TemplateView):
 				'COMP': 'completed',
 				'IPRO': 'in-progress',
 				'HOLD': 'on-hold',
-				'MOB': 'mobilizing',
+				'MOB':  'mobilizing',
 				'NSTA': 'not-started',
 				}.get(status, 'not-started')
+
+
+class DrawingDetailView(LoginRequiredMixin, generic.DetailView):
+	"""View system details with equipment tags, commissioning status, and related items."""
+	model = Drawing
+	template_name = 'rtl/drawings/drawing_detail.html'
+	context_object_name = 'drawing'
+	
+	def get_queryset(self):
+		return Drawing.objects.prefetch_related(
+				'hot_spots'
+				)
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		drawing = self.get_object()
+		
+		# Equipment Tags
+		hot_spots = DrawingHotSpot.objects.filter(drawing=drawing)
+		if hot_spots.count() > 0:
+			context['hot_spots'] = hot_spots
+		
+		return context
+
+
+
+
+from .models import EquipmentTag
+
+
+# Constants for template layout – ADJUST TO YOUR TEMPLATE
+TEMPLATE_PATH = os.path.join(settings.BASE_DIR, 'static', 'templates', 'equipment_tag_template.xlsx')
+ROWS_PER_PAGE = 11
+DATA_START_ROW = 15   # first row where equipment data is placed
+COLUMN_MAPPING = {
+		'Q': 'description',
+		'L': 'drawing_num',
+		'AH': 'area_name',
+		}
+
+
+@login_required
+def export_equipment_tags_template(request):
+	raw_ids = request.GET.getlist('ids')
+	selected_ids = []
+	for raw in raw_ids:
+		for part in raw.split(','):
+			part = part.strip()
+			if part.isdigit():
+				selected_ids.append(int(part))
+	
+	if not selected_ids:
+		return HttpResponse("No tags selected.", status=400)
+	
+	tags = EquipmentTag.objects.filter(pk__in=selected_ids).order_by('installation_order', 'tag_number')
+	items = PackingListItem.objects.filter(equipment_tag__pk__in=selected_ids)
+	if not tags.exists():
+		return HttpResponse("No valid tags found.", status=404)
+	
+	if not os.path.exists(TEMPLATE_PATH):
+		return HttpResponse("Template file not found.", status=500)
+	
+	wb = load_workbook(TEMPLATE_PATH)
+	template_sheet = wb.active
+	for sheet_name in wb.sheetnames[1:]:
+		wb.remove(wb[sheet_name])
+	
+	tag_list = list(tags)
+	total_pages = math.ceil(len(tag_list) / ROWS_PER_PAGE)
+	
+	for page_num in range(total_pages):
+		start_idx = page_num * ROWS_PER_PAGE
+		chunk = tag_list[start_idx:start_idx + ROWS_PER_PAGE]
+		
+		if page_num == 0:
+			sheet = template_sheet
+			sheet.title = "Page 1"
+		else:
+			sheet = wb.copy_worksheet(template_sheet)
+			sheet.title = f"Page {page_num + 1}"
+		
+		# Build skip_cells for merged ranges (non‑primary cells)
+		skip_cells = set()
+		for merged_range in sheet.merged_cells.ranges:
+			for row in range(merged_range.min_row, merged_range.max_row + 1):
+				for col in range(merged_range.min_col, merged_range.max_col + 1):
+					if row != merged_range.min_row or col != merged_range.min_col:
+						skip_cells.add((row, col))
+		
+		# Fill data rows (no clearing needed)
+		for i, tag in enumerate(chunk):
+			row_num = DATA_START_ROW + i
+			for col_letter, field_name in COLUMN_MAPPING.items():
+				col_idx = column_index_from_string(col_letter)
+				if (row_num, col_idx) in skip_cells:
+					continue  # skip non‑primary merged cells
+				
+				# Determine value
+				if field_name == 'equipment_type_display':
+					value = tag.get_equipment_type_display()
+				elif field_name == 'discipline_display':
+					value = tag.get_discipline_display()
+				elif field_name == 'status_display':
+					value = tag.get_status_display()
+				elif field_name == 'area_name':
+					value = tag.area.name if tag.area else ''
+				elif field_name == 'system_code':
+					value = tag.system.code if tag.system else ''
+				else:
+					value = getattr(tag, field_name, '')
+				sheet.cell(row=row_num, column=col_idx).value = value
+	
+	response = HttpResponse(
+			content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+			)
+	filename = f"equipment_tags_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+	response['Content-Disposition'] = f'attachment; filename="{filename}"'
+	wb.save(response)
+	return response
+
+
+class PackingListCreateView(LoginRequiredMixin, CreateView):
+	model = PackingList
+	form_class = PackingListForm
+	template_name = 'rtl/core/packing_list_form.html'
+	
+	def get_success_url(self):
+		return reverse('core:packing_list_detail', kwargs={'pk': self.object.pk})
+	
+	def get_initial(self):
+		initial = super().get_initial()
+		project_id = self.kwargs.get('project_id') or self.request.GET.get('project')
+		if project_id:
+			initial['project'] = get_object_or_404(Project, pk=project_id)
+		return initial
+	
+	def form_valid(self, form):
+		# Save the packing list first
+		self.object = form.save()
+		
+		# Assign selected equipment tags to this packing list
+		tags = form.cleaned_data.get('equipment_tags')
+		if tags:
+			# Clear any previous packing_list on these tags (they will be reassigned)
+			EquipmentTag.objects.filter(pk__in=tags).update(packing=self.object)
+		
+		messages.success(self.request, f'Packing list "{self.object.name}" created with {tags.count()} tag(s).')
+		return super().form_valid(form)
+
+import re
+
+def normalize_header(value):
+	if value is None:
+		return ''
+	s = str(value)
+	s = s.replace('\n', ' ').replace('\r', ' ')
+	s = re.sub(r'[^\w\s]', '', s)   # remove punctuation
+	s = re.sub(r'\s+', ' ', s)      # collapse spaces
+	return s.strip().lower()
+
+
+def upload_packing_list(request):
+	"""Handle Excel upload and process packing list data."""
+	form = PackingListUploadForm(request.POST, request.FILES)
+	if not form.is_valid():
+		return JsonResponse({'success': False, 'error': 'Invalid form data.'})
+	
+	excel_file = request.FILES['excel_file']
+	equipment_type = form.cleaned_data.get('equipment_type')
+	
+	discipline = form.cleaned_data.get('discipline')
+	status = form.cleaned_data.get('status')
+
+	# Read the Excel file
+	try:
+		wb = load_workbook(excel_file, data_only=True)
+	except Exception as e:
+		return JsonResponse({'success': False, 'error': f'Could not read Excel file: {e}'})
+	
+	ws = wb.active
+	
+	# Get headers
+	headers = [cell.value for cell in ws[1]]
+	headers_lower = [str(h).lower().strip() if h else '' for h in headers]
+	headers = [cell.value for cell in ws[1]]
+	for i, h in enumerate(headers, 1):
+		print(f"Header {i}: {repr(h)}")
+	# Column mapping (adjust to match your Excel)
+	col_map = {
+			'packing_list_num': 'Packing List  No.',   # replace with actual header, e.g., "Packing List No."
+			'tag_number': 'Goods Item\n No.',         # e.g., "Tag Number"
+			'description': 'Material. Description.',
+			'drawing_number': 'Dwg No.',
+			# --- PackingListItem fields from your header ---
+			'received_date': 'Received Date',  # adjust if different
+			'page_no': 'Page No.',
+			'goods_item_no': 'Goods Item\n No.',          # with line break inside cell
+			'type_of_material': 'Type of Material.',
+			'material_description': 'Material. Description.',
+			'vendor': 'Vendor Or\nSupplier.',
+			'mrs_no': 'MRS No.',
+			'mrs_date': 'MRS Date',
+			'qty_opi': 'QTY.\n( OPI Recived )',
+			'discipline': 'Discipline.',
+			# --- Optional extra columns from header (add fields to model if needed) ---
+			'weight_kg': 'Unit\nWeight Kg.',
+			'total_weight_kg': 'Total\nWeight Kg.',
+			}
+
+	# Normalize all headers in the sheet
+	normalized_headers = [normalize_header(h) for h in headers]
+	project=Project.objects.all().first()
+	col_indices = {}
+	for key, excel_header in col_map.items():
+		if excel_header is None:
+			col_indices[key] = None
+			continue
+		target = normalize_header(excel_header)
+		if target in normalized_headers:
+			col_indices[key] = normalized_headers.index(target)
+		else:
+			col_indices[key] = None
+	print(col_indices)
+	# Required columns
+	if col_indices['packing_list_num'] is None or col_indices['tag_number'] is None:
+		return JsonResponse({
+				'success': False,
+				'error': 'Excel must contain "packing_list_num" and "tag_number" columns.'
+				})
+	
+	created_pl = None
+	created_tags = 0
+	created_items = 0
+	errors = []
+	
+	try:
+		for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+			
+			if not any(row):
+				continue
+			packing_list_num = row[col_indices['packing_list_num']]
+			tag_number = row[col_indices['tag_number']]
+			if packing_list_num is None or tag_number is None:
+				errors.append(f'Row {row_idx}: missing packing list or tag number.')
+				continue
+			
+			# Get or create PackingList
+			if created_pl is None:
+				existing_pl = PackingList.objects.filter(packing_list_num=str(packing_list_num)).first()
+				if existing_pl:
+					created_pl = existing_pl
+				else:
+					created_pl = PackingList.objects.create(
+							packing_list_num=str(packing_list_num),
+							name=str(packing_list_num)
+							)
+			
+			# Get or create EquipmentTag
+			tag_defaults = {}
+			if col_indices['description'] is not None:
+				tag_defaults['description'] = row[col_indices['description']]
+			if col_indices['drawing_number'] is not None:
+				tag_defaults['drawing_num'] = row[col_indices['drawing_number']]
+			if col_indices['weight_kg'] is not None:
+				tag_defaults['weight_kg'] = row[col_indices['weight_kg']]
+			if col_indices['tag_number'] is not None:
+				tag_defaults['tag_number'] = row[col_indices['tag_number']]
+			if equipment_type:
+				tag_defaults['equipment_type'] = equipment_type
+			if discipline:
+				tag_defaults['discipline'] = discipline
+			if status:
+				tag_defaults['status'] = status
+			equipment_tag, tag_created = EquipmentTag.objects.get_or_create(
+					tag_number=str(tag_number),
+					project=project,
+					defaults=tag_defaults
+					)
+			
+			# # Handle area (if it's a FK, you'll need to resolve it; assume CharField for simplicity)
+			# if col_indices['area'] is not None and not tag_created:
+			# 	equipment_tag.area = row[col_indices['area']]   # adjust if FK
+			# 	equipment_tag.save()
+			# elif col_indices['area'] is not None and tag_created:
+			# 	equipment_tag.area = row[col_indices['area']]   # adjust if FK
+			# 	equipment_tag.save()
+			
+			if tag_created:
+				created_tags += 1
+			
+			# Prepare PackingListItem data
+			item_data = {
+					'equipment_tag': equipment_tag,
+					'packing_list': created_pl,
+					}
+			
+			# Helper to convert Excel date to Python date
+			def convert_date(value):
+				if isinstance(value, datetime):
+					return value.date()
+				return value
+			
+			if col_indices['discipline'] is not None:
+				item_data['discipline'] = row[col_indices['discipline']]
+			if col_indices['page_no'] is not None:
+				item_data['page_no'] = row[col_indices['page_no']]
+			if col_indices['goods_item_no'] is not None:
+				item_data['goods_item_no'] = str(row[col_indices['goods_item_no']])
+			if col_indices['type_of_material'] is not None:
+				item_data['type_of_material'] = row[col_indices['type_of_material']]
+			if col_indices['material_description'] is not None:
+				item_data['material_description'] = row[col_indices['material_description']]
+			if col_indices['vendor'] is not None:
+				item_data['vendor'] = row[col_indices['vendor']]
+			if col_indices['mrs_no'] is not None:
+				item_data['mrs_no'] = str(row[col_indices['mrs_no']])
+			if col_indices['qty_opi'] is not None and row[col_indices['qty_opi']] is not None:
+				item_data['qty_opi'] = int(row[col_indices['qty_opi']])
+			if col_indices['total_weight_kg'] is not None and row[col_indices['total_weight_kg']] is not None:
+				item_data['total_weight_kg'] = int(row[col_indices['total_weight_kg']])
+			print(item_data)
+			PackingListItem.objects.create(**item_data)
+			created_items += 1
+	
+	except Exception as e:
+		print(e)
+		return JsonResponse({'success': False, 'error': f'Processing error: {e}'})
+	
+	return JsonResponse({
+			'success': True,
+			'message': f'Import completed. {created_pl.packing_list_num}, {created_tags} new tags, {created_items} items.',
+			'errors': errors,
+			})

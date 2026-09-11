@@ -8,10 +8,11 @@
 <body>
 <style>
   .dashboard-bg {
-    background: url("{% static 'images/ga2.jpg' %}") no-repeat center center fixed;
+    background: url("{% static 'images/ga2.jpg' %}") no-repeat fixed;
     background-size: contain;
-    min-height: calc(100vh - 56px);
+    min-height: 100vh;
     position: relative;
+    width: 100%;
 
   }
   .main-container {
@@ -26,7 +27,7 @@
     height: 600px;
     background-size: cover;
     /*background-position: center;*/
-    /*background-attachment: fixed; !* if you want fixed *!*/
+    background-attachment: fixed; /*!* if you want fixed *!*/
   }
 
   .hotspot {
@@ -35,10 +36,11 @@
     cursor: pointer;
     /* Make it visible for debugging */
     background: rgba(255, 0, 0, 0.3);
+    transform: translate(-50%, -50%);
   }
 </style>
 <div class="dashboard-bg">
-  <a href="{% url 'core:equipment-tag-detail' 1897 %}" class="hotspot" style="top: 14%; left: 44%; width: 10px; height: 10px;"></a>
+  <a href="{% url 'core:equipment-tag-detail' 1897 %}" class="hotspot" style="top: 5.8rem; left: 164px; width: 10px; height: 10px;"></a>
   <a href="{% url 'core:equipment-tag-detail' 1897 %}" class="hotspot" style="top: 71.5%; left: 34.5%; width: 17px; height: 7px;"></a>
   <a href="{% url 'core:dust_bonnet' %}" class="hotspot" style="top: 51.2%; left: 46.7%; width: 10px; height: 10px;"></a>
 

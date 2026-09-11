@@ -26,7 +26,7 @@ class WorkPackage(models.Model):
 	code = models.CharField(max_length=50)
 	name = models.CharField(max_length=500)
 	area = models.ForeignKey(
-			'core.Area', on_delete=models.SET_NULL, related_name='work_packages',null=True,blank=True
+			'core.Area', on_delete=models.SET_NULL, related_name='work_packages', null=True, blank=True
 			)
 	system = models.ForeignKey(
 			'core.System', on_delete=models.SET_NULL, null=True, blank=True,
@@ -41,7 +41,7 @@ class WorkPackage(models.Model):
 	contractor = models.CharField(
 			max_length=255, blank=True, help_text="Company executing the work"
 			)
-	contractor_company=models.ForeignKey('resources.Company',on_delete=models.SET_NULL,related_name='work_packages',null=True,blank=True)
+	contractor_company = models.ForeignKey('resources.Company', on_delete=models.SET_NULL, related_name='work_packages', null=True, blank=True)
 	planned_start = models.DateField()
 	planned_finish = models.DateField()
 	actual_start = models.DateField(null=True, blank=True)
@@ -50,7 +50,7 @@ class WorkPackage(models.Model):
 	status = models.CharField(max_length=4, choices=Status.choices, default=Status.NOT_STARTED)
 	percent_complete = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 	
-	level = models.IntegerField(default=1,null=True,blank=True)
+	level = models.IntegerField(default=1, null=True, blank=True)
 	priority = models.PositiveSmallIntegerField(default=3, help_text="1=Highest, 5=Lowest")
 	notes = models.TextField(blank=True)
 	
@@ -76,10 +76,10 @@ class WorkPackageItem(models.Model):
 	"""Links equipment tags to the work package that installs them."""
 	
 	work_package = models.ForeignKey(
-			WorkPackage, on_delete=models.CASCADE, related_name='items'
+			WorkPackage, on_delete=models.CASCADE, related_name='items', null=True, blank=True
 			)
 	equipment_tag = models.ForeignKey(
-			'core.EquipmentTag', on_delete=models.CASCADE, related_name='work_package_items'
+			'core.EquipmentTag', on_delete=models.CASCADE, related_name='work_package_items', null=True, blank=True
 			)
 	
 	sequence_number = models.PositiveIntegerField(
@@ -91,14 +91,16 @@ class WorkPackageItem(models.Model):
 	notes = models.TextField(blank=True)
 	
 	class Meta:
-		
 		ordering = ['sequence_number']
 		verbose_name = 'Work Package Item'
 		verbose_name_plural = 'Work Package Items'
 	
 	def __str__(self):
-		return f"{self.work_package.code} -> {self.equipment_tag.tag_number}"
-
+		if self.work_package:
+			if self.work_package.code and self.equipment_tag:
+				return f"{self.work_package.code} -> {self.equipment_tag.tag_number}"
+		else:
+			return f"{self.equipment_tag.tag_number}"
 
 class DailyProgressReport(models.Model):
 	"""Daily report for a work package."""
@@ -129,7 +131,6 @@ class DailyProgressReport(models.Model):
 	updated_at = models.DateTimeField(auto_now=True)
 	
 	class Meta:
-		
 		ordering = ['-report_date']
 		verbose_name = 'Daily Progress Report'
 		verbose_name_plural = 'Daily Progress Reports'
@@ -296,18 +297,18 @@ class DailyProcessReportEmployees(models.Model):
 
 class WorkPackageRequirements(models.Model):
 	
-	work_pack = models.ForeignKey(WorkPackage,on_delete=models.CASCADE,related_name='requirements',null=True,blank=True)
+	work_pack = models.ForeignKey(WorkPackage, on_delete=models.CASCADE, related_name='requirements', null=True, blank=True)
 	name = models.CharField(max_length=255)
-	description = models.CharField(max_length=255,blank=True)
-	priority = models.IntegerField(default=1,null=True,blank=True)
-	is_completed=models.BooleanField(default=False,null=True,blank=True)
+	description = models.CharField(max_length=255, blank=True)
+	priority = models.IntegerField(default=1, null=True, blank=True)
+	is_completed = models.BooleanField(default=False, null=True, blank=True)
+	
 	class Meta:
 		verbose_name = 'Work Package Requirements'
 		verbose_name_plural = 'Work Package Requirements'
-		
+	
 	def __str__(self):
 		if self.work_pack:
 			return f'{self.work_pack.name} - {self.name}'
 		else:
 			return self.name
-	

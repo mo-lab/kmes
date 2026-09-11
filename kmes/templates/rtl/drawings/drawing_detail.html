@@ -8,9 +8,9 @@
 <body>
 <style>
   .dashboard-bg {
-    background: url("{% static 'images/Crusher Manual 1_Page363.jpg' %}") no-repeat;
-    width: 6000px;
-    height: 4242px;
+    background: url("{% static  drawing.url %}") no-repeat;
+    width: {{ drawing.width }}px;
+    height: {{ drawing.height }}px;
     position: relative;
     display: block;
     top: 0;
@@ -29,9 +29,10 @@
   }
 </style>
 <div class="dashboard-bg">
-  <a href="{% url 'core:equipment-tag-detail' 1573 %}" class="hotspot" style="top: 966px;
-   left:  4574px; width: 215px; height: 65px;"></a>
-
+  {% for hs in hot_spots %}
+  <a href="{% url 'core:equipment-tag-detail' hs.equipment_tag_ID %}" class="hotspot" style="top: {{ hs.top }}px;
+   left:  {{ hs.left }}px; width: {{ hs.width }}px; height: {{ hs.height }}px;"></a>
+{% endfor %}
 </div>
 </body>
 </html>

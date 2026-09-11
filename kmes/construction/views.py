@@ -1231,7 +1231,8 @@ class WorkPackageItemCreateView(LoginRequiredMixin, generic.CreateView):
 	success_message = "Equipment tag added to work package successfully."
 	
 	def get_success_url(self):
-		return reverse('construction:work_package_detail', kwargs={'pk': self.object.work_package.pk})
+		
+		return reverse('construction:work_package_list')
 	
 	def get_initial(self):
 		initial = super().get_initial()
@@ -1259,7 +1260,9 @@ class WorkPackageItemCreateView(LoginRequiredMixin, generic.CreateView):
 		
 		work_package_id = self.kwargs.get('work_package_id')
 		if work_package_id:
+			work_package_id=int(work_package_id)
 			work_package = get_object_or_404(WorkPackage, pk=work_package_id)
+			print(work_package)
 			context['work_package'] = work_package
 			
 			# Get already added tags
@@ -2518,5 +2521,7 @@ class WorkPackageTree(LoginRequiredMixin, generic.TemplateView):
 		context['work_package_items'] = WorkPackageItem.objects.filter(
 				work_package__in=wp_queryset
 				).all().order_by('sequence_number')
-		
+		context['work_package_requirements'] = WorkPackageRequirements.objects.filter(
+				work_pack__in=wp_queryset
+				).all().order_by('priority')
 		return context

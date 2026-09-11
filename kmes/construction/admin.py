@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import WorkPackage, WorkPackageItem, DailyProgressReport, InstalledItemCheck
+from .models import WorkPackage, WorkPackageItem, DailyProgressReport, InstalledItemCheck, WorkPackageRequirements
+
 
 @admin.register(WorkPackage)
 class WorkPackageAdmin(admin.ModelAdmin):
@@ -11,6 +12,10 @@ class WorkPackageAdmin(admin.ModelAdmin):
 class WorkPackageItemAdmin(admin.ModelAdmin):
 	list_display = ['work_package', 'equipment_tag', 'sequence_number', 'is_complete']
 	list_filter = ['is_complete']
+@admin.register(WorkPackageRequirements)
+class WorkPackageItemAdmin(admin.ModelAdmin):
+	list_display = ['id','work_pack', 'name', 'priority', 'is_completed']
+	list_filter = ['is_completed']
 
 @admin.register(DailyProgressReport)
 class DailyProgressReportAdmin(admin.ModelAdmin):

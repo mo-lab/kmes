@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Project, Area, System, EquipmentTag, EquipmentLocation, EquipmentLocationImage, ProfileSettings
+from .models import Project, Area, System, EquipmentTag, EquipmentLocation, EquipmentLocationImage, ProfileSettings, Drawing, DrawingHotSpot, \
+	PackingList, PackingListItem, EquipmentGrid
 
 
 @admin.register(Project)
@@ -37,4 +38,23 @@ class EquipmentTagAdmin(admin.ModelAdmin):
 	search_fields = ['title', 'description']
 @admin.register(ProfileSettings)
 class ProfileSettingsAdmin(admin.ModelAdmin):
-	list_display = ['language']
+	list_display = (['language'])
+
+@admin.register(Drawing)
+class DrawingAdmin(admin.ModelAdmin):
+	list_display = ['name','url']
+@admin.register(DrawingHotSpot)
+class DrawingHotSpotsAdmin(admin.ModelAdmin):
+	list_display = ['top','left','equipment_tag_ID','drawing__name','drawing__url']
+	list_filter = (['drawing__name'])
+	
+@admin.register(PackingList)
+class PackingListAdmin(admin.ModelAdmin):
+	list_display = ['packing_list_num']
+@admin.register(PackingListItem)
+class PackingListAdmin(admin.ModelAdmin):
+	list_display = ['id','material_description','total_weight_kg']
+
+@admin.register(EquipmentGrid)
+class PackingListAdmin(admin.ModelAdmin):
+	list_display = ['equipment_tag','grid_x','grid_y','grid_z']

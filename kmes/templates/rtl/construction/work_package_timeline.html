@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'rtl/base.html' %}
 {% load static %}
 
 {% block title %}Timeline - Work Packages{% endblock %}
@@ -172,11 +172,7 @@
     </h2>
 
     <!-- Filter Bar -->
-    <form method="get" class="filter-bar" style="        display: flex;
-        gap: 1rem;
-        align-items: end;
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;">
+    <form method="get" class="filter-bar">
         <div>
             <label class="form-label small">پروژه</label>
             <select name="project" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -194,12 +190,8 @@
         </div>
     </form>
 
-    <div class="timeline-container" style="        background: #fff;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        padding: 1.5rem;
-        overflow-x: auto;">
-        <div class="timeline-grid" style="min-width: 800px;position: relative;">
+    <div class="timeline-container">
+        <div class="timeline-grid">
             <!-- Header -->
             <div class="timeline-header">
                 <div style="width: 200px; min-width: 200px;"></div>
@@ -225,54 +217,29 @@
             </div>
 
             <!-- Rows -->
-            <div class="timeline-rows" style="position: relative;">
+            <div class="timeline-rows">
                 {% for item in work_packages_data %}
-                <div class="timeline-row" style="display: flex;
-        align-items: center;
-        height: 60px;
-        border-bottom: 1px solid #f0f0f0;
-        position: relative;
-        margin-bottom: 4px;">
-                    <div class="timeline-row-info" style="width: 200px;min-width: 200px;padding-right: 10px;font-size: 0.85rem;">
+                <div class="timeline-row">
+                    <div class="timeline-row-info">
                         <a href="{% url 'construction:work_package_detail' item.wp.pk %}" class="text-decoration-none">
                             <strong>{{ item.wp.code }}</strong>
                         </a>
                         <br>
                         <small class="text-muted">{{ item.wp.name|truncatechars:30 }}</small>
                     </div>
-                    <div class="timeline-row-bar" style="     flex: 1;
-        position: relative;
-        height: 30px;">
+                    <div class="timeline-row-bar">
                         <!-- Day grid lines -->
-                        <div class="timeline-day-grid" style="position: absolute;top: 0;left: 200px;right: 0;height: 100%;pointer-events: none;
-        display: flex;">
+                        <div class="timeline-day-grid">
                             {% for i in "x"|rjust:item.duration_days %}
-                            <div class="timeline-day-line" style="flex: 1;border-left: 1px dotted #e9ecef;"></div>
+                            <div class="timeline-day-line"></div>
                             {% endfor %}
                         </div>
                         <!-- Bar -->
                         <div class="timeline-bar {{ item.status_class }}"
-                             style="left: {{ item.left_percent }}%; width: {{ item.width_percent }}%;        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        height: 20px;
-        border-radius: 4px;
-        min-width: 4px;
-        cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-background: #198754;"
+                             style="left: {{ item.left_percent }}%; width: {{ item.width_percent }}%;"
                              title="{{ item.wp.code }} - {{ item.wp.name }} ({{ item.start|date:'Y-m-d' }} تا {{ item.finish|date:'Y-m-d' }})">
-                            <div class="progress-fill" style="width: {{ item.progress_percent }}%;position: absolute;top: 0;
-        left: 0;
-        height: 100%;
-        border-radius: 4px;
-        background: rgba(240,120,120,0.5);"></div>
-                            <span class="timeline-bar-label" style="        position: absolute;
-        top: -18px;
-        left: 0;
-        font-size: 0.7rem;
-        white-space: nowrap;">
+                            <div class="progress-fill" style="width: {{ item.progress_percent }}%;"></div>
+                            <span class="timeline-bar-label">
                                 {{ item.wp.percent_complete }}%
                             </span>
                         </div>
@@ -288,41 +255,12 @@ background: #198754;"
         </div>
 
         <!-- Legend -->
-        <div class="timeline-legend"style="display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;">
-            <span class="legend-item" style="        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        font-size: 0.8rem;"><span class="legend-color" style="background:#198754;        width: 15px;
-        height: 15px;
-        border-radius: 3px;"></span> تکمیل شده</span>
-            <span class="legend-item"style="        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        font-size: 0.8rem;"><span class="legend-color" style="background:#ffc107;        width: 15px;
-        height: 15px;
-        border-radius: 3px;"></span> در حال اجرا</span>
-            <span class="legend-item"style="        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        font-size: 0.8rem;"><span class="legend-color" style="background:#dc3545;        width: 15px;
-        height: 15px;
-        border-radius: 3px;"></span> متوقف</span>
-            <span class="legend-item"style="        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        font-size: 0.8rem;"><span class="legend-color" style="background:#0dcaf0;        width: 15px;
-        height: 15px;
-        border-radius: 3px;"></span> در حال تجهیز</span>
-            <span class="legend-item"style="        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        font-size: 0.8rem;"><span class="legend-color" style="background:#6c757d;        width: 15px;
-        height: 15px;
-        border-radius: 3px;"></span> شروع نشده</span>
+        <div class="timeline-legend">
+            <span class="legend-item"><span class="legend-color" style="background:#198754;"></span> تکمیل شده</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ffc107;"></span> در حال اجرا</span>
+            <span class="legend-item"><span class="legend-color" style="background:#dc3545;"></span> متوقف</span>
+            <span class="legend-item"><span class="legend-color" style="background:#0dcaf0;"></span> در حال تجهیز</span>
+            <span class="legend-item"><span class="legend-color" style="background:#6c757d;"></span> شروع نشده</span>
         </div>
     </div>
-</div>
-{% endblock %}
+</div>{% endblock %}

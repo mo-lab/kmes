@@ -2,20 +2,31 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+import qrcode
+from io import BytesIO
+from django.core.files.base import ContentFile
+from django.conf import settings
+import os
+
+
 User = get_user_model()
+
 
 class ProfileSettings(models.Model):
 	class Language(models.TextChoices):
 		farsi = 'Farsi', 'فارسی'
-		english = 'Enlish' , 'english'
+		english = 'Enlish', 'english'
+	
 	language = models.CharField(choices=Language.choices, default=Language.farsi, max_length=50)
 	
 	def __str__(self):
 		return self.language
+	
 	class Meta:
 		verbose_name = 'Profile Settings'
 		verbose_name_plural = 'Profiles Settings'
-	
+
+
 class Project(models.Model):
 	"""Top-level project entity."""
 	
@@ -47,6 +58,62 @@ class Project(models.Model):
 		return f"{self.code} - {self.name}"
 
 
+class PackingList(models.Model):
+	name=models.CharField(max_length=255,null=True,blank=True)
+	description=models.CharField(max_length=255,null=True,blank=True)
+	packing_list_num = models.CharField(max_length=100, blank=True, null=True)
+	qr_code = models.ImageField(
+			upload_to='packing_list_qr_codes/',
+			null=True,
+			blank=True,
+			help_text="QR code for this packing list"
+			)
+	qr_code_generated_at = models.DateTimeField(null=True, blank=True)
+	
+	def generate_qr_code(self):
+		
+		from django.urls import reverse
+		from django.utils import timezone
+		
+		# Build the URL that the QR code will point to
+		# You can customize this URL based on your domain
+		tag_url = f"http://127.0.0.1:8080{reverse('core:equipment_tag_detail', kwargs={'pk': self.pk})}"
+		
+		# Create QR code instance
+		qr = qrcode.QRCode(
+				version=1,
+				error_correction=qrcode.constants.ERROR_CORRECT_H,
+				box_size=10,
+				border=4,
+				)
+		
+		# Add data
+		qr.add_data(tag_url)
+		qr.make(fit=True)
+		
+		# Create image
+		qr_image = qr.make_image(fill_color="black", back_color="white")
+		
+		# Save to BytesIO
+		buffer = BytesIO()
+		qr_image.save(buffer, format='PNG')
+		
+		# Save to ImageField
+		filename = f'qr_{self.tag_number}.png'
+		self.qr_code.save(
+				filename,
+				ContentFile(buffer.getvalue()),
+				save=False
+				)
+		self.qr_code_generated_at = timezone.now()
+		self.save(update_fields=['qr_code', 'qr_code_generated_at'])
+		
+		return self.qr_code
+	
+	def __str__(self):
+		return f"{self.packing_list_num}"
+	
+	
 class Area(models.Model):
 	"""Physical/logical zone within a project."""
 	
@@ -381,6 +448,7 @@ class EquipmentLocationImage(models.Model):
 		return "Unknown"
 
 
+	
 class EquipmentTag(models.Model):
 	"""Central entity for all physical assets. Supports assembly hierarchy via self-referencing."""
 	
@@ -428,8 +496,9 @@ class EquipmentTag(models.Model):
 		COMMISSIONED = 'COMM', 'Commissioned'
 		HANDED_OVER = 'HNDO', 'Handed Over'
 		DEFECT = 'DEF', 'Defective'
-	installation_order=models.IntegerField(default=0,blank=True,null=True)
-	project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='equipment_tags')
+	
+	installation_order = models.IntegerField(default=0, blank=True, null=True)
+	project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='equipment_tags',null=True,blank=True)
 	area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True, blank=True, related_name='equipment_tags')
 	system = models.ForeignKey(System, on_delete=models.SET_NULL, null=True, blank=True, related_name='equipment_tags')
 	parent_tag = models.ForeignKey(
@@ -438,9 +507,10 @@ class EquipmentTag(models.Model):
 			)
 	drawing_num = models.CharField(max_length=100, blank=True, null=True)
 	tag_number = models.CharField(max_length=100, db_index=True)
-	description = models.CharField(max_length=500)
-	equipment_type = models.CharField(max_length=5, choices=EquipmentType.choices)
-	discipline = models.CharField(max_length=5, choices=Discipline.choices)
+	description = models.CharField(max_length=500,null=True,blank=True)
+	equipment_type = models.CharField(max_length=5, choices=EquipmentType.choices,null=True,blank=True)
+	discipline = models.CharField(max_length=5, choices=Discipline.choices,null=True,blank=True)
+	packing = models.ForeignKey(PackingList, on_delete=models.SET_NULL, null=True, blank=True, related_name='equipment_tags')
 	
 	manufacturer = models.CharField(max_length=255, blank=True)
 	model_number = models.CharField(max_length=100, blank=True)
@@ -449,7 +519,7 @@ class EquipmentTag(models.Model):
 	status = models.CharField(max_length=4, choices=Status.choices, default=Status.ENGINEERING)
 	
 	installation_date = models.DateField(null=True, blank=True)
-	weight_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,default=0)
+	weight_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
 	dimensions = models.CharField(
 			max_length=200, blank=True,
 			help_text="LxWxH in mm, e.g., '3000x2000x1500'"
@@ -458,6 +528,53 @@ class EquipmentTag(models.Model):
 	
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
+	qr_code = models.ImageField(
+			upload_to='equipment_qr_codes/',
+			null=True,
+			blank=True,
+			help_text="QR code for this equipment tag"
+			)
+	qr_code_generated_at = models.DateTimeField(null=True, blank=True)
+	
+	def generate_qr_code(self):
+		
+		from django.urls import reverse
+		from django.utils import timezone
+		
+		# Build the URL that the QR code will point to
+		# You can customize this URL based on your domain
+		tag_url = f"http://0.0.0.0:8080{reverse('core:equipment_tag_detail', kwargs={'pk': self.pk})}"
+		
+		# Create QR code instance
+		qr = qrcode.QRCode(
+				version=1,
+				error_correction=qrcode.constants.ERROR_CORRECT_H,
+				box_size=10,
+				border=4,
+				)
+		
+		# Add data
+		qr.add_data(tag_url)
+		qr.make(fit=True)
+		
+		# Create image
+		qr_image = qr.make_image(fill_color="black", back_color="white")
+		
+		# Save to BytesIO
+		buffer = BytesIO()
+		qr_image.save(buffer, format='PNG')
+		
+		# Save to ImageField
+		filename = f'qr_{self.tag_number}.png'
+		self.qr_code.save(
+				filename,
+				ContentFile(buffer.getvalue()),
+				save=False
+				)
+		self.qr_code_generated_at = timezone.now()
+		self.save(update_fields=['qr_code', 'qr_code_generated_at'])
+		
+		return self.qr_code
 	
 	class Meta:
 		ordering = ['tag_number']
@@ -472,11 +589,19 @@ class EquipmentTag(models.Model):
 	def __str__(self):
 		return f"{self.tag_number} - {self.description[:50]}"
 	
+	def save(self, *args, **kwargs):
+		is_new = self.pk is None
+		super().save(*args, **kwargs)
+		
+		# Auto-generate QR code for new tags
+		if is_new and not self.qr_code:
+			self.generate_qr_code()
+	
 	def get_hierarchy_tree(self, level=0):
 		"""Returns a nested representation of the assembly hierarchy."""
 		tree = {
-				'tag': self,
-				'level': level,
+				'tag':      self,
+				'level':    level,
 				'children': []
 				}
 		for child in self.child_tags.all():
@@ -492,11 +617,12 @@ class EquipmentTag(models.Model):
 			parts.insert(0, current.tag_number)
 			current = current.parent_tag
 		return '/'.join(parts)
+	
 	@property
 	def current_location(self):
 		"""Get the current location of this equipment."""
 		return self.locations.filter(is_current=True).first()
-
+	
 	@property
 	def location_history(self):
 		"""Get location history for this equipment."""
@@ -509,7 +635,7 @@ class EquipmentTag(models.Model):
 				is_current=False,
 				departure_date=timezone.now()
 				)
-	
+		
 		# Create new location
 		return EquipmentLocation.objects.create(
 				equipment_tag=self,
@@ -520,3 +646,50 @@ class EquipmentTag(models.Model):
 				**kwargs
 				)
 
+
+class Drawing(models.Model):
+	name = models.CharField(null=True, blank=True, max_length=200)
+	url = models.CharField(null=True, blank=True)
+	width = models.IntegerField(null=True, blank=True, default=6000)
+	height = models.IntegerField(null=True, blank=True, default=4242)
+	
+	def __str__(self):
+		return self.name
+
+
+class DrawingHotSpot(models.Model):
+	drawing = models.ForeignKey(Drawing, on_delete=models.CASCADE, null=True, blank=True, related_name='hot_spots')
+	top = models.IntegerField(null=True, blank=True)
+	left = models.IntegerField(null=True, blank=True)
+	width = models.IntegerField(null=True, blank=True, default=192)
+	height = models.IntegerField(null=True, blank=True, default=35)
+	equipment_tag_ID = models.IntegerField(null=True, blank=True)
+
+
+class PackingListItem(models.Model):
+	equipment_tag=models.ForeignKey(EquipmentTag, on_delete=models.SET_NULL,related_name='packing_list_items', blank=True, null=True)
+	packing_list=models.ForeignKey(PackingList, on_delete=models.SET_NULL, blank=True, null=True,related_name='packing_list_items')
+	received_date=models.DateField(null=True, blank=True)
+	discipline=models.CharField(max_length=255, null=True, blank=True)
+	page_no=models.IntegerField(null=True, blank=True)
+	goods_item_no=models.CharField(max_length=255, null=True, blank=True)
+	type_of_material=models.CharField(max_length=255, null=True, blank=True)
+	material_description=models.CharField(max_length=255, null=True, blank=True)
+	vendor=models.CharField(max_length=255, null=True, blank=True)
+	mrs_no=models.CharField(max_length=255, null=True, blank=True)
+	mrs_date=models.DateField(null=True, blank=True)
+	qty_opi=models.IntegerField(null=True, blank=True)
+	miv=models.IntegerField(null=True, blank=True)
+	total_weight_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+
+
+class EquipmentGrid(models.Model):
+	grid_x=models.CharField(max_length=255, null=True, blank=True)
+	grid_y=models.CharField(max_length=255, null=True, blank=True)
+	grid_z=models.CharField(max_length=255, null=True, blank=True)
+	equipment_tag=models.ForeignKey(EquipmentTag, on_delete=models.CASCADE,related_name='grids', blank=True, null=True)
+	
+	def __str__(self):
+		if self.grid_z and self.grid_x and self.grid_y:
+			return f'{self.grid_x} - {self.grid_y} - {self.grid_z}'
+	

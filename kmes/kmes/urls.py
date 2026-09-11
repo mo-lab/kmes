@@ -19,6 +19,7 @@ urlpatterns = [
 		 path('construction/', include('construction.urls', namespace='construction')),
 		 path('resources/', include('resources.urls', namespace='resources')),
 		path('', views.DashboardView.as_view(), name='dashboard'),
+		path('accounts/', include('accounts.urls')),
 		# path('documents/', include('documents.urls', namespace='documents')),
 		# path('procurement/', include('procurement.urls', namespace='procurement')),
 		# path('construction/', include('construction.urls', namespace='construction')),

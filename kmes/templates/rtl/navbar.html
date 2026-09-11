@@ -15,21 +15,48 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
         <!-- Dashboard -->
-        <li class="nav-item">
-          <a style="max-height: 40px; width: 117px;" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-             href="{% url 'dashboard' %}">
-            <i class="bi bi-speedometer2 me-1" style="max-width: 90px;" ></i> داشبورد
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if 'equipment_tag' in request.resolver_match.url_name %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-tag me-1"></i> Dashboard
           </a>
+          <ul class="dropdown-menu">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="bi bi-speedometer2 me-1" style="max-width: 90px;" ></i> dashboards
+              </h6>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'dashboard' %}">
+                <i class="bi bi-list-ul"></i> dashboard 1
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:work_package_timeline' %}">
+                <i class="bi bi-plus-circle"></i> dashboard 2
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:work_package_tree' %}">
+                <i class="bi bi-grid-3x3-gap"></i> dashboard 3
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'construction:work_package_analytics' %}">
+                <i class="bi bi-grid-3x3-gap"></i> dashboard 3
+              </a>
+            </li>
+          </ul>
         </li>
         <li class="nav-item">
-          <a style="max-height: 40px; width: 117px;" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-             href="{% url 'core:crusher_ga' %}">
+          <a style="max-height: 40px; width: 117px;" class="nav-link {% if request.resolver_match.url_name == 'manual' %}active{% endif %}"
+             href="{% url 'core:drawing_detail' 1 %}">
             <i class="bi bi-book-fill me-1" style="max-width: 90px;" ></i> crusher
           </a>
         </li>
         <!-- Projects Dropdown -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {% if 'project' in request.resolver_match.url_name or 'area' in request.resolver_match.url_name or 'system' in request.resolver_match.url_name or 'equipment' in request.resolver_match.url_name %}active{% endif %}"
+          <a class="nav-link dropdown-toggle {% if 'project' in request.resolver_match.url_name or 'area' in request.resolver_match.url_name or 'system' in request.resolver_match.url_name %}active{% endif %}"
              href="#" role="button" data-bs-toggle="dropdown">
             <i class="bi bi-folder me-1"></i> پروژه‌ها
           </a>
@@ -70,7 +97,7 @@
 
         <!-- Equipment Tags -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {% if 'equipment_tag' in request.resolver_match.url_name %}active{% endif %}"
+          <a class="nav-link dropdown-toggle {% if 'equipment_tag' in request.resolver_match.url_name or 'equipment-tag' in request.resolver_match.url_name%}active{% endif %}"
              href="#" role="button" data-bs-toggle="dropdown">
             <i class="bi bi-tag me-1"></i> تجهیزات
           </a>
@@ -88,6 +115,11 @@
             <li>
               <a class="dropdown-item" href="{% url 'core:equipment_tag_create' %}">
                 <i class="bi bi-plus-circle"></i> برچسب تجهیزات جدید
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'core:packing_list_create' %}">
+                <i class="bi bi-plus-circle"></i> پکینگ لیست جدید
               </a>
             </li>
             <li>
@@ -185,14 +217,6 @@
           </ul>
         </li>
 
-        <!-- Commissioning Dropdown -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {% if 'commissioning' in request.resolver_match.url_name or 'punch' in request.resolver_match.url_name %}active{% endif %}"
-             href="#" role="button" data-bs-toggle="dropdown">
-            <i class="bi bi-clipboard-check me-1"></i> راه‌اندازی
-          </a>
-
-        </li>
 
         <!-- Resources Dropdown -->
         <li class="nav-item dropdown">
@@ -338,11 +362,23 @@
             </li>
             {% endif %}
             <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item text-danger" href="#">
-                <i class="bi bi-box-arrow-right"></i> خروج
+            {% if user.is_authenticated %}
+            <!-- User menu with logout -->
+            <li class="nav-item">
+              <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item">
+                  <i class="bi bi-box-arrow-right" ></i> خروج
+                </button>
+              </form>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'accounts:login' %}">
+                <i class="bi bi-box-arrow-in-right"></i> ورود
               </a>
             </li>
+            {% endif %}
           </ul>
         </li>
       </ul>
