@@ -4,53 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="manual">
-      <change afterPath="$PROJECT_DIR$/kmes/Procfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/accounts/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/accounts/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/accounts/login.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/packing_list_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/qr_code_print.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kmes/templates/rtl/drawings/drawing_detail.html" afterDir="false" />
+    <list default="true" id="d18681d1-05ea-4ee0-8d21-d4c6f827d74b" name="Changes" comment="v1">
+      <change afterPath="$PROJECT_DIR$/kmes/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/construction/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/construction/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/core/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/core/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/core/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/documents/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/documents/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kmes/kmes/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/kmes/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/kmes/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/core/equipment_tag_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/core/equipment_tag_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/navbar.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/navbar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_analytics.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_analytics.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_item_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_item_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_timeline.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_timeline.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_tree.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/construction/work_package_tree.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/area_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/area_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/area_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_location_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/equipment_tag_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/core/project_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/core/project_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/documents/document_share.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/drawings/crusher_ga.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/drawings/crusher_ga.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/drawings/dust_bonnet.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/drawings/dust_bonnet.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kmes/templates/rtl/navbar.html" beforeDir="false" afterPath="$PROJECT_DIR$/kmes/templates/rtl/navbar.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,22 +37,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Python.import_script.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/moein/OneDrive/projects/django/kani/km/kmes/templates/rtl/drawings&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Python.import_script.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/moein/OneDrive/projects/django/kani/km/kmes/templates/rtl/drawings",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\moein\OneDrive\projects\django\kani\km\kmes\templates\rtl\drawings" />
@@ -249,7 +207,7 @@
       <workItem from="1788497519670" duration="1855000" />
       <workItem from="1789021423480" duration="2523000" />
       <workItem from="1789033174969" duration="3397000" />
-      <workItem from="1789136112956" duration="4683000" />
+      <workItem from="1789136112956" duration="5423000" />
     </task>
     <task id="LOCAL‎−۰۰۰۰۱" summary="init">
       <option name="closed" value="true" />
@@ -370,7 +328,14 @@
       <option name="presentableId" value="LOCAL‎−۰۰۰۱۷" />
       <updated>1787731216407</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL‎−۰۰۰۱۸" summary="v1">
+      <option name="closed" value="true" />
+      <created>1789143214819</created>
+      <option name="number" value="LOCAL‎−۰۰۰۱۸" />
+      <option name="presentableId" value="LOCAL‎−۰۰۰۱۸" />
+      <updated>1789143214819</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -383,7 +348,8 @@
     <MESSAGE value="area" />
     <MESSAGE value="employee report" />
     <MESSAGE value="manual" />
-    <option name="LAST_COMMIT_MESSAGE" value="manual" />
+    <MESSAGE value="v1" />
+    <option name="LAST_COMMIT_MESSAGE" value="v1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

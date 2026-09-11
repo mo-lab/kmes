@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +33,7 @@ ALLOWED_HOSTS = [
 		'192.168.1.4',  # Your computer's IP address
 		'192.168.1.*',    # Allow all devices on this subnet
 		'10.0.0.*',
+		'*',
 		]
 
 # Application definition
@@ -54,6 +56,7 @@ INSTALLED_APPS = [
 		]
 
 MIDDLEWARE = [
+		'whitenoise.middleware.WhiteNoiseMiddleware',
 		"django.middleware.security.SecurityMiddleware",
 		"django.contrib.sessions.middleware.SessionMiddleware",
 		"django.middleware.common.CommonMiddleware",
@@ -87,10 +90,11 @@ WSGI_APPLICATION = "kmes.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-		"default": {
-				"ENGINE": "django.db.backends.sqlite3",
-				"NAME":   BASE_DIR / "db.sqlite3",
-				}
+		'default': dj_database_url.config(conn_max_age=600, default='sqlite:///db.sqlite3')
+		# "default": {
+		# 		"ENGINE": "django.db.backends.sqlite3",
+		# 		"NAME":   BASE_DIR / "db.sqlite3",
+		# 		}
 		}
 
 # Password validation
@@ -135,7 +139,7 @@ STATICFILES_DIRS = [
 		os.path.join(BASE_DIR, 'static'),
 		]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # For file uploads
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 
