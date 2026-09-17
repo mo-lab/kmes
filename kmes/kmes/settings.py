@@ -24,7 +24,12 @@ SECRET_KEY = "django-insecure-*ll)hvkwg33kjuf#&a_!0!kg66s=1bxh8#k#%_%o$ht7)nkh+u
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+CSRF_TRUSTED_ORIGINS = [
+    'https://kmes-production.up.railway.app',
+    'https://*.up.railway.app',
+]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ALLOWED_HOSTS = [
 		'localhost',
 		'127.0.0.1',
@@ -34,6 +39,8 @@ ALLOWED_HOSTS = [
 		'192.168.1.*',    # Allow all devices on this subnet
 		'10.0.0.*',
 		'*',
+		'kmes-production.up.railway.app',
+	    '.up.railway.app',   # leading dot = wildcard subdomains
 		]
 
 # Application definition
