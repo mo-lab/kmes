@@ -370,6 +370,7 @@
         }
 
         const map = L.map('map').setView([lat, lng], 16);
+        L.TileLayer.prototype.options.referrerPolicy = 'strict-origin-when-cross-origin';
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
