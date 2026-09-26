@@ -1081,17 +1081,17 @@ class EquipmentTagListView(LoginRequiredMixin, generic.ListView):
 			data = form.cleaned_data
 			
 			if data.get('project'):
-				queryset = queryset.filter(project=data['project'])
+				queryset = queryset.filter(project__pk=data['project'])
 			
 			if data.get('area'):
-				queryset = queryset.filter(area=data['area'])
+				queryset = queryset.filter(area__pk=data['area'])
 				
 			if data.get('packing'):
 				
-				queryset = queryset.filter(packing=data['packing'])
+				queryset = queryset.filter(packing__pk=data['packing'])
 		
 			if data.get('system'):
-				queryset = queryset.filter(system=data['system'])
+				queryset = queryset.filter(system__pk=data['system'])
 			
 			if data.get('equipment_type'):
 				queryset = queryset.filter(equipment_type=data['equipment_type'])
