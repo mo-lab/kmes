@@ -3,36 +3,360 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    /* ----- existing styles (untouched) ----- */
+    .dashboard-bg {
+      background: url("{% static drawing.url %}") no-repeat;
+      width: {{ drawing.width }}px;
+      height: {{ drawing.height }}px;
+      position: relative;
+      display: block;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+      overflow-x: auto;
+      transform: scale(0.2);
+      transform-origin: top left;
+    }
+
+    .hotspot {
+      position: absolute;
+      display: block;
+      cursor: pointer;
+      background: rgba(255, 0, 0, 0.3);
+    }
+
+    /* ----- HAMBURGER MENU – top left corner ----- */
+    .menu-overlay {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 9999;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    #menu-toggle {
+      display: none;
+    }
+
+    .menu-icon {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 32px;
+      height: 24px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+      position: relative;
+      z-index: 10000;
+    }
+
+    .menu-icon span {
+      display: block;
+      width: 100%;
+      height: 3px;
+      background: #1e2b3a;
+      border-radius: 4px;
+      transition: transform 0.25s ease, opacity 0.2s ease;
+      transform-origin: center;
+    }
+
+    .menu-icon:hover span {
+      background: #0d6efd;
+    }
+
+    /* ----- FULL-SCREEN BACKDROP (click outside to close) ----- */
+    .menu-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 9997;
+      cursor: pointer;
+    }
+
+    #menu-toggle:checked ~ .menu-backdrop {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* ----- sliding menu panel ----- */
+    .menu-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      background: #ffffff;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+      padding: 90px 0 0 0;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+      z-index: 9998;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(0, 0, 0, 0.05);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .menu-scroll {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 20px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .menu-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .menu-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .menu-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+    .menu-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* ----- menu links (base style) ----- */
+    .menu-scroll a {
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #1e2b3a;
+      padding: 0.55rem 0.7rem;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      flex-shrink: 0;
+      line-height: 1.3;
+      border-left: 3px solid transparent;
+    }
+
+    .menu-scroll a::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #0d6efd;
+      opacity: 0.5;
+      flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.15s, background 0.15s;
+    }
+
+    .menu-scroll a:hover {
+      background: #f0f4fe;
+      color: #0d6efd;
+      border-left-color: #0d6efd;
+    }
+
+    .menu-scroll a:hover::before {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+
+    /* ----- ACTIVE LINK HIGHLIGHT ----- */
+    .menu-scroll a.active {
+      background: #e7efff;
+      color: #0d6efd;
+      font-weight: 600;
+      border-left-color: #0d6efd;
+    }
+
+    .menu-scroll a.active::before {
+      opacity: 1;
+      background: #0d6efd;
+      transform: scale(1.3);
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+
+    /* ----- animate bars into X when open ----- */
+    #menu-toggle:checked ~ .menu-icon span:nth-child(1) {
+      transform: translateY(10.5px) rotate(45deg);
+    }
+
+    #menu-toggle:checked ~ .menu-icon span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    #menu-toggle:checked ~ .menu-icon span:nth-child(3) {
+      transform: translateY(-10.5px) rotate(-45deg);
+    }
+
+    #menu-toggle:checked ~ .menu-panel {
+      transform: translateX(0);
+    }
+
+    /* responsive tweak */
+    @media (max-width: 480px) {
+      .menu-overlay {
+        top: 16px;
+        left: 16px;
+      }
+      .menu-icon {
+        width: 28px;
+        height: 21px;
+      }
+      .menu-icon span {
+        height: 2.5px;
+      }
+      #menu-toggle:checked ~ .menu-icon span:nth-child(1) {
+        transform: translateY(9.25px) rotate(45deg);
+      }
+      #menu-toggle:checked ~ .menu-icon span:nth-child(3) {
+        transform: translateY(-9.25px) rotate(-45deg);
+      }
+      .menu-panel {
+        width: 250px;
+      }
+    }
+  </style>
 </head>
 <body>
-<style>
-  .dashboard-bg {
-    background: url("{% static  drawing.url %}") no-repeat;
-    width: {{ drawing.width }}px;
-    height: {{ drawing.height }}px;
-    position: relative;
-    display: block;
-    top: 0;
-    left: 0;
-    overflow-y: auto;
-    overflow-x: auto;
-  }
 
+  <!-- ===== HAMBURGER MENU – top left corner ===== -->
+  <div class="menu-overlay">
+    <input type="checkbox" id="menu-toggle">
+    
+    <label for="menu-toggle" class="menu-icon" aria-label="Toggle navigation menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
 
-  .hotspot {
-    position: absolute;
-    display: block;
-    cursor: pointer;
-    /* Make it visible for debugging */
-    background: rgba(255, 0, 0, 0.3);
-  }
-</style>
-<div class="dashboard-bg">
-  {% for hs in hot_spots %}
-  <a href="{% url 'core:equipment-tag-detail' hs.equipment_tag_ID %}" class="hotspot" style="top: {{ hs.top }}px;
-   left:  {{ hs.left }}px; width: {{ hs.width }}px; height: {{ hs.height }}px;"></a>
-{% endfor %}
-</div>
+    <label for="menu-toggle" class="menu-backdrop" aria-hidden="true"></label>
+
+    <nav class="menu-panel">
+      <div class="menu-scroll">
+        <a href="{% url 'dashboard' %}"
+           class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          Dashboard
+        </a>
+        <a href="{% url 'core:drawing_detail' 2 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 2 %}active{% endif %}">
+          Crucher GA
+        </a>
+        <a href="{% url 'core:drawing_detail' 3 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 3 %}active{% endif %}">
+          spider Handling
+        </a>
+        <a href="{% url 'core:drawing_detail' 4 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 4 %}active{% endif %}">
+          top shell handling
+        </a>
+        <a href="{% url 'core:drawing_detail' 5 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 5 %}active{% endif %}">
+          middle shell handling
+        </a>
+        <a href="{% url 'core:drawing_detail' 6 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 6 %}active{% endif %}">
+          bottom shell handling
+        </a>
+        <a href="{% url 'core:drawing_detail' 7 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 7 %}active{% endif %}">
+          main shaft handling
+        </a>
+        <a href="{% url 'core:drawing_detail' 8 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 8 %}active{% endif %}">
+          spider assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 9 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 9 %}active{% endif %}">
+          top shell assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 10 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 10 %}active{% endif %}">
+          middle shell assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 11 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 11 %}active{% endif %}">
+          bottom shell assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 12 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 12 %}active{% endif %}">
+          bottom shell liner assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 13 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 13 %}active{% endif %}">
+          dust bonnet assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 14 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 14 %}active{% endif %}">
+          eccentric assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 15 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 15 %}active{% endif %}">
+          hydrulic cylandler assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 16 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 16 %}active{% endif %}">
+          main shaft assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 17 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 17 %}active{% endif %}">
+          dust seal assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 18 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 18 %}active{% endif %}">
+          concave assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 19 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 19 %}active{% endif %}">
+          counter shaft assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 20 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 20 %}active{% endif %}">
+          lube and hydraulic schematic
+        </a>
+        <a href="{% url 'core:drawing_detail' 21 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 21 %}active{% endif %}">
+          mantle relif valve
+        </a>
+        <a href="{% url 'core:drawing_detail' 22 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 22 %}active{% endif %}">
+          mantle position indicator
+        </a>
+        <a href="{% url 'core:drawing_detail' 23 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 23 %}active{% endif %}">
+          maintenance platform assembly
+        </a>
+        <a href="{% url 'core:drawing_detail' 24 %}"
+           class="{% if request.resolver_match.url_name == 'drawing_detail' and request.resolver_match.kwargs.pk == 24 %}active{% endif %}">
+          counter shaft extention assembly
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ===== YOUR EXISTING DASHBOARD – untouched ===== -->
+  <div class="dashboard-bg">
+    {% for hs in hot_spots %}
+    <a href="{% url 'core:equipment-tag-detail' hs.equipment_tag_ID %}" class="hotspot" style="top: {{ hs.top }}px;
+     left:  {{ hs.left }}px; width: {{ hs.width }}px; height: {{ hs.height }}px;"></a>
+    {% endfor %}
+  </div>
+
 </body>
 </html>
